@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import style from "./SignIn.module.css";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useAuth } from "../../Context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function SignIn() {
-  const [showPassword, setShowPassword] = useState(false);
-  
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const [data, setData] = useState({
     role: "",
@@ -25,86 +26,98 @@ export default function SignIn() {
 
   const handlesubmit = async (e) => {
     e.preventDefault();
-    console.log(data);
     const { role, email, password } = data;
     if (!email || !password || !role) {
       toast.error("Please fill all fields");
       return;
     }
-    
 
     try {
       const response = await axios.post(url, data);
       if (response.status === 200) {
-
         toast.success("Login Successful");
+        login(response.data.token);
+        navigate('/home');
       }
     } catch (error) {
-      toast.error("Login Failed");
+      toast.error(error.response?.data?.error || "Login Failed");
     }
   };
 
   return (
-    <div className={style.Signin}>
-      <div className={style.signinimg}>
-        <img src="Loginbg.png" alt="Background" />
-      </div>
-
-      <div className={style.signin_content}>
-        <img src="Logo.png" alt="Logo" />
-
-        <div className={style.signin_form}>
-          <h2>Sign In</h2>
-          <form onSubmit={handlesubmit} className={style.form}>
-            <label htmlFor="role">Sign In as</label>
-            <select
-              id="role"
-              name="role"
-              value={data.role}
-              onChange={changehandle}
-            >
-              <option value="">--Select Role--</option>
-              <option value="patient" >Patient</option>
-              <option value="Doctor">Doctor</option>
-              <option value="Hospital">Hospital</option>
-              <option value="External">External</option>
-            </select>
-
-            <label htmlFor="email">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              onChange={changehandle}
-              value={data.email}
-            />
-
-            <label htmlFor="password">Password</label>
-            <div className={style.passwordWrapper}>
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                name="password"
-                onChange={changehandle}
-                value={data.password}
-              />
+    <div className="flex items-center justify-center min-h-screen bg-white p-4">
+      <div className="flex w-full max-w-7xl">
+        <div className="hidden md:flex md:w-1/2 items-center justify-center pr-10">
+          <img src="Loginbg.png" alt="Medical illustration" className="max-w-xl" />
+        </div>
+        <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
+          <img src="Logo.png" alt="Medorc Logo" className="w-72 pb-4" />
+          <div className="bg-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md">
+            <h2 className="text-4xl font-bold text-center mb-8">Sign In</h2>
+            <form onSubmit={handlesubmit} className="flex flex-col gap-4">
+              <div>
+                <label htmlFor="role" className="block mb-1 font-medium text-gray-700">
+                  Sign In as
+                </label>
+                <div className="w-full border border-gray-300 rounded-full px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+                  <select
+                    id="role"
+                    name="role"
+                    value={data.role}
+                    onChange={changehandle}
+                    className="w-full outline-none bg-transparent"
+                  >
+                    <option value="">--Select Role--</option>
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="hospital">Hospital</option>
+                    <option value="extern">External</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label htmlFor="email" className="block mb-1 font-medium text-gray-700">
+                  Email
+                </label>
+                <div className="w-full border border-gray-300 rounded-full px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={data.email}
+                    onChange={changehandle}
+                    placeholder="Enter your email"
+                    className="w-full bg-transparent outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="password" className="block mb-1 font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="w-full border border-gray-300 rounded-full px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={data.password}
+                    onChange={changehandle}
+                    placeholder="Enter your password"
+                    className="w-full bg-transparent outline-none"
+                  />
+                </div>
+              </div>
               <button
-                type="button"
-                className={style.toggleBtn}
-                onClick={() => setShowPassword(!showPassword)}
+                type="submit"
+                className="w-full bg-blue-500 text-white py-3 rounded-full font-semibold text-lg hover:bg-blue-600 transition duration-300 mt-4"
               >
-                {showPassword ? "👁" : "👁"}
+                Sign In
               </button>
+            </form>
+            <div className="text-center mt-6 flex justify-between text-sm">
+              <p className="text-blue-500 hover:underline cursor-pointer">Forgot password?</p>
+              <p className="text-blue-500 hover:underline cursor-pointer">Not a user? Sign up</p>
             </div>
-
-            <button type="submit" className={style.signinbtn}>
-              Sign In
-            </button>
-          </form>
-
-          <div className={style.credentials}>
-            <p>Forgot password?</p>
-            <p>Not a user? Sign up</p>
           </div>
         </div>
       </div>

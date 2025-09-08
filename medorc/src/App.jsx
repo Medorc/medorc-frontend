@@ -1,22 +1,22 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-// import NavBar from './Components/NavBar/NavBar'
 import SignIn from './Pages/Login/Signin'
 import { ToastContainer } from 'react-toastify';
-import SignUp from './Pages/Login/SignUp'
 import SPatient from './Pages/Login/SignUp/SPatient'
-
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 function App() {
-  
+
 
   return (
     <>
       <ToastContainer />
-      
-       <SPatient/>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<SignIn />} />
+          <Route path='/patient' element={<SPatient />} />
+        </Routes>
+      </BrowserRouter>
+
     </>
   )
 }
