@@ -37,7 +37,7 @@ export default function SignIn() {
       if (response.status === 200) {
         toast.success("Login Successful");
         login(response.data.token);
-        navigate('/home');
+        navigate(`/${data.role}/home`);
       }
     } catch (error) {
       toast.error(error.response?.data?.error || "Login Failed");
@@ -116,7 +116,7 @@ export default function SignIn() {
             </form>
             <div className="text-center mt-6 flex justify-between text-sm">
               <p className="text-blue-500 hover:underline cursor-pointer">Forgot password?</p>
-              <p className="text-blue-500 hover:underline cursor-pointer">Not a user? Sign up</p>
+              <p className="text-blue-500 hover:underline cursor-pointer" onClick={()=>navigate('/SignUp')}>Not a user? Sign up</p>
             </div>
           </div>
         </div>
