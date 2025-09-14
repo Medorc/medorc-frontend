@@ -28,7 +28,7 @@ export default function Tabs() {
               onClick={() => handleTabClick(tab.id)}
               role="tab"
               aria-selected={isActive}
-              className={`px-3 sm:px-4 md:px-6 py-1 sm:py-2 rounded-full 
+              className={`px-4 sm:px-5 md:px-10 py-1 sm:py-2 rounded-full 
                 text-xs sm:text-sm md:text-base font-medium transition
                 ${
                   isActive

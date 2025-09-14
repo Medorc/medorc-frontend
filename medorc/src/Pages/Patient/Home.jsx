@@ -11,7 +11,7 @@ export default function Home() {
   
   const [enabled, setEnabled] = useState(false);
   const navigator = useNavigate();
-
+  
   const url = "http://localhost:3000/api/v1/patient/profile";
   const { token } = useAuth();
   const [data, setdata] = useState({});
@@ -26,6 +26,9 @@ export default function Home() {
           },
         });
         setdata(res.data.data);
+        localStorage.setItem("schcode", res.data.data.shc_code);
+
+
         setEnabled(res.data.data.visibility);
       } catch (err) {
         toast.error(

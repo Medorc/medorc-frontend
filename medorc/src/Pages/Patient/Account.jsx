@@ -30,6 +30,7 @@ export default function Account() {
             "Content-Type": "application/json",
           },
         });
+        
         setData(res.data.data);
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));
