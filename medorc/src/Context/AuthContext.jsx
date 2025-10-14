@@ -4,9 +4,12 @@ import { jwtDecode } from 'jwt-decode';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+
+  const [schcode,setSchcode]=useState(localStorage.getItem('schcode'));
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [user, setUser] = useState(() => {
     const savedToken = localStorage.getItem('token');
+
     if (savedToken) {
       try {
         return jwtDecode(savedToken);
@@ -37,6 +40,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const authContextValue = {
+    schcode,
+    setSchcode,
     token,
     user,
     login,

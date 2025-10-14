@@ -37,7 +37,7 @@ export default function SignIn() {
       if (response.status === 200) {
         toast.success("Login Successful");
         login(response.data.token);
-        navigate(`/${data.role}/home`);
+        navigate(`/home`);
       }
     } catch (error) {
       toast.error(error.response?.data?.error || "Login Failed");
