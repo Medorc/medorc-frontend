@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../Context/AuthContext";
 import { FaSearch } from "react-icons/fa";
+import BackButton from "../../Components/BackButton";
 
 export default function Logs() {
   const url = "http://localhost:3000/api/v1/patient/profile";
@@ -61,17 +62,7 @@ export default function Logs() {
       <NavBar />
 
       {/* Header */}
-      <div className="w-full h-16 flex items-center justify-center relative px-4 sm:px-8">
-        <button
-          className="absolute left-4 sm:left-8 bg-[#4A82B3] py-1 px-4 sm:px-7 text-white font-bold rounded"
-          onClick={() => navigate("/home")}
-        >
-          <FaArrowLeft className="inline mr-2 text-lg sm:text-xl" /> Back
-        </button>
-        <h1 className="font-medium text-xl sm:text-2xl md:text-3xl text-[#0751A7]">
-          Profile & Settings
-        </h1>
-      </div>
+      <BackButton/>
 
       <NavButton />
 

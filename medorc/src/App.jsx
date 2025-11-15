@@ -10,6 +10,9 @@ import Account from './Pages/Patient/Account';
 import Emergency from './Pages/Patient/Emergency';
 import Logs from './Pages/Patient/Logs';
 
+import CreateRecordPage from './Pages/Patient/CreateRecordPage';
+import Records from './Pages/Patient/Records';
+
 function App() {
 
 
@@ -26,6 +29,9 @@ function App() {
           <Route path='/security' element={<Account />} />
           <Route path='/emergency' element={<Emergency />} />
           <Route path='/logs' element={<Logs />} />
+          <Route path='/addrecord' element={<CreateRecordPage/>}/>
+          <Route path='/records' element={<Records/>}/>
+          
         </Routes>
       </BrowserRouter>
 

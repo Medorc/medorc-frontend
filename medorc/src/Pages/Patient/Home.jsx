@@ -76,7 +76,7 @@ export default function Home() {
       </div>
 
       {/* Profile Section */}
-      <div className="w-full flex flex-col md:flex-row justify-between items-center py-2 px-4 md:py-3 md:px-6 gap-3">
+      <div className="w-full flex flex-col md:flex-row cursor-pointer justify-between items-center py-2 px-4 md:py-3 md:px-6 gap-3">
         {/* Left Section */}
         <div className="flex flex-col gap-1 text-center md:text-left">
           <h2 className="font-semibold text-base md:text-xl lg:text-2xl leading-tight">
@@ -85,7 +85,7 @@ export default function Home() {
           <p className="font-medium text-xs md:text-sm lg:text-base leading-tight">
             {data.email}
           </p>
-          <button className="bg-sky-500 py-1 px-3 md:px-5 rounded-full font-medium text-white hover:bg-sky-600 transition text-xs md:text-sm" onClick={()=>navigator("/profile/settings")}>
+          <button className="bg-sky-500 py-1 px-3 md:px-5 cursor-pointer rounded-full font-medium text-white hover:bg-sky-600 transition text-xs md:text-sm" onClick={()=>navigator("/profile/settings")}>
             View Profile
           </button>
         </div>

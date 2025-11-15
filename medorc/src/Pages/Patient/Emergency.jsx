@@ -6,6 +6,7 @@ import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import BackButton from "../../Components/BackButton";
 
 // API URLs
 const URL = "http://localhost:3000/api/v1/patient/profile/";
@@ -93,17 +94,9 @@ export default function Emergency() {
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
       <NavBar />
-      <div className="w-full h-16 flex items-center justify-center relative px-4 sm:px-8">
-        <button
-          className="absolute left-4 sm:left-8 bg-[#4A82B3] py-1 px-4 sm:px-7 text-white font-bold rounded cursor-pointer"
-          onClick={() => navigate("/home")}
-        >
-          <FaArrowLeft className="inline mr-2 text-lg sm:text-xl" /> Back
-        </button>
-        <h1 className="font-medium text-xl sm:text-2xl md:text-3xl text-[#0751A7]">
-          Profile & Settings
-        </h1>
-      </div>
+      
+      <BackButton/>
+
       <NavButton />
 
       <div className="w-full max-w-4xl my-8 flex flex-col gap-8 space-y-6 px-4">
