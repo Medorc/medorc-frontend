@@ -36,7 +36,7 @@ export default function SignIn() {
       const response = await axios.post(url, data);
       if (response.status === 200) {
         toast.success("Login Successful");
-        login(response.data.token);
+        login(response.data.token,response.data.role);
         navigate(`/home`);
       }
     } catch (error) {

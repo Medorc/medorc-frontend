@@ -25,11 +25,11 @@ export default function Home() {
             "Content-Type": "application/json",
           },
         });
-        setdata(res.data.data);
-        localStorage.setItem("schcode", res.data.data.shc_code);
+        setdata(res.data);
+        localStorage.setItem("schcode", res.data.shc_code);
 
 
-        setEnabled(res.data.data.visibility);
+        setEnabled(res.data.visibility);
       } catch (err) {
         toast.error(
           "Error fetching profile:",
@@ -55,7 +55,7 @@ export default function Home() {
       );
 
       toast.success("Visibility updated successfully");
-      setEnabled(res.data.data.visibility);
+      setEnabled(res.data.visibility);
     } catch (err) {
       toast.error(
         "Error updating visibility:",
@@ -93,7 +93,7 @@ export default function Home() {
         {/* Right Section */}
         <div className="profile flex justify-center items-center w-16 h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 bg-white border-3 border-green-500 rounded-full shadow-sm ">
           <img
-            src="https://wallpapers.com/images/featured/vijay-hd-27mgorooz2ewisvi.jpg"
+            src={data.photo}
             className="h-14  md:h-18 lg:h-26 object-contain rounded-full"
             alt="Profile"
           />

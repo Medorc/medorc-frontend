@@ -7,8 +7,10 @@ export const AuthProvider = ({ children }) => {
 
   const [schcode,setSchcode]=useState(localStorage.getItem('schcode'));
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [role, setRole] = useState(localStorage.getItem('role'));
   const [user, setUser] = useState(() => {
     const savedToken = localStorage.getItem('token');
+    const savedRole = localStorage.getItem('role');
 
     if (savedToken) {
       try {
@@ -21,12 +23,16 @@ export const AuthProvider = ({ children }) => {
     return null;
   });
 
-  const login = (newToken) => {
+  const login = (newToken,newRole) => {
     localStorage.setItem('token', newToken);
+    localStorage.setItem('role', newRole);
+    setRole(newRole);
     setToken(newToken);
     try {
         const decodedUser = jwtDecode(newToken);
+        setRole(newRole);
         setUser(decodedUser);
+
     } catch(error) {
         console.error("Failed to decode token:", error);
         logout();
@@ -35,7 +41,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     setToken(null);
+    setRole(null);
     setUser(null);
   };
 
@@ -43,6 +51,7 @@ export const AuthProvider = ({ children }) => {
     schcode,
     setSchcode,
     token,
+    role,
     user,
     login,
     logout,

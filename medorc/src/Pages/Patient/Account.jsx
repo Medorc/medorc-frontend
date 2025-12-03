@@ -3,21 +3,33 @@ import NavBar from "../../Components/NavBar";
 import { toast } from "react-toastify";
 import BackButton from "../../Components/BackButton";
 
-
 import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 
 
 export default function Account() {
+
+  var url="http://localhost:3000";
+
+  
   const [data, setData] = useState({
     email:"",
     phone_no:"",
     password:""
   });
-  const { token } = useAuth();
+  const { token,role } = useAuth();
 
-    const url="http://localhost:3000/api/v1/patient/profile";
+    if(role==="patient"){
+        url+="/api/v1/patient/profile";
+    }else if(role==="doctor"){
+        url+="/api/v1/doctor/profile";
+    }else if(role=="extern"){
+        url+="/api/v1/extern/profile";
+    }else{
+      url+="/api/v1/hospital/profile";
+    }
+    console.log(url);
 
     useEffect(() => {
     if (!token) return;
@@ -92,6 +104,7 @@ export default function Account() {
             className="flex-1 border-2 rounded py-1 px-4"
             name="email"
             value={data.email || ""}
+            onChange={changehandler}
             
           />
           <button className="bg-[#4A90E2] py-1 px-6 text-white font-bold rounded" onClick={changehandler}>
@@ -114,6 +127,7 @@ export default function Account() {
             className="flex-1 border-2 rounded py-1 px-4"
             name="phone_no"
             value={data.phone_no || ""}
+            onChange={changehandler}
             
           />
           <button className="bg-[#4A90E2] py-1 px-6 text-white font-bold rounded">
@@ -135,6 +149,7 @@ export default function Account() {
             name="password"
             value={data.password || ""}
             className="flex-1 border-2 rounded py-1 px-4"
+            onChange={changehandler}
           />
           <button className="bg-[#4A90E2] py-1 px-6 text-white font-bold rounded">
             Change

@@ -86,7 +86,6 @@ function CreateRecordPage() {
   const handleFileUpload = async (file, documentType) => {
     if (!file) return;
 
-    console.log(`Uploading ${documentType}:`, file.name);
     setUploading(prev => ({ ...prev, [documentType]: true }));
 
     const formDataUpload = new FormData();
@@ -101,7 +100,7 @@ function CreateRecordPage() {
       });
 
       const fileUrl = response.data.secure_url;
-      console.log(`${documentType} uploaded to:`, fileUrl);
+     
 
       // Save URL to form data
       handleChange('documents', documentType, fileUrl);
