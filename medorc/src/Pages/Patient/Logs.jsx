@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../Components/NavBar";
-import { FaArrowLeft } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 import NavButton from "../../Components/NavButton";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+
 import { toast } from "react-toastify";
 import { useAuth } from "../../Context/AuthContext";
 import { FaSearch } from "react-icons/fa";
@@ -14,6 +14,8 @@ export default function Logs() {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const { token, schcode } = useAuth();
+
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function Logs() {
           },
         });
         // Ensure data is always an array
-        console.log(res.data.data);
+       
         const rawLogs = res.data.data.data_logs || "";
         // Split into an array by comma
         const logs = rawLogs
@@ -38,10 +40,8 @@ export default function Logs() {
           .map((log) => log.trim())
           .filter((log) => log.length > 0);
 
-        console.log(logs);
         setData(logs);
 
-        setData(logs);
       } catch (err) {
         toast.error(
           "API Error: " + (err.response?.data?.message || err.message)
@@ -56,6 +56,10 @@ export default function Logs() {
   const filteredLogs = data.filter((log) =>
     log.toLowerCase().includes(search.toLowerCase())
   );
+
+   if(!token){
+    navigate("/");
+  }
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">

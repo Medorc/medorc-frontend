@@ -15,9 +15,10 @@ import Records from "./Pages/Patient/Records";
 
 
 import ExternProfile from "./Pages/Extern/ExternProfile";
-import PatientDetails from "./Pages/Extern/PatientDetails";
+import PatientDetails from "./Pages/Extern/PatientBasicDetails";
 import ExternHome from "./Pages/Extern/ExternHome";
-
+import ExternAccount from "./Pages/Extern/Account";
+import PatientRecords from "./Pages/Extern/PatientRecord";
 
 function App() {
   return (
@@ -28,18 +29,21 @@ function App() {
           <Route path="/" element={<SignIn />} />
           <Route path="/SignUp" element={<SignUp />} />
           <Route path="/patient" element={<SPatient />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/profile/settings" element={<ProfileSettings />} />
-          <Route path="/security" element={<Account />} />
-          <Route path="/emergency" element={<Emergency />} />
-          <Route path="/logs" element={<Logs />} />
-          <Route path="/addrecord" element={<CreateRecordPage />} />
-          <Route path="/records" element={<Records />} />
+          <Route path="/patient/home" element={<Home />} />
+          <Route path="/patient/profile" element={<ProfileSettings />} />
+          <Route path="/patient/security" element={<Account />} />
+          <Route path="/patient/emergency" element={<Emergency />} />
+          <Route path="/patient/logs" element={<Logs />} />
+          <Route path="/patient/addrecord" element={<CreateRecordPage />} />
+          <Route path="/patient/records" element={<Records />} />
 
-          <Route path="/ExternHome" element={<ExternHome />} />
-          <Route path="/ExternProfile" element={<ExternProfile />} />
-          <Route path="/PatientDetails" element={<PatientDetails />} />
+          <Route path="/extern/home" element={<ExternHome />} />
+          <Route path="/extern/profile" element={<ExternProfile />} />
+          <Route path="/extern/patientbasicdetails" element={<PatientDetails />} />
+          <Route path="/extern/patientrecords" element={<PatientRecords />} />
+          <Route path="/extern/security" element={<ExternAccount />}/>
           
+
         </Routes>
       </BrowserRouter>
     </>

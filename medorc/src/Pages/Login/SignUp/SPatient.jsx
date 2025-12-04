@@ -5,9 +5,9 @@ import { toast } from "react-toastify";
 import axios from "axios";
 
 // Cloudinary Config
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/image/upload";
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
 const CLOUDINARY_UPLOAD_PRESET = "Medorc";
-const CLOUD_NAME = "dr8hcq37p";
+
 
 const FormInput = ({ id, name, label, type = "text", value, onChange }) => (
   <div>
@@ -73,7 +73,7 @@ export default function SPatient() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-    formData.append("cloud_name", CLOUD_NAME);
+    
 
     try {
       const res = await axios.post(CLOUDINARY_URL, formData);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../../Components/NavBar";
-import { FaArrowLeft, FaTimesCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaTimesCircle } from "react-icons/fa";
+
 import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
@@ -14,7 +14,6 @@ const CONTACTS_ENDPOINT = "emergency-contacts";
 const CONTACT_ENDPOINT = "emergency-contact";
 
 export default function Emergency() {
-  const navigate = useNavigate();
   const [contacts, setContacts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({

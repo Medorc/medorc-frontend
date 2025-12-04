@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import NavBar from "../../Components/NavBar";
 import { toast } from "react-toastify";
@@ -6,11 +7,14 @@ import BackButton from "../../Components/BackButton";
 import { FaPen, FaSave, FaTimes } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
 import Loading from "../../Components/Loading";
+import PesonalDetails from "../../Components/PesonalDetails";
+import NavButton from "../../Components/NavButton";
 
 export default function ExternProfile() {
   const { token, role } = useAuth();
   const url = "http://localhost:3000";
 
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
   const [profile, setProfile] = useState({});
@@ -56,20 +60,13 @@ export default function ExternProfile() {
     getOrganization();
   }, []);
 
-  const [isEditingPersonal, setIsEditingPersonal] = useState(false);
+  
   const [isEditingOrg, setIsEditingOrg] = useState(false);
-  const [originalProfile, setOriginalProfile] = useState({});
+
   const [originalOrganization, setOriginalOrganization] = useState({});
 
-  const handlePersonalEdit = () => {
-    setOriginalProfile({ ...profile });
-    setIsEditingPersonal(true);
-  };
+  
 
-  const handlePersonalCancel = () => {
-    setProfile(originalProfile);
-    setIsEditingPersonal(false);
-  };
 
   const handleOrgEdit = () => {
     setOriginalOrganization({ ...Organization });
@@ -96,124 +93,49 @@ export default function ExternProfile() {
       );
       setLoading(false);
       setIsEditingOrg(false);
-
+      setOrganization(response.data.data);
       toast.success("Organization updated successfully");
-      getOrganization();
+    
     } catch (error) {
       console.error("Error updating organization:", error);
       toast.error("Failed to update organization details");
     }
   };
 
-  const handleProfileChange = (e, field) => {
-    setProfile({ ...profile, [field]: e.target.value });
-  };
+  
 
   const handleOrgChange = (e, field) => {
     setOrganization({ ...Organization, [field]: e.target.value });
   };
 
-  const [activeTab, setActiveTab] = useState("personal");
+  
 
   if (!token) {
-    navigate("/login");
+    navigate("/");
   }
 
   if (role !== "extern") {
-    navigate("/login");
+    navigate("/");
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] pb-10  ">
+    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center ">
       <NavBar />
-      <BackButton showTitle={false} />
+      <BackButton />
+      <NavButton />
 
       {loading ? (
         <Loading />
       ) : (
-        <div className=" mx-auto px-4 py-6 flex flex-col gap-6 justify-center sm:px-8">
+        <div className="w-full mx-auto px-4 py-6 flex flex-col gap-6  items-center sm:px-8">
           {/* Tabs */}
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex gap-4">
-              <button
-                onClick={() => setActiveTab("personal")}
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${
-                  activeTab === "personal"
-                    ? "bg-[#4A90E2] text-white"
-                    : "text-gray-600 hover:text-[#4A90E2]"
-                }`}
-              >
-                Personal profile
-              </button>
-            </div>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => setActiveTab("security")}
-                className={`px-6 py-2 rounded-full font-medium transition-colors ${
-                  activeTab === "security"
-                    ? "bg-[#4A90E2] text-white"
-                    : "text-black hover:text-[#4A90E2]"
-                }`}
-              >
-                Account & Security
-              </button>
-            </div>
-          </div>
 
           {/* Personal Details Card */}
-          <div className="bg-white rounded-xl border border-gray-400 p-8 mb-12   relative">
-            <h2 className="text-[#4A82B3] text-xl font-medium mb-6 text-center">
-              Personal Details
-            </h2>
-
-            <div className="flex flex-col md:flex-row justify-between gap-8">
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-black font-medium">Full Name:</label>
-                  <input
-                    type="text"
-                    className="border border-black rounded px-3 py-2 w-full"
-                    value={profile.full_name || ""}
-                    onChange={(e) => handleProfileChange(e, "full_name")}
-                    disabled={!isEditingPersonal}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-black font-medium">Gender:</label>
-                  <input
-                    type="text"
-                    className="border border-black rounded px-3 py-2 w-full"
-                    value={profile.gender || ""}
-                    onChange={(e) => handleProfileChange(e, "gender")}
-                    disabled={!isEditingPersonal}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-black font-medium">
-                    Date of birth:
-                  </label>
-                  <input
-                    type="text"
-                    className="border border-black rounded px-3 py-2 w-full"
-                    value={profile.date_of_birth || ""}
-                    onChange={(e) => handleProfileChange(e, "date_of_birth")}
-                    disabled={!isEditingPersonal}
-                  />
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="w-32 h-32 bg-gray-300 rounded-full border-4 border-[#5EEAD4]"></div>
-              </div>
-            </div>
-          </div>
+          <PesonalDetails data={profile}/>
 
           {/* Organization Details Card */}
-          <div className="bg-white rounded-xl border border-gray-400 p-8 relative">
-            <h2 className="text-[#4A82B3] text-xl font-medium mb-6 text-center">
+          <div className="bg-white rounded-xl w-full max-w-7xl border border-gray-400 p-8 relative">
+            <h2 className="text-[#0751A7] text-xl  font-semibold mb-6 text-start">
               Organization details
             </h2>
 

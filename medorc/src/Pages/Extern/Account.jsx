@@ -1,12 +1,12 @@
 import React, { useEffect ,useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+
 import { useAuth } from "../../Context/AuthContext";
 import NavBar from "../../Components/NavBar";
-
 import BackButton from "../../Components/BackButton";
-
 import NavButton from "../../Components/NavButton";
+
 import ProfileChange from "../../Components/ProfileChange";
 
 
@@ -39,7 +39,7 @@ export default function Account() {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/basic`, {
+        const res = await axios.get(url+"/basic", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -47,7 +47,7 @@ export default function Account() {
         });
         
         setData(res.data.data);
-      
+       
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));
       }
@@ -55,6 +55,8 @@ export default function Account() {
 
     fetchData();
   }, [token]);
+
+  
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center ">
@@ -67,7 +69,7 @@ export default function Account() {
 
       {/* Profile Image */}
       
-      <ProfileChange data={data}/>
+      <ProfileChange data={data} />
       
     </div>
   );
