@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import ProfilePhoto from "./ProfilePhoto";
 
 export default function ProfileChange({ data }) {
   const url = "http://localhost:3000";
@@ -12,6 +13,7 @@ export default function ProfileChange({ data }) {
     email: data.email || "",
     phone: data.phone || "",
     password: "",
+    photo: data.photo || "",
   });
 
   const handleChange = (e) => {
@@ -67,6 +69,7 @@ export default function ProfileChange({ data }) {
             className="flex-1 border-2 rounded py-1 px-4"
             name="email"
             value={profile.email}
+            placeholder="Enter new email"
             onChange={handleChange}
           />
           <button className="bg-[#4A90E2] py-1 px-6 text-white font-bold rounded"
@@ -84,6 +87,7 @@ export default function ProfileChange({ data }) {
             className="flex-1 border-2 rounded py-1 px-4"
             name="phone"
             value={profile.phone}
+            placeholder="Enter new phone number"
             onChange={handleChange}
           />
           <button className="bg-[#4A90E2] py-1 px-6 text-white font-bold rounded"
@@ -99,6 +103,7 @@ export default function ProfileChange({ data }) {
             id="password"
             type="password"
             className="flex-1 border-2 rounded py-1 px-4"
+            placeholder="Enter new password"
             name="password"
             value={profile.password}
             onChange={handleChange}

@@ -5,7 +5,7 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
 
-  const [schcode,setSchcode]=useState(localStorage.getItem('schcode'));
+  const [shc_code,setShc_code]=useState(localStorage.getItem('shc_code'));
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [role, setRole] = useState(localStorage.getItem('role'));
   const [user, setUser] = useState(() => {
@@ -48,8 +48,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const authContextValue = {
-    schcode,
-    setSchcode,
+    shc_code,
+    setShc_code,
     token,
     role,
     user,

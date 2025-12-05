@@ -80,7 +80,7 @@ export default function PesonalDetails({ data }) {
           <div className="flex justify-center items-center mt-4 md:mt-0">
             <div className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-[#4AE3C7] rounded-full overflow-hidden">
               <img
-                src={data.photo || "image.png"}
+                src={data.photo || "/image.png"}
                 className="w-full h-full object-cover"
                 alt="profile"
               />
