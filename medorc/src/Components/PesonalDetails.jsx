@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 
 export default function PesonalDetails({ data }) {
+
+
+
   return (
     <div className="w-full max-w-7xl bg-white border rounded-lg p-4 sm:p-6 md:p-8 shadow flex flex-col gap-4">
       <h3 className="text-lg sm:text-xl font-semibold text-[#0751A7] mb-2">

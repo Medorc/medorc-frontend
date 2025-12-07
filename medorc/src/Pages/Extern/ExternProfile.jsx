@@ -24,7 +24,7 @@ export default function ExternProfile() {
   const getProfile = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/extern/profile/personal`,
+        `${url}/api/v1/extern/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -213,6 +213,7 @@ export default function ExternProfile() {
                     type="file"
                     className="w-full text-center text-sm"
                     disabled={!isEditingOrg}
+                    accept="image/*"
                     // Note: File uploads usually require different handling (FormData)
                     // and cannot be controlled via 'value' prop.
                     onChange={(e) =>

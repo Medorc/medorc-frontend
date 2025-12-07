@@ -113,7 +113,7 @@ export default function UserCard({ user, role, navigate, token, loading }) {
 
                 {/* Right Section: Profile Placeholder */}
                 <div className="items-start md:items-center">
-                  <div className="w-24 h-24 bg-gray-300 rounded-full">
+                  <div className="w-24 h-24 bg-gray-300 rounded-full overflow-hidden">
                     <img
                       src={user.photo || "image.png"}
                       className="w-full h-full object-cover"

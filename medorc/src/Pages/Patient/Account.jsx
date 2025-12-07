@@ -23,23 +23,12 @@ export default function Account() {
   });
   const { token,role } = useAuth();
 
-    if(role==="patient"){
-        url+="/api/v1/patient/profile";
-    }else if(role==="doctor"){
-        url+="/api/v1/doctor/profile";
-    }else if(role=="extern"){
-        url+="/api/v1/extern/profile";
-    }else{
-      url+="/api/v1/hospital/profile";
-    }
-  
-
     useEffect(() => {
     if (!token) return;
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/basic`, {
+        const res = await axios.get(`${url}/api/v1/${role}/profile/basic`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -2,11 +2,14 @@ import React, { useState } from "react";
 import { useAuth } from "../Context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import ProfilePhoto from "./ProfilePhoto";
+import Profile from "./Profile";
 
 export default function ProfileChange({ data }) {
   const url = "http://localhost:3000";
   const { token, role } = useAuth();
+
+  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
+  const CLOUDINARY_UPLOAD_PRESET = "Medorc";
 
   // local editable state
   const [profile, setProfile] = useState({
@@ -27,6 +30,8 @@ export default function ProfileChange({ data }) {
         payload.newPhoneNo = profile.phone;
       }else if(field=="password"){
         payload.newPassword = profile.password;
+      }else{
+        payload.newPhoto = profile.photo;
       }
 
     try {
@@ -48,13 +53,46 @@ export default function ProfileChange({ data }) {
     }
   };
 
+  const handlePhotoUpload = async (file) => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    
+
+    try {
+      const res = await axios.post(CLOUDINARY_URL, formData);
+  
+
+      const uploadRes = await axios.patch(
+        `${url}/api/v1/${role}/profile/photo`,
+        {newPhoto: res.data.secure_url},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      toast.success("Photo uploaded successfully!");
+    } catch (error) {
+      console.log("Cloudinary error response:", error.response?.data);
+      toast.error("Upload failed. Check preset is unsigned.");
+    }
+  };
+
+
+
   return (
     <div className="w-full max-w-3xl flex flex-col gap-6">
       {/* Photo */}
       <div className="flex justify-center items-center mt-4 md:mt-0">
-        <div className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-[#4AE3C7] rounded-full overflow-hidden">
-          <img src={data.photo||"image.png"} className="w-full h-full object-cover" alt="profile" />
-        </div>
+          <Profile
+                    onFileSelect={(file) => handlePhotoUpload(file)}
+                    photo={data.photo}
+          />
       </div>
 
       {/* Form */}
