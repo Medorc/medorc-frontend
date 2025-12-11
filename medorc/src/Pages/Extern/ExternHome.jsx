@@ -10,12 +10,20 @@ export default function ExternHome() {
   const navigate = useNavigate();
 
   const { token, role } = useAuth();
-  const [user, setUser] = useState("");
 
-   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState({});
+  const [loading, setLoading] = useState(true);
 
+  // Validate Login
   useEffect(() => {
-    const getuser = async () => {
+    if (!token || role !== "extern") {
+      navigate("/signup");
+    }
+  }, [token, role]);
+
+  // Load Profile
+  useEffect(() => {
+    const getUser = async () => {
       try {
         const response = await axios.get(`${url}/api/v1/extern/profile/`, {
           headers: {
@@ -25,32 +33,25 @@ export default function ExternHome() {
 
         setUser(response.data.data);
         setLoading(false);
-        
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
     };
 
     if (token) {
-      getuser();
+      getUser();
     }
   }, [token]);
 
-
-
-  if (!token) {
-    navigate("/signup");
-  }
-
-  if (role !== "extern") {
-    navigate("/signup");
-  }
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
       <NavBar />
 
-      <UserCard user={user} role={role} token={token} navigate={navigate} loading={loading} />
-      
+      {loading ? (
+        <p className="text-center pt-20">Loading...</p>
+      ) : (
+        <UserCard user={user} role={role} token={token} navigate={navigate} />
+      )}
     </div>
   );
 }
