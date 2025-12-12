@@ -1,7 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // 1. Accept 'data', 'handleChange', and 'onNext' as props
 function AddRecordForm({ data, handleChange, onNext }) {
+
+  const navigate = useNavigate();
+
   const inputBaseClass = "w-full p-1 border border-black shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base";
   const labelBaseClass = "block mb-2 py-2 font-semibold text-black";
 
@@ -133,6 +137,7 @@ function AddRecordForm({ data, handleChange, onNext }) {
             <button 
               type="button" 
               className="py-3 w-full md:w-auto md:px-20 rounded-full font-semibold bg-[#4A90E2] text-base text-white hover:bg-[#207FEE] cursor-pointer transition-all duration-300"
+              onClick={() => navigate("/patient/records")}
             >
               Cancel
             </button>

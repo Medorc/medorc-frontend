@@ -109,7 +109,7 @@ export default function UserCard({ user, role, navigate, token }) {
                 </div>
 
                 {/* ORG */}
-                {role !== "hospital" && (
+                {role === "hospital" || role === "extern" && (
                   <div className="flex flex-col items-start md:items-center mt-2 md:mt-0">
                     <p className="text-black font-medium text-sm">{user?.org_name}</p>
                     <p className="text-black font-medium text-sm">LIC pvt. ltd</p>

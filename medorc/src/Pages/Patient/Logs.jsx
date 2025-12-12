@@ -19,7 +19,7 @@ export default function Logs() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || !schcode) navigate("/");
+    if (!token || !schcode) return;
     const fetchData = async () => {
       try {
         const res = await axios.get(`${url}/data-logs?sch_code=${schcode}`, {
