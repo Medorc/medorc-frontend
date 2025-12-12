@@ -110,11 +110,7 @@ export default function ExternProfile() {
 
   
 
-  if (!token) {
-    navigate("/");
-  }
-
-  if (role !== "extern") {
+  if (!token || role !== "extern") {
     navigate("/");
   }
 

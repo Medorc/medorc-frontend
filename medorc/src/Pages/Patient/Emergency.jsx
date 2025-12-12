@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import NavBar from "../../Components/NavBar";
 import { FaTimesCircle } from "react-icons/fa";
-
+import { useNavigate } from "react-router-dom";
 import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import BackButton from "../../Components/BackButton";
+
 
 // API URLs
 const URL = "http://localhost:3000/api/v1/patient/profile/";
@@ -22,10 +23,12 @@ export default function Emergency() {
     relation: "",
   });
 
+  const navigate = useNavigate();
+
   const { token } = useAuth();
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) navigate("/");
 
     const fetchData = async () => {
       try {

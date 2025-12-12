@@ -8,10 +8,12 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 import BackButton from "../../Components/BackButton";
-import PesonalDetails from "../../Components/PesonalDetails";
-
+import PersonalDetails from "../../Components/PesonalDetails";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileSettings() {
+  const navigate = useNavigate();
+
   const [data, setData] = useState({
     full_name: "",
     date_of_birth: "",
@@ -29,9 +31,11 @@ export default function ProfileSettings() {
 
   const { token } = useAuth();
   
-  if(!token){
-    navigator("/");
-  }
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
 
   const url = "http://localhost:3000/api/v1/patient/profile/personal";
 
@@ -65,7 +69,7 @@ export default function ProfileSettings() {
 
       <div className="flex flex-col items-center gap-8 px-4 sm:px-6 lg:px-12">
         {/* Personal Details */}
-        <PesonalDetails data={data}/>
+        <PersonalDetails data={data}/>
 
         {/* Lifestyle */}
         <div className="w-full max-w-7xl bg-white border rounded-lg p-4 sm:p-6 md:p-6 shadow-sm relative gap-2 flex flex-col">

@@ -19,7 +19,7 @@ export default function Logs() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || !schcode) return;
+    if (!token || !schcode) navigate("/");
     const fetchData = async () => {
       try {
         const res = await axios.get(`${url}/data-logs?sch_code=${schcode}`, {
@@ -57,9 +57,7 @@ export default function Logs() {
     log.toLowerCase().includes(search.toLowerCase())
   );
 
-   if(!token){
-    navigate("/");
-  }
+   
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">

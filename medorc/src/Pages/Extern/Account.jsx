@@ -1,7 +1,7 @@
 import React, { useEffect ,useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import NavBar from "../../Components/NavBar";
 import BackButton from "../../Components/BackButton";
@@ -12,7 +12,7 @@ import ProfileChange from "../../Components/ProfileChange";
 
 export default function Account() {
 
-  var url="http://localhost:3000";
+  const url="http://localhost:3000";
 
   
   const [data, setData] = useState({
@@ -23,10 +23,11 @@ export default function Account() {
   });
   const { token,role } = useAuth();
 
+  const navigate = useNavigate();
    
 
     useEffect(() => {
-    if (!token) return;
+    if (!token) navigate("/");
 
     const fetchData = async () => {
       try {

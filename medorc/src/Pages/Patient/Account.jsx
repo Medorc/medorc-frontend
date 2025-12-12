@@ -8,11 +8,12 @@ import BackButton from "../../Components/BackButton";
 
 import NavButton from "../../Components/NavButton";
 import ProfileChange from "../../Components/ProfileChange";
-
+import { useNavigate } from "react-router-dom";
 
 export default function Account() {
 
   var url="http://localhost:3000";
+  const navigate = useNavigate();
 
   
   const [data, setData] = useState({
@@ -24,7 +25,7 @@ export default function Account() {
   const { token,role } = useAuth();
 
     useEffect(() => {
-    if (!token) return;
+    if (!token) navigate("/");
 
     const fetchData = async () => {
       try {
@@ -43,7 +44,7 @@ export default function Account() {
     };
 
     fetchData();
-  }, [token]);
+  }, [token,navigate]);
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center ">

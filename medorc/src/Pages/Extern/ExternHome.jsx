@@ -23,7 +23,7 @@ export default function ExternHome() {
 
   // Load Profile
   useEffect(() => {
-    const getUser = async () => {
+    const getUser = async () => { 
       try {
         const response = await axios.get(`${url}/api/v1/extern/profile/`, {
           headers: {

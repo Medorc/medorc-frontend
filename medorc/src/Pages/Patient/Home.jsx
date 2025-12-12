@@ -23,7 +23,7 @@ export default function Home() {
 
   // Fetch profile
   useEffect(() => {
-    if (!token) return;
+   
 
     const fetchProfile = async () => {
       try {
