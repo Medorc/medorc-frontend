@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import axios from "axios";
-import NavBar from "../../Components/NavBar";
-import AddRecordForm from "./AddRecordForm";
-import AddRecordForm2 from "./AddRecordForm2";
+import React, { useState } from 'react';
+import axios from 'axios';
+import NavBar from '../../Components/NavBar';
+import AddRecordForm from './AddRecordForm';
+import AddRecordForm2 from './AddRecordForm2';
 import { useAuth } from "../../Context/AuthContext";
-import { toast } from "react-toastify";
+import { toast } from 'react-toastify';
+import { useSearchParams } from 'react-router-dom';
 
 // --- CLOUDINARY DETAILS ---
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
@@ -14,40 +15,45 @@ const CLOUDINARY_UPLOAD_PRESET = "Medorc"; // ✓ Correct: Use preset name for u
 const url = "http://localhost:3000";
 
 function CreateRecordPage() {
-  const { token } = useAuth();
+  const {token,role}=useAuth();
+  const [searchParams] = useSearchParams();
+  const qr_code = searchParams.get("qr_code");
+  const shc_code = searchParams.get("shc_code");
+  
 
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
+   
     basicDetails: {
-      entry_type: "Self",
+      entry_type: role,
       diagnosis_name: "",
       doctor_name: "",
       hospital_name: "",
       appointment_date: "",
       history_of_present_illness: "",
-      treatment_undergone: "",
+      treatment_undergone: ""
     },
     hospitalizationDetails: {
       reason: "",
       duration: "",
       room_no: "",
-      treatment_undergone: "",
+      treatment_undergone: ""
     },
     surgeryDetails: {
       type: "",
       duration: "",
       bed_no: "",
       medical_condition: "",
-      outcome: "",
+      outcome: ""
     },
     documents: {
       prescriptions: "",
-      lab_results: "",
+      lab_results: ""
     },
     ui: {
       showHospitalization: true,
-      showSurgery: true,
-    },
+      showSurgery: true
+    }
   });
 
   const [uploading, setUploading] = useState({
@@ -62,23 +68,23 @@ function CreateRecordPage() {
 
   // Handle input changes
   const handleChange = (section, field, value) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [field]: value,
-      },
+        [field]: value
+      }
     }));
   };
 
   // Toggle sections visibility
   const handleToggle = (section) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       ui: {
         ...prev.ui,
-        [section]: !prev.ui[section],
-      },
+        [section]: !prev.ui[section]
+      }
     }));
   };
 
@@ -86,45 +92,47 @@ function CreateRecordPage() {
   const handleFileUpload = async (file, documentType) => {
     if (!file) return;
 
-    setUploading((prev) => ({ ...prev, [documentType]: true }));
+    setUploading(prev => ({ ...prev, [documentType]: true }));
 
     const formDataUpload = new FormData();
-    formDataUpload.append("file", file);
-    formDataUpload.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formDataUpload.append('file', file);
+    formDataUpload.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
     try {
       const response = await axios.post(CLOUDINARY_URL, formDataUpload, {
         headers: {
-          "Content-Type": "multipart/form-data",
-        },
+          'Content-Type': 'multipart/form-data'
+        }
       });
 
       const fileUrl = response.data.secure_url;
+     
 
       // Save URL to form data
-      handleChange("documents", documentType, fileUrl);
-
+      handleChange('documents', documentType, fileUrl);
+      
       // Save file info for display
-      setUploadedFiles((prev) => ({
+      setUploadedFiles(prev => ({
         ...prev,
         [documentType]: {
           name: file.name,
           url: fileUrl,
-          type: file.type,
-        },
+          type: file.type
+        }
       }));
+
     } catch (error) {
       console.error("Error uploading file:", error);
       toast.error(`File upload failed for ${documentType}. Please try again.`);
     } finally {
-      setUploading((prev) => ({ ...prev, [documentType]: false }));
+      setUploading(prev => ({ ...prev, [documentType]: false }));
     }
   };
 
   const handleNext = () => {
     // Validate basic details before proceeding
     if (!formData.basicDetails.diagnosis_name.trim()) {
-      alert("Please enter diagnosis name");
+      alert('Please enter diagnosis name');
       return;
     }
     setCurrentStep(2);
@@ -135,10 +143,12 @@ function CreateRecordPage() {
   // Final submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+ 
 
     // Validate required documents
     if (!formData.documents.prescriptions && !formData.documents.lab_results) {
-      toast.info("Please upload Lab Result ");
+      toast.info('Please upload Lab Result ');
       return;
     }
 
@@ -147,38 +157,44 @@ function CreateRecordPage() {
     const isoDateString = dateOnly ? `${dateOnly}T00:00:00.000Z` : "";
 
     const dataToSend = {
+       qr_code:qr_code,
+       shc_code:shc_code,
       basicDetails: {
         ...formData.basicDetails,
-        appointment_date: isoDateString,
+        appointment_date: isoDateString
       },
       ...(formData.ui.showHospitalization && {
-        hospitalizationDetails: formData.hospitalizationDetails,
+        hospitalizationDetails: formData.hospitalizationDetails
       }),
       ...(formData.ui.showSurgery && {
-        surgeryDetails: formData.surgeryDetails,
+        surgeryDetails: formData.surgeryDetails
       }),
-      documents: formData.documents,
+      documents: formData.documents
     };
 
     try {
+
       delete dataToSend.basicDetails.reg_no;
       delete dataToSend.basicDetails.alternative_medicine;
 
-      const response = await axios.post(
-        `${url}/api/v1/patient/createrecord`,
-        dataToSend,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+      
+
+      console.log(dataToSend);
+
+      const response = await axios.post(`${url}/api/v1/patient/createrecord`, dataToSend, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      );
-
-      if (response.status === 201)
-        toast.success("Medical record created successfully!");
-      else toast.error("Failed to create record. Please try again.");
-
+      });
+      
+      if(response.status === 201)
+        toast.success('Medical record created successfully!');
+        
+      else
+        toast.error('Failed to create record. Please try again.');
+     
+      
       // Reset form or redirect
       setFormData({
         basicDetails: {
@@ -188,44 +204,42 @@ function CreateRecordPage() {
           hospital_name: "",
           appointment_date: "",
           history_of_present_illness: "",
-          treatment_undergone: "",
+          treatment_undergone: ""
         },
         hospitalizationDetails: {
           reason: "",
           duration: "",
           room_no: "",
-          treatment_undergone: "",
+          treatment_undergone: ""
         },
         surgeryDetails: {
           type: "",
           duration: "",
           bed_no: "",
           medical_condition: "",
-          outcome: "",
+          outcome: ""
         },
         documents: {
           prescriptions: "",
-          lab_results: "",
+          lab_results: ""
         },
         ui: {
           showHospitalization: true,
-          showSurgery: true,
-        },
+          showSurgery: true
+        }
       });
       setCurrentStep(1);
+      
     } catch (error) {
-      console.error("Error:", error);
-      toast.error(
-        "Failed to create record: " +
-          (error.response?.data?.message || error.message)
-      );
+      console.error('Error:', error);
+      toast.error('Failed to create record: ' + (error.response?.data?.message || error.message));
     }
   };
 
   return (
     <div className="flex flex-col  items-center min-h-screen bg-gray-100">
       <NavBar />
-
+      
       {currentStep === 1 && (
         <AddRecordForm
           data={formData.basicDetails}

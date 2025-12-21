@@ -22,7 +22,7 @@ export default function PatientBasicDetails() {
 
   useEffect(() => {
     const fetchData = async () => {
-      console.log(qr_code, shc_code);
+      
       
       setLoading(true);
       setError("");

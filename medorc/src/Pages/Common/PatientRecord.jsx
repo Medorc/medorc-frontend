@@ -4,11 +4,11 @@ import NavBar from "../../Components/NavBar";
 import { FiSearch, FiFilter } from "react-icons/fi";
 import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
 
 /* ================= MAIN PAGE ================= */
-export default function Records() {
+export default function PatientRecord() {
   const url = "http://localhost:3000";
   const [searchTerm, setSearchTerm] = useState("");
   const [entryType, setEntryType] = useState("All");
@@ -16,18 +16,28 @@ export default function Records() {
   const [records, setRecords] = useState([]);
   const [user, setUser] = useState(null);
 
-  const navigate = useNavigate();
-  const { token, shc_code } = useAuth();
+  const [searchParams] = useSearchParams();
+  const qr_code = searchParams.get("qr_code");
+  const shc_code = searchParams.get("shc_code");
 
+  const navigate = useNavigate();
+  const { token, role } = useAuth();
+
+  // Fetch records (depends on search filters)
   useEffect(() => {
-    if (!shc_code) return;
+    if (!role) return;
 
     const fetchRecords = async () => {
       try {
         const payload = {
-          searchOptions: { sort_by: sortBy, entry_type: entryType },
-          shc_code,
+          searchOptions: {
+            sort_by: sortBy,
+            entry_type: entryType,
+          },
+          role,
           searchQuery: searchTerm,
+          qr_code,
+          shc_code,
         };
 
         const res = await axios.post(`${url}/api/v1/patient/records`, payload, {
@@ -36,24 +46,32 @@ export default function Records() {
 
         setRecords(res.data?.data || []);
       } catch (err) {
-        console.error(err);
-      }
-    };
-
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(`${url}/api/v1/patient/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(res.data || null);
-      } catch (err) {
-        console.error(err);
+        console.error("Error fetching records:", err);
       }
     };
 
     fetchRecords();
+  }, [searchTerm, entryType, sortBy, role, token, qr_code, shc_code]);
+  // Fetch user profile (depends only on codes)
+
+  useEffect(() => {
+    if (!role || (!qr_code && !shc_code)) return;
+
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get(`${url}/api/v1/patient/profile`, {
+          params: { qr_code, shc_code },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setUser(res.data || null);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      }
+    };
+
     fetchUser();
-  }, [searchTerm, entryType, sortBy, shc_code, token]);
+  }, [role, qr_code, shc_code, token]);
 
   return (
     <div className="min-h-screen  bg-gray-50">
@@ -97,10 +115,28 @@ export default function Records() {
             >
               <FaArrowLeft /> Back
             </button>
-            <button className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80">
-              Add Record
+            {role != "extern" && (
+              <button
+                className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+                onClick={() =>
+                  navigate(
+                    `/${role}/addrecord?qr_code=${qr_code}&shc_code=${shc_code}`
+                  )
+                }
+              >
+                Add Record
+              </button>
+            )}
+            <button
+              className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+              onClick={() => navigate(`/${role}/patientprofile?qr_code=${qr_code}&shc_code=${shc_code}`)}
+            >
+              User Profile
             </button>
-            <button className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80">
+            <button
+              className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+              onClick={() => navigate(`/${role}/askorby`)}
+            >
               Ask Orby
             </button>
           </div>

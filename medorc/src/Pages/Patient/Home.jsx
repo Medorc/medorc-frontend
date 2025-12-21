@@ -117,7 +117,7 @@ export default function Home() {
 
       {/* Medical History Button */}
       <div className="w-full flex justify-center items-center my-4">
-        <button className="bg-sky-500 py-2 rounded-full px-6 font-medium text-white hover:bg-sky-600 transition">
+        <button className="bg-sky-500 py-2 rounded-full px-6 font-medium text-white hover:bg-sky-600 transition" onClick={() => navigator("/patient/records")}>
           View Full Medical History
         </button>
       </div>

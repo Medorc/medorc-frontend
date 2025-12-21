@@ -2,12 +2,11 @@ import "./App.css";
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
-
-{/* {Login} */}
+{ /* {Login} */ }
 import SignUp from "./Pages/Login/SignUp";
 import SignIn from "./Pages/Login/SignIn";
 
-{/* {Patient} */}
+{ /* {Patient} */ }
 import SPatient from "./Pages/Login/SignUp/SPatient";
 import Home from "./Pages/Patient/Home";
 import ProfileSettings from "./Pages/Patient/ProfileSettings";
@@ -17,25 +16,28 @@ import Logs from "./Pages/Patient/Logs";
 import CreateRecordPage from "./Pages/Patient/CreateRecordPage";
 import Records from "./Pages/Patient/Records";
 
-
-{/* {Doctor} */}
+{ /* {Doctor} */ }
 import DoctorHome from "./Pages/Doctor/DoctorHome";
 import DoctorProfile from "./Pages/Doctor/DoctorProfile";
 import DoctorSecurity from "./Pages/Doctor/Account";
 
-{/* {Hospital} */}
+{ /* {Hospital} */ }
 import HospitalHome from "./Pages/Hospital/HospitalHome";
 import HospitalProfile from "./Pages/Hospital/HospitalProfile";
 import HospitalSecurity from "./Pages/Hospital/Account";
 
-
-
-{/* {External} */}
+{ /* {External} */ }
 import ExternProfile from "./Pages/Extern/ExternProfile";
-import PatientDetails from "./Pages/Extern/PatientBasicDetails";
 import ExternHome from "./Pages/Extern/ExternHome";
 import ExternAccount from "./Pages/Extern/Account";
-import PatientRecords from "./Pages/Extern/PatientRecord";
+
+
+{ /* {PatientRecord} */ }
+import PatientRecords from "./Pages/Common/PatientRecord";
+import CreateRecord from "./Pages/Common/CreateRecordPage";
+import PatientDetails from "./Pages/Common/PatientBasicDetails";
+import PatientProfile from "./Pages/Common/PatientProfile";
+import RecordView from "./Pages/Common/RecordView";
 
 function App() {
   return (
@@ -59,21 +61,30 @@ function App() {
           <Route path="/doctor/home" element={<DoctorHome />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route path="/doctor/security" element={<DoctorSecurity />} />
-
+          <Route path="/doctor/patientrecords" element={<PatientRecords />} />
+          <Route path="/doctor/addrecord" element={<CreateRecord />} />
+          <Route path="/doctor/patientbasicdetails" element={<PatientDetails />} />
+          <Route path="/doctor/patientprofile" element={<PatientProfile />} />
 
           {/* {Hospital} */}
           <Route path="/hospital/home" element={<HospitalHome />} />
           <Route path="/hospital/profile" element={<HospitalProfile />} />
           <Route path="/hospital/security" element={<HospitalSecurity />} />
-
+          <Route path="/hospital/patientrecords" element={<PatientRecords />} />
+          <Route path="/hospital/addrecord" element={<CreateRecord />} />
+          <Route path="/hospital/patientbasicdetails" element={<PatientDetails />} />
+          <Route path="/hospital/patientprofile" element={<PatientProfile />} />
 
           {/* {External} */}
           <Route path="/extern/home" element={<ExternHome />} />
           <Route path="/extern/profile" element={<ExternProfile />} />
           <Route path="/extern/patientbasicdetails" element={<PatientDetails />} />
           <Route path="/extern/patientrecords" element={<PatientRecords />} />
-          <Route path="/extern/security" element={<ExternAccount />}/>
-          
+          <Route path="/extern/security" element={<ExternAccount />} />
+          <Route path="/extern/patientprofile" element={<PatientProfile />} />
+
+
+          <Route path="/recordview" element={<RecordView />} />
 
         </Routes>
       </BrowserRouter>
