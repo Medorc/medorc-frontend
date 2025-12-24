@@ -1,56 +1,110 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../../Context/AuthContext";
+import NavBar from "../../Components/NavBar";
+import Loading from "../../Components/Loading";
 import { FaEye } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
-import NavBar from "../../Components/NavBar";
 
 export default function RecordView() {
-  const [activeTab, setActiveTab] = useState("General");
+  const { record_id } = useParams();
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const url = "http://localhost:3000";
 
-  // Dummy data matching the screenshot
-  const data = {
-    diagnosis: "Hyper tension",
-    entryType: "Doctor",
-    appointmentDate: "January 15th, 2025",
-    registrationNo: "REC0001",
-    doctorName: "Dr. Sarah Johnson",
-    hospitalName: "City General Hospital",
-    history: "Acute onset of right lower quadrant pain, nausea, and fever.",
-    treatment: "Emergency appendectomy performed",
-  };
+  const [activeTab, setActiveTab] = useState("General");
+  const [loading, setLoading] = useState(true);
+  const [record, setRecord] = useState(null);
+  const [hospitalization, setHospitalization] = useState(null);
+  const [surgery, setSurgery] = useState(null);
+  const [documents, setDocuments] = useState(null);
+
+  useEffect(() => {
+    if (!token || !record_id) return;
+
+    const fetchAllData = async () => {
+      setLoading(true);
+      try {
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Fetching records with default payload to satisfy backend controller
+        const recordRes = await axios.post(
+          `${url}/api/v1/patient/records`, 
+          { searchOptions: { sort_by: "Time Desc", entry_type: "All" }, searchQuery: "" }, 
+          { headers }
+        );
+        
+        const currentRecord = recordRes.data?.data?.find(r => r.record_id === record_id);
+        if (!currentRecord) throw new Error("Record not found");
+        setRecord(currentRecord);
+
+        // Fetching parallel sub-details
+        const [hospRes, surgRes, docRes] = await Promise.allSettled([
+          currentRecord.is_hospitalized 
+            ? axios.get(`${url}/api/v1/patient/record/hospitalization/${record_id}`, { headers }) 
+            : Promise.reject(),
+          currentRecord.is_surgery 
+            ? axios.get(`${url}/api/v1/patient/record/surgery/${record_id}`, { headers }) 
+            : Promise.reject(),
+          axios.get(`${url}/api/v1/patient/record/documents/${record_id}`, { headers })
+        ]);
+
+        if (hospRes.status === "fulfilled") setHospitalization(hospRes.value.data);
+        if (surgRes.status === "fulfilled") setSurgery(surgRes.value.data);
+        if (docRes.status === "fulfilled") setDocuments(docRes.value.data);
+
+      } catch (err) {
+        console.error("Failed to load record details:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, [record_id, token]);
+
+  if (loading) return <Loading />;
+  if (!record) return <div className="p-10 text-center">Record not found.</div>;
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gray-50 ">
-        <NavBar/>
-      <div className="w-full max-w-6xl bg-white rounded-lg shadow-sm p-8 relative">
-        {/* Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {data.diagnosis}
+    <div className="flex flex-col items-center min-h-screen bg-gray-50 font-sans">
+      <NavBar />
+      
+      <div className="w-full max-w-5xl bg-white rounded-xl shadow-sm mt-8 mb-12 p-10 relative border border-gray-100">
+        {/* Close Button */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <IoMdClose size={28} />
+        </button>
+
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-4 mb-1">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {record.diagnosis_name}
             </h1>
-            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-500 text-xs font-medium border border-blue-200">
-              {data.entryType}
+            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-500 text-xs font-bold border border-blue-100 uppercase tracking-wide">
+              {record.entry_type}
             </span>
-            <FaEye className="text-green-500 text-lg" />
+            <FaEye className="text-green-500 text-xl" title="Visible" />
           </div>
-          <button className="text-gray-500 hover:text-gray-700">
-            <IoMdClose size={24} />
-          </button>
+          <p className="text-sm text-gray-400 font-medium">
+            Detailed medical record information
+          </p>
         </div>
 
-        <p className="text-xs text-gray-400 -mt-5 mb-6">
-          Detailed medical record information
-        </p>
-
-        {/* Tabs */}
-        <div className="w-full bg-gray-100 p-1 rounded-md flex mb-8">
+        {/* Tabs Bar */}
+        <div className="w-full bg-gray-100 p-1.5 rounded-lg flex mb-10">
           {["General", "Treatment", "Procedures", "Documents"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-1.5 text-sm font-medium rounded-sm transition-all duration-200 ${
+              className={`flex-1 py-2.5 text-sm font-bold rounded-md transition-all duration-300 ${
                 activeTab === tab
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-white text-gray-900 shadow-sm translate-y-0"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -59,101 +113,116 @@ export default function RecordView() {
           ))}
         </div>
 
-        {/* Content - General Tab */}
+        {/* Tab Content: General */}
         {activeTab === "General" && (
-          <div className="animate-in fade-in duration-300">
-            <div className="mb-8">
-              <h2 className="text-sm font-bold text-gray-900 mb-6">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <section className="mb-12">
+              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-8 border-l-4 border-blue-500 pl-3">
                 Basic Information
               </h2>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-6 gap-x-4">
-                {/* Empty first col for alignment matches mockup roughly or just standard grid */}
-                {/* The mockup has 'Appointment Date' left, 'Entry type' middle, 'Registration No' right roughly? 
-                     Actually looks like:
-                     Row 1: [Space] [Entry Type] [Space]
-                     Row 2: [Date] [Reg No]
-                 */}
-                {/* Replicating the grid from screenshot closer */}
-                <div></div>{" "}
-                {/* Empty spacer if trying to match exact white space or just auto layout */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-y-10">
+                {/* Row 1 */}
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-400 mb-1">
-                    Entry type:
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.entryType}
-                  </span>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Entry Type</span>
+                  <span className="text-base font-semibold text-gray-700">{record.entry_type}</span>
                 </div>
-                <div></div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-400 mb-1">
-                    Appointment Date:
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.appointmentDate}
+                  <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Appointment Date</span>
+                  <span className="text-base font-semibold text-gray-700">
+                    {new Date(record.appointment_date).toLocaleDateString('en-US', { 
+                        month: 'long', day: 'numeric', year: 'numeric' 
+                    })}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-400 mb-1">
-                    Registration No:
-                  </span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.registrationNo}
-                  </span>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Registration No</span>
+                  <span className="text-base font-semibold text-gray-700">{record.reg_no || "N/A"}</span>
                 </div>
               </div>
-              <div className="border-b border-gray-200 mt-8 mb-8"></div>
-            </div>
+            </section>
 
-            <div>
-              <h2 className="text-sm font-bold text-gray-900 mb-6">
-                Healthcare provider
+            <div className="w-full h-px bg-gray-100 mb-12"></div>
+
+            <section>
+              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-8 border-l-4 border-blue-500 pl-3">
+                Healthcare Provider
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-900">
-                    {data.doctorName}
-                  </span>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Doctor Name</span>
+                  <span className="text-lg font-bold text-gray-900">Dr. {record.doctor_name || "N/A"}</span>
                 </div>
-
                 <div className="flex flex-col">
-                  <span className="text-xs text-gray-400 mb-1">Hospital:</span>
-                  <span className="text-sm font-medium text-gray-700">
-                    {data.hospitalName}
-                  </span>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Hospital</span>
+                  <span className="text-base font-semibold text-gray-700">{record.hospital_name || "N/A"}</span>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
         )}
 
-        {/* Content - Treatment Tab */}
+        {/* Tab Content: Treatment */}
         {activeTab === "Treatment" && (
-          <div className="animate-in fade-in duration-300">
-            <div className="mb-6">
-              <h2 className="text-sm font-bold text-gray-900 mb-3">
-                History of present illness
-              </h2>
-              <div className="w-full p-4 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700">
-                {data.history}
+          <div className="animate-in fade-in duration-500 space-y-10">
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-4">History of present illness</h2>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-gray-700 leading-relaxed italic">
+                "{record.history_of_present_illness || "No history logged."}"
               </div>
             </div>
-
             <div>
-              <h2 className="text-sm font-bold text-gray-900 mb-3">
-                Treatment undergone
-              </h2>
-              <div className="w-full p-4 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-700">
-                {data.treatment}
+              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-4">Treatment Undergone</h2>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-gray-700 leading-relaxed">
+                {record.treatment_undergone || "Ongoing observation."}
               </div>
             </div>
           </div>
         )}
 
-        {/* Placeholders for other tabs */}
-        {(activeTab === "Procedures" || activeTab === "Documents") && (
-          <div className="flex justify-center items-center h-40 text-gray-400 text-sm">
-            No information available for {activeTab}
+        {/* Tab Content: Procedures (Hospitalization & Surgery) */}
+        {activeTab === "Procedures" && (
+          <div className="animate-in fade-in duration-500 space-y-8">
+            {hospitalization ? (
+              <div className="p-6 bg-orange-50/40 border border-orange-100 rounded-xl">
+                <h3 className="font-bold text-orange-800 mb-4">Hospitalization Details</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <p><span className="text-gray-500">Admission:</span> {hospitalization.admission_date}</p>
+                  <p><span className="text-gray-500">Discharge:</span> {hospitalization.discharge_date}</p>
+                  <p className="col-span-2"><span className="text-gray-500">Reason:</span> {hospitalization.reason_for_admission}</p>
+                </div>
+              </div>
+            ) : <p className="text-gray-400 text-sm italic text-center py-4">No hospitalization records.</p>}
+
+            {surgery ? (
+              <div className="p-6 bg-purple-50/40 border border-purple-100 rounded-xl">
+                <h3 className="font-bold text-purple-800 mb-4">Surgery Details</h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <p><span className="text-gray-500">Procedure:</span> {surgery.surgery_name}</p>
+                  <p><span className="text-gray-500">Outcome:</span> {surgery.surgery_outcome}</p>
+                </div>
+              </div>
+            ) : <p className="text-gray-400 text-sm italic text-center py-4">No surgical records.</p>}
+          </div>
+        )}
+
+        {/* Tab Content: Documents */}
+        {activeTab === "Documents" && (
+          <div className="animate-in fade-in duration-500 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {documents?.prescriptions ? (
+              <a href={documents.prescriptions} target="_blank" rel="noreferrer" className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all text-center group">
+                <p className="font-bold text-gray-800 group-hover:text-blue-600">Prescription Document</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view file</p>
+              </a>
+            ) : null}
+            {documents?.lab_results ? (
+              <a href={documents.lab_results} target="_blank" rel="noreferrer" className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-green-400 hover:bg-green-50 transition-all text-center group">
+                <p className="font-bold text-gray-800 group-hover:text-green-600">Lab Reports</p>
+                <p className="text-xs text-gray-400 mt-1">Click to view file</p>
+              </a>
+            ) : null}
+            {!documents?.prescriptions && !documents?.lab_results && (
+              <p className="col-span-2 text-center text-gray-400 py-10">No documents found.</p>
+            )}
           </div>
         )}
       </div>

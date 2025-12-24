@@ -7,26 +7,26 @@ import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
 
-/* ================= MAIN PAGE ================= */
 export default function Records() {
   const url = "http://localhost:3000";
   const [searchTerm, setSearchTerm] = useState("");
   const [entryType, setEntryType] = useState("All");
   const [sortBy, setSortBy] = useState("Time Desc");
   const [records, setRecords] = useState([]);
-  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null); // Renamed to avoid confusion with auth user
 
   const navigate = useNavigate();
   const { token, shc_code } = useAuth();
 
   useEffect(() => {
-    if (!shc_code) return;
+    // Only fetch if we have a token (since this is the patient's own view)
+    if (!token) return;
 
     const fetchRecords = async () => {
       try {
         const payload = {
           searchOptions: { sort_by: sortBy, entry_type: entryType },
-          shc_code,
+          shc_code: shc_code, // This will be used if the role is doctor/hospital
           searchQuery: searchTerm,
         };
 
@@ -34,29 +34,31 @@ export default function Records() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        // Backend returns records wrapped in a "data" field
         setRecords(res.data?.data || []);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching records:", err);
       }
     };
 
-    const fetchUser = async () => {
+    const fetchUserProfile = async () => {
       try {
         const res = await axios.get(`${url}/api/v1/patient/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUser(res.data || null);
+        // Backend returns the profile object directly
+        setUserProfile(res.data || null);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching profile:", err);
       }
     };
 
     fetchRecords();
-    fetchUser();
+    fetchUserProfile();
   }, [searchTerm, entryType, sortBy, shc_code, token]);
 
   return (
-    <div className="min-h-screen  bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <NavBar />
 
       <main className="w-full mx-auto px-4 py-8 space-y-6 flex flex-col gap-6">
@@ -64,15 +66,15 @@ export default function Records() {
         <div className="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#50E3C2]">
-              {user?.photo ? (
+              {userProfile?.photo ? (
                 <img
-                  src={user.photo}
-                  alt=""
+                  src={userProfile.photo}
+                  alt="Profile"
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-bold text-gray-600">
-                  {user?.full_name?.[0]}
+                <div className="w-full h-full flex items-center justify-center font-bold text-gray-600 bg-gray-200">
+                  {userProfile?.full_name?.[0]}
                 </div>
               )}
             </div>
@@ -83,9 +85,10 @@ export default function Records() {
               </h1>
               <p className="text-sm text-gray-500">
                 <span className="font-medium text-gray-900">
-                  {user?.full_name}
+                  {userProfile?.full_name || "Loading..."}
                 </span>{" "}
-                • SHC: {user?.shc_code || "N/A"}
+                {/* Fixed: Display shc_code from the fetched profile */}
+                • SHC: {userProfile?.shc_code || "N/A"}
               </p>
             </div>
           </div>
@@ -97,7 +100,11 @@ export default function Records() {
             >
               <FaArrowLeft /> Back
             </button>
-            <button className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80">
+            <button 
+              /* Fixed: Correct route from App.jsx */
+              onClick={() => navigate("/patient/addrecord")} 
+              className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+            >
               Add Record
             </button>
             <button className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80">
@@ -106,7 +113,7 @@ export default function Records() {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Filters and Search... (remaining code stays the same) */}
         <div className="bg-white rounded-xl border p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <FiFilter className="text-gray-400" />
@@ -132,6 +139,7 @@ export default function Records() {
               <option value="All">All Records</option>
               <option value="Hospital">Hospital</option>
               <option value="Doctor">Doctor</option>
+              <option value="Self">Self</option>
             </select>
 
             <select
@@ -141,15 +149,16 @@ export default function Records() {
             >
               <option value="Time Desc">Newest First</option>
               <option value="Time Asc">Oldest First</option>
+              <option value="Diagnosis">Diagnosis (A-Z)</option>
             </select>
           </div>
         </div>
 
-        {/* Records */}
+        {/* Records Display */}
         <div className="space-y-4">
           {records.length ? (
             records.map((r) => (
-              <RecordCard key={r.id || r.record_id} record={r} />
+              <RecordCard key={r.record_id} record={r} />
             ))
           ) : (
             <p className="text-center text-gray-500 py-10">No records found</p>
