@@ -35,13 +35,17 @@ export default function SignUp() {
             Doctor
           </button>
 
-          <button className="w-full py-2 rounded-lg border-2 border-black font-medium  transition">
+          <button 
+           onClick={() => navigate("/sHospital")}
+           className="w-full py-2 rounded-lg border-2 border-black font-medium  transition">
             Hospital
           </button>
 
-         <button className="w-full py-2 rounded-lg border-2 m-2 font-medium border-black transition">
-  External
-</button>
+         <button 
+          onClick={() => navigate("/sExternal")}
+          className="w-full py-2 rounded-lg border-2 m-2 font-medium border-black transition">
+            External
+        </button>
 
         </div>
       </div>

@@ -20,8 +20,10 @@ import Records from "./Pages/Patient/Records";
 import DoctorHome from "./Pages/Doctor/DoctorHome";
 import DoctorProfile from "./Pages/Doctor/DoctorProfile";
 import DoctorSecurity from "./Pages/Doctor/Account";
+import SDoctor from "./Pages/Login/SignUp/SDoctor";
 
 { /* {Hospital} */ }
+import SHospital from "./Pages/Login/SignUp/SHostpital";
 import HospitalHome from "./Pages/Hospital/HospitalHome";
 import HospitalProfile from "./Pages/Hospital/HospitalProfile";
 import HospitalSecurity from "./Pages/Hospital/Account";
@@ -30,6 +32,7 @@ import HospitalSecurity from "./Pages/Hospital/Account";
 import ExternProfile from "./Pages/Extern/ExternProfile";
 import ExternHome from "./Pages/Extern/ExternHome";
 import ExternAccount from "./Pages/Extern/Account";
+import SExternal from "./Pages/Login/SignUp/SExternal";
 
 
 { /* {PatientRecord} */ }
@@ -48,6 +51,8 @@ function App() {
           {/* {Patient} */}
           <Route path="/" element={<SignIn />} />
           <Route path="/SignUp" element={<SignUp />} />
+          <Route path="/sDoctor" element={<SDoctor />} />
+          <Route path="/sHospital" element={<SHospital />} />
           <Route path="/patient" element={<SPatient />} />
           <Route path="/patient/home" element={<Home />} />
           <Route path="/patient/profile" element={<ProfileSettings />} />
@@ -77,6 +82,7 @@ function App() {
 
           {/* {External} */}
           <Route path="/extern/home" element={<ExternHome />} />
+          <Route path="/sExternal" element={<SExternal />} />
           <Route path="/extern/profile" element={<ExternProfile />} />
           <Route path="/extern/patientbasicdetails" element={<PatientDetails />} />
           <Route path="/extern/patientrecords" element={<PatientRecords />} />
