@@ -28,7 +28,7 @@ export default function RecordView() {
       try {
         const headers = { Authorization: `Bearer ${token}` };
 
-        // Fetching records with default payload to satisfy backend controller
+        // 1. Fetch main record list to find the basic details (including reg_no)
         const recordRes = await axios.post(
           `${url}/api/v1/patient/records`, 
           { searchOptions: { sort_by: "Time Desc", entry_type: "All" }, searchQuery: "" }, 
@@ -39,17 +39,19 @@ export default function RecordView() {
         if (!currentRecord) throw new Error("Record not found");
         setRecord(currentRecord);
 
-        // Fetching parallel sub-details
+        // 2. Fetch parallel sub-details using the CORRECT backend routes
+        // Backend expects: /api/v1/patient/records/:record_id/:details_type
         const [hospRes, surgRes, docRes] = await Promise.allSettled([
           currentRecord.is_hospitalized 
-            ? axios.get(`${url}/api/v1/patient/record/hospitalization/${record_id}`, { headers }) 
+            ? axios.get(`${url}/api/v1/patient/records/${record_id}/hospitalization`, { headers }) 
             : Promise.reject(),
           currentRecord.is_surgery 
-            ? axios.get(`${url}/api/v1/patient/record/surgery/${record_id}`, { headers }) 
+            ? axios.get(`${url}/api/v1/patient/records/${record_id}/surgery`, { headers }) 
             : Promise.reject(),
-          axios.get(`${url}/api/v1/patient/record/documents/${record_id}`, { headers })
+          axios.get(`${url}/api/v1/patient/records/${record_id}/documents`, { headers })
         ]);
 
+        // 3. Update state if the requests were successful
         if (hospRes.status === "fulfilled") setHospitalization(hospRes.value.data);
         if (surgRes.status === "fulfilled") setSurgery(surgRes.value.data);
         if (docRes.status === "fulfilled") setDocuments(docRes.value.data);
@@ -129,13 +131,15 @@ export default function RecordView() {
                 <div className="flex flex-col">
                   <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Appointment Date</span>
                   <span className="text-base font-semibold text-gray-700">
-                    {new Date(record.appointment_date).toLocaleDateString('en-US', { 
-                        month: 'long', day: 'numeric', year: 'numeric' 
-                    })}
+                    {record.appointment_date 
+                        ? new Date(record.appointment_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                        : "N/A"
+                    }
                   </span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[11px] font-bold text-gray-400 uppercase mb-2">Registration No</span>
+                  {/* Matches backend 'reg_no' field */}
                   <span className="text-base font-semibold text-gray-700">{record.reg_no || "N/A"}</span>
                 </div>
               </div>
@@ -186,22 +190,23 @@ export default function RecordView() {
               <div className="p-6 bg-orange-50/40 border border-orange-100 rounded-xl">
                 <h3 className="font-bold text-orange-800 mb-4">Hospitalization Details</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <p><span className="text-gray-500">Admission:</span> {hospitalization.admission_date}</p>
-                  <p><span className="text-gray-500">Discharge:</span> {hospitalization.discharge_date}</p>
-                  <p className="col-span-2"><span className="text-gray-500">Reason:</span> {hospitalization.reason_for_admission}</p>
+                  <p><span className="text-gray-500">Duration:</span> {hospitalization.duration}</p>
+                  <p><span className="text-gray-500">Room No:</span> {hospitalization.room_no}</p>
+                  <p className="col-span-2"><span className="text-gray-500">Reason:</span> {hospitalization.reason}</p>
                 </div>
               </div>
-            ) : <p className="text-gray-400 text-sm italic text-center py-4">No hospitalization records.</p>}
+            ) : <p className="text-gray-400 text-sm italic text-center py-4">No hospitalization records found.</p>}
 
             {surgery ? (
               <div className="p-6 bg-purple-50/40 border border-purple-100 rounded-xl">
                 <h3 className="font-bold text-purple-800 mb-4">Surgery Details</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <p><span className="text-gray-500">Procedure:</span> {surgery.surgery_name}</p>
-                  <p><span className="text-gray-500">Outcome:</span> {surgery.surgery_outcome}</p>
+                  <p><span className="text-gray-500">Type:</span> {surgery.type}</p>
+                  <p><span className="text-gray-500">Duration:</span> {surgery.duration}</p>
+                  <p className="col-span-2"><span className="text-gray-500">Outcome:</span> {surgery.outcome}</p>
                 </div>
               </div>
-            ) : <p className="text-gray-400 text-sm italic text-center py-4">No surgical records.</p>}
+            ) : <p className="text-gray-400 text-sm italic text-center py-4">No surgical records found.</p>}
           </div>
         )}
 
