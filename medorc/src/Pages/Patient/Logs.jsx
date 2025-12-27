@@ -13,16 +13,16 @@ export default function Logs() {
   const url = "http://localhost:3000/api/v1/patient/profile";
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const { token, schcode } = useAuth();
+  const { token, shc_code } = useAuth();
 
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || !schcode) return;
+    if (!token || !shc_code) return;
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/data-logs?sch_code=${schcode}`, {
+        const res = await axios.get(`${url}/data-logs?sch_code=${shc_code}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -50,7 +50,7 @@ export default function Logs() {
       }
     };
     fetchData();
-  }, [token, schcode]);
+  }, [token, shc_code]);
 
   // Filter logs by search
   const filteredLogs = data.filter((log) =>
