@@ -1,19 +1,18 @@
 import React, { useEffect ,useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import NavBar from "../../Components/NavBar";
-
 import BackButton from "../../Components/BackButton";
-
 import NavButton from "../../Components/NavButton";
+
 import ProfileChange from "../../Components/ProfileChange";
-import { useNavigate } from "react-router-dom";
+
 
 export default function Account() {
 
-  var url="http://localhost:3000";
-  const navigate = useNavigate();
+  const url="http://localhost:3000";
 
   
   const [data, setData] = useState({
@@ -23,6 +22,9 @@ export default function Account() {
     photo:""
   });
   const { token,role } = useAuth();
+
+  const navigate = useNavigate();
+   
 
     useEffect(() => {
     if (!token) navigate("/");
@@ -37,14 +39,16 @@ export default function Account() {
         });
         
         setData(res.data.data);
-      
+       
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));
       }
     };
 
     fetchData();
-  }, [token,navigate]);
+  }, [token]);
+
+  
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center ">
@@ -57,7 +61,7 @@ export default function Account() {
 
       {/* Profile Image */}
       
-      <ProfileChange data={data}/>
+      <ProfileChange data={data} />
       
     </div>
   );

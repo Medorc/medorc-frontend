@@ -1,5 +1,4 @@
-import React, { useContext } from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "../../Components/NavBar";
 import { useAuth } from "../../Context/AuthContext";
@@ -8,15 +7,24 @@ import { QRCodeCanvas } from "qrcode.react";
 import { toast } from "react-toastify";
 
 export default function Home() {
-  
   const [enabled, setEnabled] = useState(false);
   const navigator = useNavigate();
-  
+
   const url = "http://localhost:3000/api/v1/patient/profile";
   const { token } = useAuth();
-  const [data, setdata] = useState({});
+  const [data, setData] = useState({});
 
+  // Redirect if no token
   useEffect(() => {
+    if (!token) {
+      navigator("/");
+    }
+  }, [token, navigator]);
+
+  // Fetch profile
+  useEffect(() => {
+   
+
     const fetchProfile = async () => {
       try {
         const res = await axios.get(url, {
@@ -25,20 +33,16 @@ export default function Home() {
             "Content-Type": "application/json",
           },
         });
-        setdata(res.data.data);
-        localStorage.setItem("schcode", res.data.data.shc_code);
 
-
-        setEnabled(res.data.data.visibility);
+        setData(res.data);
+        localStorage.setItem("schcode", res.data.shc_code);
+        setEnabled(res.data.visibility);
       } catch (err) {
-        toast.error(
-          "Error fetching profile:",
-          err.response?.data || err.message
-        );
+        toast.error("Error fetching profile: " + (err.response?.data || err.message));
       }
     };
 
-    if (token) fetchProfile(); 
+    fetchProfile();
   }, [token]);
 
   const visibility = async () => {
@@ -54,13 +58,10 @@ export default function Home() {
         }
       );
 
+      setEnabled(res.data.visibility);
       toast.success("Visibility updated successfully");
-      setEnabled(res.data.data.visibility);
     } catch (err) {
-      toast.error(
-        "Error updating visibility:",
-        err.response?.data || err.message
-      );
+      toast.error("Error updating visibility: " + (err.response?.data || err.message));
     }
   };
 
@@ -76,8 +77,7 @@ export default function Home() {
       </div>
 
       {/* Profile Section */}
-      <div className="w-full flex flex-col md:flex-row justify-between items-center py-2 px-4 md:py-3 md:px-6 gap-3">
-        {/* Left Section */}
+      <div className="w-full flex flex-col md:flex-row cursor-pointer justify-between items-center py-2 px-4 md:py-3 md:px-6 gap-3">
         <div className="flex flex-col gap-1 text-center md:text-left">
           <h2 className="font-semibold text-base md:text-xl lg:text-2xl leading-tight">
             {data.full_name}
@@ -85,17 +85,19 @@ export default function Home() {
           <p className="font-medium text-xs md:text-sm lg:text-base leading-tight">
             {data.email}
           </p>
-          <button className="bg-sky-500 py-1 px-3 md:px-5 rounded-full font-medium text-white hover:bg-sky-600 transition text-xs md:text-sm" onClick={()=>navigator("/profile/settings")}>
+          <button
+            className="bg-sky-500 py-1 px-3 md:px-5 cursor-pointer rounded-full font-medium text-white hover:bg-sky-600 transition text-xs md:text-sm"
+            onClick={() => navigator("/patient/profile")}
+          >
             View Profile
           </button>
         </div>
 
-        {/* Right Section */}
-        <div className="profile flex justify-center items-center w-16 h-16 md:w-20 md:h-20 lg:w-28 lg:h-28 bg-white border-3 border-green-500 rounded-full shadow-sm ">
+        <div className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-[#4AE3C7] rounded-full overflow-hidden">
           <img
-            src="https://tse3.mm.bing.net/th/id/OIP.JflGW8e1fT4_ttSuFTQXJwHaHj?pid=Api&P=0&h=220"
-            className="h-14  md:h-18 lg:h-26 object-contain rounded-full"
-            alt="Profile"
+            src={data.photo || "/image.png"}
+            className="w-full h-full object-cover"
+            alt="profile"
           />
         </div>
       </div>
@@ -115,7 +117,7 @@ export default function Home() {
 
       {/* Medical History Button */}
       <div className="w-full flex justify-center items-center my-4">
-        <button className="bg-sky-500 py-2 rounded-full px-6 font-medium text-white hover:bg-sky-600 transition">
+        <button className="bg-sky-500 py-2 rounded-full px-6 font-medium text-white hover:bg-sky-600 transition" onClick={() => navigator("/patient/records")}>
           View Full Medical History
         </button>
       </div>
@@ -130,7 +132,7 @@ export default function Home() {
             <label className="font-medium">SHC Visibility:</label>
             <button
               onClick={visibility}
-              className={`w-14 h-7 flex items-center rounded-full p-1 transition-colors duration-300 ${
+              className={`w-14 h-7 flex items-center  rounded-full p-1 transition-colors duration-300 ${
                 enabled ? "bg-green-500" : "bg-gray-300"
               }`}
             >

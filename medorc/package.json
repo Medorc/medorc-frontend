@@ -10,8 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.22.0",
     "@tailwindcss/vite": "^4.1.13",
+    "@yudiel/react-qr-scanner": "^2.4.1",
     "axios": "^1.11.0",
+    "cloudinary": "^2.8.0",
+    "dotenv": "^17.2.3",
+    "framer-motion": "^12.23.26",
     "i": "^0.3.7",
     "jwt-decode": "^4.0.0",
     "npm": "^11.6.0",

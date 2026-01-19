@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../Components/NavBar";
 import { FaPencilAlt } from "react-icons/fa";
-import { FaArrowLeft } from "react-icons/fa6";
+
 import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+
+import BackButton from "../../Components/BackButton";
+import PersonalDetails from "../../Components/PesonalDetails";
 import { useNavigate } from "react-router-dom";
 
-
 export default function ProfileSettings() {
+  const navigate = useNavigate();
+
   const [data, setData] = useState({
     full_name: "",
     date_of_birth: "",
@@ -26,7 +30,12 @@ export default function ProfileSettings() {
   });
 
   const { token } = useAuth();
-  const Navigate = useNavigate();
+  
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
 
   const url = "http://localhost:3000/api/v1/patient/profile/personal";
 
@@ -55,118 +64,19 @@ export default function ProfileSettings() {
       <NavBar />
 
       {/* Header */}
-      <div className="w-full h-16 flex items-center justify-center relative px-4 sm:px-8">
-        <button className="absolute left-4 sm:left-8 bg-[#4A82B3] py-1 px-4 sm:px-7 text-white font-bold rounded " onClick={()=>Navigate('/home')}>
-          <FaArrowLeft className="inline mr-2 text-lg sm:text-xl"  /> Back
-        </button>
-        <h1 className="font-medium text-xl sm:text-2xl md:text-3xl text-[#0751A7]">
-          Profile & Settings
-        </h1>
-      </div>
+      <BackButton/>
       <NavButton />
 
       <div className="flex flex-col items-center gap-8 px-4 sm:px-6 lg:px-12">
         {/* Personal Details */}
-        <div className="w-full max-w-6xl bg-white border rounded-lg p-4 sm:p-6 md:p-8 shadow flex flex-col gap-4">
-          <h3 className="text-lg sm:text-xl font-semibold text-[#0751A7] mb-2">
-            Personal Details
-          </h3>
-
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            {/* Left column */}
-            <div className="flex flex-col gap-3 flex-1 w-full md:w-1/2">
-              {/* Full Name */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                <label
-                  htmlFor="fullName"
-                  className="text-sm text-gray-600 w-28 sm:w-32"
-                >
-                  Full Name:
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  className="border-2 rounded px-4 py-1 w-full sm:w-80"
-                  value={data.full_name || "John Doe"}
-                  readOnly
-                />
-              </div>
-
-              {/* Date of Birth */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                <label
-                  htmlFor="dob"
-                  className="text-sm text-gray-600 w-28 sm:w-32"
-                >
-                  Date of Birth:
-                </label>
-                <input
-                  type="text"
-                  id="dob"
-                  className="border-2 rounded px-4 py-1 w-full sm:w-80"
-                  value={
-                    data.date_of_birth
-                      ? new Date(data.date_of_birth).toLocaleDateString("en-GB")
-                      : ""
-                  }
-                  readOnly
-                />
-              </div>
-
-              {/* Gender */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-                <label
-                  htmlFor="gender"
-                  className="text-sm text-gray-600 w-28 sm:w-32"
-                >
-                  Gender:
-                </label>
-                <input
-                  type="text"
-                  id="gender"
-                  className="border-2 rounded px-4 py-1 w-full sm:w-80"
-                  value={data.gender || "Male"}
-                  readOnly
-                />
-              </div>
-            </div>
-
-            {/* Right column */}
-            <div className="flex flex-col md:flex-row gap-4 flex-1 w-full md:w-1/2">
-              <div className="flex flex-col gap-2 flex-1">
-                <label
-                  htmlFor="address"
-                  className="text-sm text-gray-600 mb-1"
-                >
-                  Address:
-                </label>
-                <textarea
-                  id="address"
-                  className="border-2 rounded px-4 py-2 w-full h-24 resize-none"
-                  value={data.address || "123 Main St, City, Country"}
-                  readOnly
-                />
-              </div>
-
-              <div className="flex justify-center items-center mt-4 md:mt-0">
-                <div className="w-20 h-20 sm:w-28 sm:h-28 border-4 border-[#4AE3C7] rounded-full flex justify-center items-center">
-                  <img
-                    src="https://tse3.mm.bing.net/th/id/OIP.JflGW8e1fT4_ttSuFTQXJwHaHj?pid=Api&P=0&h=220"
-                    className="h-16 sm:h-20 md:h-24 lg:h-26 object-contain rounded-full"
-                    alt="profile"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PersonalDetails data={data}/>
 
         {/* Lifestyle */}
-        <div className="w-full max-w-6xl bg-white border rounded-lg p-4 sm:p-6 md:p-6 shadow-sm relative gap-2 flex flex-col">
+        <div className="w-full max-w-7xl bg-white border rounded-lg p-4 sm:p-6 md:p-6 shadow-sm relative gap-2 flex flex-col">
           <h3 className="text-lg sm:text-xl font-semibold text-[#0751A7]">
             Lifestyle
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 items-start">
             {/* Habits */}
             <div className="flex flex-col gap-2">
               {[

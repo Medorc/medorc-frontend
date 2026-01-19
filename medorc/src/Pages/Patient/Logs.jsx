@@ -1,25 +1,28 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../Components/NavBar";
-import { FaArrowLeft } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 import NavButton from "../../Components/NavButton";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+
 import { toast } from "react-toastify";
 import { useAuth } from "../../Context/AuthContext";
 import { FaSearch } from "react-icons/fa";
+import BackButton from "../../Components/BackButton";
 
 export default function Logs() {
   const url = "http://localhost:3000/api/v1/patient/profile";
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
-  const { token, schcode } = useAuth();
+  const { token, shc_code } = useAuth();
+
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || !schcode) return;
+    if (!token || !shc_code) return;
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/data-logs?sch_code=${schcode}`, {
+        const res = await axios.get(`${url}/data-logs?sch_code=${shc_code}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -29,7 +32,7 @@ export default function Logs() {
           },
         });
         // Ensure data is always an array
-        console.log(res.data.data);
+       
         const rawLogs = res.data.data.data_logs || "";
         // Split into an array by comma
         const logs = rawLogs
@@ -37,10 +40,8 @@ export default function Logs() {
           .map((log) => log.trim())
           .filter((log) => log.length > 0);
 
-        console.log(logs);
         setData(logs);
 
-        setData(logs);
       } catch (err) {
         toast.error(
           "API Error: " + (err.response?.data?.message || err.message)
@@ -49,29 +50,21 @@ export default function Logs() {
       }
     };
     fetchData();
-  }, [token, schcode]);
+  }, [token, shc_code]);
 
   // Filter logs by search
   const filteredLogs = data.filter((log) =>
     log.toLowerCase().includes(search.toLowerCase())
   );
 
+   
+
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center">
       <NavBar />
 
       {/* Header */}
-      <div className="w-full h-16 flex items-center justify-center relative px-4 sm:px-8">
-        <button
-          className="absolute left-4 sm:left-8 bg-[#4A82B3] py-1 px-4 sm:px-7 text-white font-bold rounded"
-          onClick={() => navigate("/home")}
-        >
-          <FaArrowLeft className="inline mr-2 text-lg sm:text-xl" /> Back
-        </button>
-        <h1 className="font-medium text-xl sm:text-2xl md:text-3xl text-[#0751A7]">
-          Profile & Settings
-        </h1>
-      </div>
+      <BackButton/>
 
       <NavButton />
 
