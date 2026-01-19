@@ -151,7 +151,7 @@ export default function ProfileSettings() {
               <div className="flex justify-center items-center mt-4 md:mt-0">
                 <div className="w-20 h-20 sm:w-28 sm:h-28 border-4 border-[#4AE3C7] rounded-full flex justify-center items-center">
                   <img
-                    src="https://wallpapers.com/images/featured/vijay-hd-27mgorooz2ewisvi.jpg"
+                    src="https://tse3.mm.bing.net/th/id/OIP.JflGW8e1fT4_ttSuFTQXJwHaHj?pid=Api&P=0&h=220"
                     className="h-16 sm:h-20 md:h-24 lg:h-26 object-contain rounded-full"
                     alt="profile"
                   />
