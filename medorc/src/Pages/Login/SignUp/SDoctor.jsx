@@ -120,12 +120,12 @@ export default function SDoctor() {
     }
 
     const submissionData = { ...data };
-    
+
     // Ensure years_of_experience is an integer
     if (submissionData.years_of_experience) {
-        submissionData.years_of_experience = parseInt(submissionData.years_of_experience, 10);
+      submissionData.years_of_experience = parseInt(submissionData.years_of_experience, 10);
     } else {
-        submissionData.years_of_experience = 0;
+      submissionData.years_of_experience = 0;
     }
 
     delete submissionData.confirmPassword;
@@ -138,7 +138,7 @@ export default function SDoctor() {
       }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Signup failed");
+      toast.error(error.response?.data?.error || "Signup failed");
     }
   };
 
@@ -215,7 +215,7 @@ export default function SDoctor() {
               onChange={changehandle}
               value={data.date_of_birth}
             />
-            
+
             <div>
               <label className="block mb-1 font-medium text-gray-700">
                 Gender
@@ -256,33 +256,33 @@ export default function SDoctor() {
           <div className="flex flex-col justify-between">
             <div className="bg-gray-50 p-4 rounded-lg border mb-4 h-full">
               <h4 className="font-semibold text-lg mb-4 text-blue-800">Professional Details</h4>
-              
+
               <div className="flex flex-col gap-4">
                 <FormInput
-                    id="specializations"
-                    name="specializations"
-                    label="Specialization"
-                    onChange={changehandle}
-                    value={data.specializations}
-                    placeholder="e.g. Cardiologist"
+                  id="specializations"
+                  name="specializations"
+                  label="Specialization"
+                  onChange={changehandle}
+                  value={data.specializations}
+                  placeholder="e.g. Cardiologist"
                 />
 
                 <FormInput
-                    id="experience"
-                    name="years_of_experience"
-                    label="Years of Experience"
-                    type="number"
-                    onChange={changehandle}
-                    value={data.years_of_experience}
+                  id="experience"
+                  name="years_of_experience"
+                  label="Years of Experience"
+                  type="number"
+                  onChange={changehandle}
+                  value={data.years_of_experience}
                 />
 
                 <FormInput
-                    id="hospital"
-                    name="hospital_affiliation"
-                    label="Hospital Affiliation"
-                    onChange={changehandle}
-                    value={data.hospital_affiliation}
-                    placeholder="Current Hospital"
+                  id="hospital"
+                  name="hospital_affiliation"
+                  label="Hospital Affiliation"
+                  onChange={changehandle}
+                  value={data.hospital_affiliation}
+                  placeholder="Current Hospital"
                 />
               </div>
             </div>
