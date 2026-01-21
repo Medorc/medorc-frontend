@@ -6,6 +6,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
+import OrbyChat from "../../Components/OrbyChat";
 
 export default function Records() {
   const url = "http://localhost:3000";
@@ -13,20 +14,20 @@ export default function Records() {
   const [entryType, setEntryType] = useState("All");
   const [sortBy, setSortBy] = useState("Time Desc");
   const [records, setRecords] = useState([]);
-  const [userProfile, setUserProfile] = useState(null); // Renamed to avoid confusion with auth user
+  const [userProfile, setUserProfile] = useState(null);
+  const [showOrbyChat, setShowOrbyChat] = useState(false);
 
   const navigate = useNavigate();
   const { token, shc_code } = useAuth();
 
   useEffect(() => {
-    // Only fetch if we have a token (since this is the patient's own view)
     if (!token) return;
 
     const fetchRecords = async () => {
       try {
         const payload = {
           searchOptions: { sort_by: sortBy, entry_type: entryType },
-          shc_code: shc_code, // This will be used if the role is doctor/hospital
+          shc_code: shc_code,
           searchQuery: searchTerm,
         };
 
@@ -34,7 +35,6 @@ export default function Records() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Backend returns records wrapped in a "data" field
         setRecords(res.data?.data || []);
       } catch (err) {
         console.error("Error fetching records:", err);
@@ -46,7 +46,6 @@ export default function Records() {
         const res = await axios.get(`${url}/api/v1/patient/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // Backend returns the profile object directly
         setUserProfile(res.data || null);
       } catch (err) {
         console.error("Error fetching profile:", err);
@@ -56,6 +55,17 @@ export default function Records() {
     fetchRecords();
     fetchUserProfile();
   }, [searchTerm, entryType, sortBy, shc_code, token]);
+
+  if (showOrbyChat) {
+    return (
+      <OrbyChat
+        userName={userProfile?.full_name || "User"}
+        onBack={() => setShowOrbyChat(false)}
+        shcCode={userProfile?.shc_code}
+        qrCode={userProfile?.qr_code}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,7 +97,6 @@ export default function Records() {
                 <span className="font-medium text-gray-900">
                   {userProfile?.full_name || "Loading..."}
                 </span>{" "}
-                {/* Fixed: Display shc_code from the fetched profile */}
                 • SHC: {userProfile?.shc_code || "N/A"}
               </p>
             </div>
@@ -100,20 +109,22 @@ export default function Records() {
             >
               <FaArrowLeft /> Back
             </button>
-            <button 
-              /* Fixed: Correct route from App.jsx */
-              onClick={() => navigate("/patient/addrecord")} 
+            <button
+              onClick={() => navigate("/patient/addrecord")}
               className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
             >
               Add Record
             </button>
-            <button className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80">
+            <button
+              onClick={() => setShowOrbyChat(true)}
+              className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+            >
               Ask Orby
             </button>
           </div>
         </div>
 
-        {/* Filters and Search... (remaining code stays the same) */}
+        {/* Filters and Search */}
         <div className="bg-white rounded-xl border p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <FiFilter className="text-gray-400" />
