@@ -4,7 +4,7 @@ import NavBar from "../../Components/NavBar";
 import { FiSearch, FiFilter } from "react-icons/fi";
 import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
 import OrbyChat from "../../Components/OrbyChat";
 
@@ -15,10 +15,13 @@ export default function Records() {
   const [sortBy, setSortBy] = useState("Time Desc");
   const [records, setRecords] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
-  const [showOrbyChat, setShowOrbyChat] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { token, shc_code } = useAuth();
+
+  // Check if navigated with openOrby flag
+  const [showOrbyChat, setShowOrbyChat] = useState(location.state?.openOrby || false);
 
   useEffect(() => {
     if (!token) return;
