@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import DOMPurify from "dompurify";
 
 const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
     const [messages, setMessages] = useState([
@@ -143,8 +144,8 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
                                             ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-lg shadow-blue-500/20"
                                             : "bg-white text-gray-700 rounded-2xl rounded-bl-md shadow-md border border-gray-100"
                                         }`}
-                                >
-                                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} >
+                                    {/*<p className="text-sm leading-relaxed">{msg.content}</p>*/}
                                 </div>
                                 {msg.role === "user" && (
                                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-teal-500 flex items-center justify-center ml-3 flex-shrink-0 shadow-sm">
