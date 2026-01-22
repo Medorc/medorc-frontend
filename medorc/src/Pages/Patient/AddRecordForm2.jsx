@@ -51,7 +51,7 @@ function AddRecordForm2({
       <h2 className="text-center text-2xl font-semibold text-gray-800 mb-4 py-4 md:mb-8 md:py-8 tracking-wide">
         DETAILS FOR RECORD
       </h2>
-      <main className="bg-white border border-black pt-6 md:pt-[30px] pb-10 px-4 md:px-8 shadow-lg relative z-10">
+      <main className="bg-white rounded-lg pt-6 md:pt-[30px] pb-10 px-4 md:px-8 shadow-lg relative z-10">
         <form onSubmit={onSubmit}>
           {/* --- Hospitalization & Surgery sections --- */}
           <div className="flex flex-col md:flex-row gap-8 mb-8">

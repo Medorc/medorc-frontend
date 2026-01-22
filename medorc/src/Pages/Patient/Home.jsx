@@ -95,8 +95,8 @@ export default function Home() {
         }
       );
 
-      setEnabled(res.data.visibility);
-      toast.success(res.data.visibility ? "SHC is now visible to doctors" : "SHC is now hidden");
+      setEnabled(res.data.data.visibility);
+      toast.success(res.data.data.visibility ? "SHC is now visible to doctors" : "SHC is now hidden");
     } catch (err) {
       toast.error("Error updating visibility: " + (err.response?.data || err.message));
     }

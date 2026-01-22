@@ -159,7 +159,7 @@ export default function Emergency() {
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
           <div className="bg-white rounded-lg p-8 shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4 text-[#0751A7]">
+            <h2 className="text-xl font-semibold mb-4 text-[#0751A7] pb-2">
               Add Emergency Contact
             </h2>
             <div className="flex flex-col gap-4">
@@ -185,7 +185,7 @@ export default function Emergency() {
                 onChange={(e) => setForm({ ...form, relation: e.target.value })}
               />
             </div>
-            <div className="flex justify-end gap-4 mt-6 ">
+            <div className="flex justify-end gap-4 mt-6 pt-3">
               <button
                 className="bg-gray-300 px-4 py-2 rounded"
                 onClick={resetFormAndCloseModal}

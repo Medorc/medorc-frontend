@@ -3,6 +3,8 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronDown, Check } from "lucide-react";
 
 export default function SignIn() {
   const { login } = useAuth();
@@ -13,6 +15,14 @@ export default function SignIn() {
     email: "",
     password: "",
   });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const roles = [
+    { value: "patient", label: "Patient" },
+    { value: "doctor", label: "Doctor" },
+    { value: "hospital", label: "Hospital" },
+    { value: "extern", label: "External" },
+  ];
 
   const changehandle = (e) => {
     const { name, value } = e.target;
@@ -36,7 +46,7 @@ export default function SignIn() {
       const response = await axios.post(url, data);
       if (response.status === 200) {
         toast.success("Login Successful");
-        login(response.data.token,response.data.role);
+        login(response.data.token, response.data.role);
         navigate(`/${role}/home`);
       }
     } catch (error) {
@@ -59,20 +69,42 @@ export default function SignIn() {
                 <label htmlFor="role" className="block mb-1 font-medium text-gray-700">
                   Sign In as
                 </label>
-                <div className="w-full border border-gray-300 rounded-full px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-                  <select
-                    id="role"
-                    name="role"
-                    value={data.role}
-                    onChange={changehandle}
-                    className="w-full outline-none bg-transparent"
+                <div className="relative">
+                  <div
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full border border-gray-300 rounded-full px-4 py-3 cursor-pointer bg-white flex items-center justify-between hover:border-blue-400 transition-colors"
                   >
-                    <option value="">--Select Role--</option>
-                    <option value="patient">Patient</option>
-                    <option value="doctor">Doctor</option>
-                    <option value="hospital">Hospital</option>
-                    <option value="extern">External</option>
-                  </select>
+                    <span className={data.role ? "text-gray-900" : "text-gray-500"}>
+                      {roles.find((r) => r.value === data.role)?.label || "--Select Role--"}
+                    </span>
+                    <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
+                  </div>
+
+                  <AnimatePresence>
+                    {isDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
+                      >
+                        {roles.map((role) => (
+                          <div
+                            key={role.value}
+                            onClick={() => {
+                              setData((prev) => ({ ...prev, role: role.value }));
+                              setIsDropdownOpen(false);
+                            }}
+                            className="px-4 py-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between text-gray-700 hover:text-blue-600 transition-colors"
+                          >
+                            <span>{role.label}</span>
+                            {data.role === role.value && <Check className="w-4 h-4 text-blue-500" />}
+                          </div>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
               <div>
@@ -116,7 +148,7 @@ export default function SignIn() {
             </form>
             <div className="text-center mt-6 flex justify-between text-sm pt-2">
               <p className="text-blue-500 hover:underline cursor-pointer">Forgot password?</p>
-              <p className="text-blue-500 hover:underline cursor-pointer" onClick={()=>navigate('/SignUp')}>Not a user? Sign up</p>
+              <p className="text-blue-500 hover:underline cursor-pointer" onClick={() => navigate('/SignUp')}>Not a user? Sign up</p>
             </div>
           </div>
         </div>
