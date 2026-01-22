@@ -114,7 +114,7 @@ export default function SignIn() {
                 Sign In
               </button>
             </form>
-            <div className="text-center mt-6 flex justify-between text-sm">
+            <div className="text-center mt-6 flex justify-between text-sm pt-2">
               <p className="text-blue-500 hover:underline cursor-pointer">Forgot password?</p>
               <p className="text-blue-500 hover:underline cursor-pointer" onClick={()=>navigate('/SignUp')}>Not a user? Sign up</p>
             </div>

@@ -73,7 +73,7 @@ export default function SPatient() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-    
+
 
     try {
       const res = await axios.post(CLOUDINARY_URL, formData);
@@ -137,7 +137,7 @@ export default function SPatient() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <header className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl mb-8">
+      <header className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl mb-8 pb-4">
         <img src="Logo.png" alt="logo" className="w-40" />
         <h2 className="text-3xl font-bold text-gray-800 mt-4 md:mt-0">
           Sign Up - Patient
@@ -146,7 +146,7 @@ export default function SPatient() {
 
       <form
         onSubmit={Signup}
-        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-6xl"
+        className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-6xl"
       >
         {/* 🔥 Upload Photo */}
         <Profile

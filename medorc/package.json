@@ -21,6 +21,7 @@
     "framer-motion": "^12.23.26",
     "i": "^0.3.7",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.562.0",
     "npm": "^11.6.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.1",

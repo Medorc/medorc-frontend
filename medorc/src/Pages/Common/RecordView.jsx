@@ -116,7 +116,7 @@ export default function RecordView() {
 
         {/* Tab Content: General */}
         {activeTab === "General" && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 pt-4">
             <section className="mb-12">
               <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-8 pb-2 pt-2 border-l-4 border-blue-500 pl-3">
                 Basic Information
@@ -166,16 +166,16 @@ export default function RecordView() {
 
         {/* Tab Content: Treatment */}
         {activeTab === "Treatment" && (
-          <div className="animate-in fade-in duration-500 space-y-10">
+          <div className="animate-in fade-in duration-500 flex flex-col gap-4 pt-4">
             <div>
-              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-4">History of present illness</h2>
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-gray-700 leading-relaxed italic">
+              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-4 pb-2">History of present illness</h2>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-700 leading-relaxed italic">
                 "{record.history_of_present_illness || "No history logged."}"
               </div>
             </div>
             <div>
-              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-4">Treatment Undergone</h2>
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-gray-700 leading-relaxed">
+              <h2 className="text-sm font-black uppercase tracking-wider text-gray-900 mb-4 pb-2">Treatment Undergone</h2>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-700 leading-relaxed">
                 {record.treatment_undergone || "Ongoing observation."}
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function RecordView() {
 
         {/* Tab Content: Procedures (Hospitalization & Surgery) */}
         {activeTab === "Procedures" && (
-          <div className="animate-in fade-in duration-500 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="animate-in fade-in duration-500 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
             {hospitalization ? (
               <div className="p-6 bg-orange-50/40 border border-orange-100 rounded-xl h-fit">
                 <h3 className="font-bold text-orange-800 mb-4">Hospitalization Details</h3>
@@ -219,7 +219,7 @@ export default function RecordView() {
 
         {/* Tab Content: Documents */}
         {activeTab === "Documents" && (
-          <div className="animate-in fade-in duration-500 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="animate-in fade-in duration-500 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
             {documents?.prescriptions ? (
               <a href={documents.prescriptions} target="_blank" rel="noreferrer" className="p-6 border-2 border-dashed border-gray-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all text-center group">
                 <p className="font-bold text-gray-800 group-hover:text-blue-600">Prescription Document</p>

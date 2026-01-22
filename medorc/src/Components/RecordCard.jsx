@@ -177,7 +177,7 @@ export default function RecordCard({ record }) {
       </div>
 
       {/* Date & Time */}
-      <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-6">
+      <div className="flex flex-wrap gap-6 text-sm text-gray-500 mb-6 pb-2">
         <div className="flex items-center gap-1.5">
           <FiCalendar className="text-gray-400"/>
           {formatDate(record.appointment_date)}
@@ -206,7 +206,7 @@ export default function RecordCard({ record }) {
 
       {/* Illness */}
       <div className="mb-6">
-        <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider">
+        <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wider py-1">
          History of present illness
         </p>
         <p className="text-sm text-gray-700 line-clamp-2">
@@ -215,7 +215,7 @@ export default function RecordCard({ record }) {
       </div>
 
       {/* Footer Tags */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-auto pt-2">
         <div className="flex flex-wrap gap-2">
           {tags.map((tag, i) => (
             <span

@@ -10,6 +10,7 @@ import { FaHeartbeat } from "react-icons/fa";
 
 export default function Home() {
   const [enabled, setEnabled] = useState(false);
+  const [showShcInfo, setShowShcInfo] = useState(false);
   const navigator = useNavigate();
 
   const url = "http://localhost:3000/api/v1/patient/profile";
@@ -26,6 +27,8 @@ export default function Home() {
 
   // Fetch profile
   useEffect(() => {
+    if (!token) return;
+
     const fetchProfile = async () => {
       try {
         const res = await axios.get(url, {
@@ -39,7 +42,12 @@ export default function Home() {
         localStorage.setItem("schcode", res.data.shc_code);
         setEnabled(res.data.visibility);
       } catch (err) {
-        toast.error("Error fetching profile: " + (err.response?.data || err.message));
+        console.error("Profile fetch error:", err);
+        const errorMsg = err.response?.data?.message || err.response?.data || err.message || "Unknown error";
+        // Avoid showing toast on 401/403 which might happen during logout race conditions
+        if (err.response?.status !== 401 && err.response?.status !== 403) {
+          toast.error("Error fetching profile: " + (typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg));
+        }
       } finally {
         setLoading(false);
       }
@@ -47,6 +55,32 @@ export default function Home() {
 
     fetchProfile();
   }, [token]);
+
+  const [healthTip, setHealthTip] = useState(null);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    const fetchTip = async () => {
+      try {
+        setFade(false); // Start fade out
+        setTimeout(async () => {
+          const res = await axios.get("http://localhost:3000/api/v1/health-tips/random");
+          if (res.data?.healthTip) {
+            setHealthTip(res.data.healthTip);
+          }
+          setFade(true); // Fade in
+        }, 500); // Wait for fade out
+      } catch (err) {
+        console.error("Error fetching health tip:", err);
+        setFade(true); // Ensure visible even on error
+      }
+    };
+
+    fetchTip(); // Initial fetch
+    const interval = setInterval(fetchTip, 5000); // Rotate every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   const visibility = async () => {
     try {
@@ -126,7 +160,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 pt-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 pt-12">
           {/* LEFT COLUMN: Welcome & Quick Stats */}
           <div className="lg:col-span-2 space-y-8">
             {/* Hero / Welcome Card */}
@@ -182,20 +216,25 @@ export default function Home() {
             </div>
 
             {/* Health Tip */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 ">
-              <div className="p-4 bg-emerald-100 rounded-full text-emerald-600 shrink-0">
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 min-h-[120px]">
+              <div className="p-4 bg-emerald-100 rounded-full text-emerald-600 shrink-0 animate-pulse">
                 <FiActivity size={32} />
               </div>
-              <div className="text-center md:text-left">
-                <h3 className="text-lg font-bold text-emerald-900 mb-1">Daily Health Tip</h3>
-                <p className="text-emerald-700">Drink at least 3 liters of water today to verify hydration levels and improve cognitive function.</p>
+              <div className={`text-center md:text-left transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}>
+                <h3 className="text-lg font-bold text-emerald-900 mb-1">
+                  Daily Health Tip {healthTip?.category ? <span className="text-emerald-600 text-xs bg-emerald-100 px-2 py-0.5 rounded-full ml-2 uppercase">{healthTip.category}</span> : null}
+                </h3>
+                <p className="text-emerald-700">
+                  {healthTip?.tip_text || "Loading health tips for you..."}
+                </p>
               </div>
             </div>
 
           </div>
 
           {/* RIGHT COLUMN: SHC & QR */}
-          <div className="space-y-8">
+          <div className="flex flex-col gap-4">
+            {/* SHC Card Widget */}
             {/* SHC Card Widget */}
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden relative">
               <div className="bg-gray-900 p-6 text-white relative overflow-hidden">
@@ -203,13 +242,25 @@ export default function Home() {
                 <div className="flex justify-between items-start mb-8 relative z-10">
                   <div className="flex items-center gap-2">
                     <FiShield className="text-emerald-400" size={24} />
-                    <span className="font-bold tracking-wider">MEDORC SHC</span>
+                    <span className="font-bold tracking-wider ">MEDORC SHC</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowShcInfo(true);
+                      }}
+                      className="ml-1 text-gray-400 hover:text-white transition-colors"
+                      title="What is SHC?"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
                   </div>
                   <img src="/Logo.png" alt="Medorc" className="h-6 opacity-50 grayscale invert" />
                 </div>
                 <div className="mb-2">
-                  <p className="text-gray-400 text-xs uppercase tracking-widest mb-1">SHC Code</p>
-                  <p className="font-mono text-2xl tracking-widest text-emerald-400 drop-shadow-md">
+                  <p className="text-gray-400 text-xs uppercase tracking-widest mb-1 pt-2">SHC Code</p>
+                  <p className="font-mono text-xl tracking-widest text-emerald-400 drop-shadow-md">
                     {data.shc_code || "LOADING..."}
                   </p>
                 </div>
@@ -253,17 +304,55 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Info Card */}
-            <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100 mt-6">
-              <h4 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                <FiTrendingUp />
-                What is SHC?
-              </h4>
-              <p className="text-sm text-blue-700/80 leading-relaxed">
-                Secure Health Card (SHC) is your digital health passport. It allows instant, secure sharing of your medical history with doctors via QR code.
-                <button className="block mt-2 text-blue-600 font-bold hover:underline text-xs">Learn More →</button>
-              </p>
-            </div>
+            {/* SHC INFO MODAL */}
+            {showShcInfo && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                onClick={() => setShowShcInfo(false)}
+              >
+                <div
+                  className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative transform transition-all scale-100"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => setShowShcInfo(false)}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+
+                  <div className="flex items-center gap-3 mb-4 text-blue-600">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <FiTrendingUp size={24} />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">What is SHC?</h3>
+                  </div>
+
+                  <div className="space-y-4">
+                    <p className="text-gray-600 leading-relaxed">
+                      <span className="font-semibold text-gray-900">Secure Health Card (SHC)</span> is your digital health passport. It acts as a unique identifier for your medical history.
+                    </p>
+                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
+                      <p className="text-sm text-gray-600 flex gap-2">
+                        <span className="text-green-500">✔</span> Instant sharing via QR code
+                      </p>
+                      <p className="text-sm text-gray-600 flex gap-2">
+                        <span className="text-green-500">✔</span> Secure doctor access control
+                      </p>
+                      <p className="text-sm text-gray-600 flex gap-2">
+                        <span className="text-green-500">✔</span> Centralized medical history
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowShcInfo(false)}
+                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/20"
+                    >
+                      Got it
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

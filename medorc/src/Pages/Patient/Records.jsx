@@ -169,7 +169,7 @@ export default function Records() {
         </div>
 
         {/* Records Display */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-2">
           {records.length ? (
             records.map((r) => (
               <RecordCard key={r.record_id} record={r} />

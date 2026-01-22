@@ -69,11 +69,11 @@ export default function SignUp() {
           {/* Header */}
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-gray-800 mb-3">Create Account</h2>
-            <p className="text-gray-500">Select your account type to get started</p>
+            <p className="text-gray-500 py-2">Select your account type to get started</p>
           </div>
 
           {/* Role Selection Cards */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-2">
             {roleOptions.map((role) => (
               <button
                 key={role.label}
@@ -111,7 +111,7 @@ export default function SignUp() {
           </div>
 
           {/* Footer */}
-          <div className="mt-10 text-center">
+          <div className="mt-10 text-center pt-2">
             <p className="text-gray-500">
               Already have an account?{" "}
               <button
