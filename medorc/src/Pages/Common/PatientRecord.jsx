@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import NavBar from "../../Components/NavBar";
-import { FiSearch, FiFilter } from "react-icons/fi";
+import { FiSearch, FiFilter, FiCalendar } from "react-icons/fi";
+import { motion } from "framer-motion";
 import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
-
+import { useSearchParams } from "react-router-dom";
+import OrbyChat from "../../Components/OrbyChat";
 /* ================= MAIN PAGE ================= */
 export default function PatientRecord() {
   const url = "http://localhost:3000";
@@ -14,14 +16,20 @@ export default function PatientRecord() {
   const [entryType, setEntryType] = useState("All");
   const [sortBy, setSortBy] = useState("Time Desc");
   const [records, setRecords] = useState([]);
-  const [user, setUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+
+  const location = useLocation();
+  const { token } = useAuth();
+
+  // Check if navigated with openOrby flag
+  const [showOrbyChat, setShowOrbyChat] = useState(location.state?.openOrby || false);
 
   const [searchParams] = useSearchParams();
   const qr_code = searchParams.get("qr_code");
   const shc_code = searchParams.get("shc_code");
 
   const navigate = useNavigate();
-  const { token, role } = useAuth();
+  const { role } = useAuth();
 
   // Fetch records (depends on search filters)
   useEffect(() => {
@@ -64,7 +72,7 @@ export default function PatientRecord() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setUser(res.data || null);
+        setUserProfile(res.data || null);
       } catch (err) {
         console.error("Error fetching user:", err);
       }
@@ -72,9 +80,19 @@ export default function PatientRecord() {
 
     fetchUser();
   }, [role, qr_code, shc_code, token]);
+  if (showOrbyChat) {
+    return (
+      <OrbyChat
+        userName={userProfile?.full_name || "User"}
+        onBack={() => setShowOrbyChat(false)}
+        shcCode={userProfile?.shc_code}
+        qrCode={userProfile?.qr_code}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen  bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <NavBar />
 
       <main className="w-full mx-auto px-4 py-8 space-y-6 flex flex-col gap-6">
@@ -82,15 +100,15 @@ export default function PatientRecord() {
         <div className="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#50E3C2]">
-              {user?.photo ? (
+              {userProfile?.photo ? (
                 <img
-                  src={user.photo}
-                  alt=""
+                  src={userProfile.photo}
+                  alt="Profile"
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-bold text-gray-600">
-                  {user?.full_name?.[0]}
+                <div className="w-full h-full flex items-center justify-center font-bold text-gray-600 bg-gray-200">
+                  {userProfile?.full_name?.[0]}
                 </div>
               )}
             </div>
@@ -101,9 +119,9 @@ export default function PatientRecord() {
               </h1>
               <p className="text-sm text-gray-500">
                 <span className="font-medium text-gray-900">
-                  {user?.full_name}
+                  {userProfile?.full_name || "Loading..."}
                 </span>{" "}
-                • SHC: {user?.shc_code || "N/A"}
+                • SHC: {userProfile?.shc_code || "N/A"}
               </p>
             </div>
           </div>
@@ -115,77 +133,86 @@ export default function PatientRecord() {
             >
               <FaArrowLeft /> Back
             </button>
-            {role != "extern" && (
-              <button
-                className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
-                onClick={() =>
-                  navigate(
-                    `/${role}/addrecord?qr_code=${qr_code}&shc_code=${shc_code}`
-                  )
-                }
-              >
-                Add Record
-              </button>
-            )}
             <button
+              onClick={() => navigate("/patient/addrecord")}
               className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
-              onClick={() => navigate(`/${role}/patientprofile?qr_code=${qr_code}&shc_code=${shc_code}`)}
             >
-              User Profile
+              Add Record
             </button>
+            {/* {role === "doctor" && (
+              <button
+                onClick={() => navigate("/patient/profile", { state: { userProfile } })}
+                className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+              >
+                User Profile
+              </button>
+            )} */}
             <button
+              onClick={() => setShowOrbyChat(true)}
               className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
-              onClick={() => navigate(`/${role}/askorby`)}
             >
               Ask Orby
             </button>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-xl border p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <FiFilter className="text-gray-400" />
-            <h2 className="text-lg font-bold">Filter & Search</h2>
-          </div>
+        {/* Filters and Search - Redesigned */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+          <div className="flex flex-col gap-6">
+            {/* Top Row: Search & Sort */}
+            <div className="flex flex-col md:flex-row gap-4 justify-between">
+              <div className="relative flex-1">
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  className="w-full h-12 pl-12 pr-4 bg-gray-50 border-none rounded-xl text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                  placeholder="Search records by diagnosis, doctor, or hospital..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                className="w-full h-11 pl-10 pr-4 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500"
-                placeholder="Search by diagnosis, doctor, hospital"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <div className="flex items-center gap-3 bg-gray-50 px-4 rounded-xl">
+                <FiCalendar className="text-gray-500" />
+                <select
+                  className="h-12 bg-transparent border-none text-gray-700 font-medium focus:ring-0 cursor-pointer outline-none min-w-[140px]"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="Time Desc">Newest First</option>
+                  <option value="Time Asc">Oldest First</option>
+                  <option value="Diagnosis">Diagnosis (A-Z)</option>
+                </select>
+              </div>
             </div>
 
-            <select
-              className="h-11 min-w-[160px] border border-gray-200 rounded-lg px-4 text-sm"
-              value={entryType}
-              onChange={(e) => setEntryType(e.target.value)}
-            >
-              <option value="All">All Records</option>
-              <option value="Hospital">Hospital</option>
-              <option value="Doctor">Doctor</option>
-            </select>
-
-            <select
-              className="h-11 min-w-[160px] border border-gray-200 rounded-lg px-4 text-sm"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="Time Desc">Newest First</option>
-              <option value="Time Asc">Oldest First</option>
-            </select>
+            {/* Bottom Row: Entry Type Pills */}
+            <div className="flex flex-wrap gap-2">
+              {["All", "Hospital", "Doctor", "Self"].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setEntryType(type)}
+                  className={`relative px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${entryType === type ? "text-white" : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                >
+                  {entryType === type && (
+                    <motion.div
+                      layoutId="activeFilter"
+                      className="absolute inset-0 bg-blue-600 rounded-full shadow-md shadow-blue-500/30"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{type === "All" ? "All Records" : type}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Records */}
-        <div className="space-y-4">
+        {/* Records Display */}
+        <div className="flex flex-col gap-2">
           {records.length ? (
             records.map((r) => (
-              <RecordCard key={r.id || r.record_id} record={r} />
+              <RecordCard key={r.record_id} record={r} />
             ))
           ) : (
             <p className="text-center text-gray-500 py-10">No records found</p>
