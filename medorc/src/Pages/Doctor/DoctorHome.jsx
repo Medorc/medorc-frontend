@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import NavBar from "../../Components/NavBar";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
+import Loading from "../../Components/Loading";
 import { useNavigate } from "react-router-dom";
 import UserCard from "../../Components/UserCard";
 
@@ -48,7 +49,7 @@ export default function DoctorHome() {
       <NavBar />
 
       {loading ? (
-        <p className="text-center pt-20">Loading...</p>
+        <Loading />
       ) : (
         <UserCard user={user} role={role} token={token} navigate={navigate} />
       )}

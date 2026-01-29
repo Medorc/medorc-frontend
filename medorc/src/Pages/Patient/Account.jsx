@@ -1,4 +1,4 @@
-import React, { useEffect ,useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
@@ -11,21 +11,20 @@ import ProfileChange from "../../Components/ProfileChange";
 import { useNavigate } from "react-router-dom";
 
 export default function Account() {
-
-  var url="http://localhost:3000";
+  var url = "http://localhost:3000";
   const navigate = useNavigate();
 
-  
   const [data, setData] = useState({
-    email:"",
-    phone_no:"",
-    password:"",
-    photo:""
+    email: "",
+    phone_no: "",
+    password: "",
+    photo: "",
   });
-  const { token,role } = useAuth();
+  const { token, role } = useAuth();
 
-    useEffect(() => {
+  useEffect(() => {
     if (!token) navigate("/");
+    if (!role) return; // Wait for role to be available
 
     const fetchData = async () => {
       try {
@@ -35,30 +34,28 @@ export default function Account() {
             "Content-Type": "application/json",
           },
         });
-        
+        console.log(res.data);    
         setData(res.data.data);
-      
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));
       }
     };
 
     fetchData();
-  }, [token,navigate]);
+  }, [token, role, navigate]);
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center ">
       <NavBar />
 
       {/* Header */}
-      <BackButton/>
+      <BackButton />
 
       <NavButton />
 
       {/* Profile Image */}
-      
-      <ProfileChange data={data}/>
-      
+
+      <ProfileChange data={data} />
     </div>
   );
 }

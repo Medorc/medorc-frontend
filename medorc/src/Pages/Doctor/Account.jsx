@@ -15,12 +15,7 @@ export default function Account() {
   const url="http://localhost:3000";
 
   
-  const [data, setData] = useState({
-    email:"",
-    phone_no:"",
-    password:"",
-    photo:""
-  });
+  const [data, setData] = useState();
   const { token,role } = useAuth();
 
   const navigate = useNavigate();
@@ -31,7 +26,7 @@ export default function Account() {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/api/v1/${role}/profile/basic`, {
+        const res = await axios.get(`${url}/api/v1/${role}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -39,6 +34,7 @@ export default function Account() {
         });
         
         setData(res.data.data);
+        console.log(res.data);
        
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));

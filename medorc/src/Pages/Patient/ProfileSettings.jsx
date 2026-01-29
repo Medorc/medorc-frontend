@@ -11,6 +11,18 @@ import BackButton from "../../Components/BackButton";
 import PersonalDetails from "../../Components/PesonalDetails";
 import { useNavigate } from "react-router-dom";
 
+import {
+  Cigarette,
+  Wine,
+  Coffee,
+  Activity,
+  Baby,
+  FileText,
+  AlertCircle,
+  Save,
+  Pencil,
+} from "lucide-react";
+
 export default function ProfileSettings() {
   const navigate = useNavigate();
   const { token } = useAuth();
@@ -43,7 +55,6 @@ export default function ProfileSettings() {
       navigate("/");
     }
   }, [token, navigate]);
-
 
   // Fetch initial data
   useEffect(() => {
@@ -79,16 +90,19 @@ export default function ProfileSettings() {
   const toggleLifestyleEdit = async () => {
     if (isLifestyleEditing) {
       try {
-        await axios.patch(urlLifestyle,
+        await axios.patch(
+          urlLifestyle,
           { newLifestyle: data },
           {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         toast.success("Lifestyle updated successfully!");
         setIsLifestyleEditing(false);
       } catch (err) {
-        toast.error("Update failed: " + (err.response?.data?.error || err.message));
+        toast.error(
+          "Update failed: " + (err.response?.data?.error || err.message),
+        );
       }
     } else {
       setIsLifestyleEditing(true);
@@ -99,27 +113,78 @@ export default function ProfileSettings() {
   const togglePersonalEdit = async () => {
     if (isPersonalEditing) {
       try {
-        await axios.patch(urlPersonal,
+        await axios.patch(
+          urlPersonal,
           // Send only the relevant fields for personal details
           {
             full_name: data.full_name,
             date_of_birth: data.date_of_birth,
             gender: data.gender,
-            address: data.address
+            address: data.address,
           },
           {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+            headers: { Authorization: `Bearer ${token}` },
+          },
         );
         toast.success("Personal details updated successfully!");
         setIsPersonalEditing(false);
       } catch (err) {
-        toast.error("Update failed: " + (err.response?.data?.error || err.message));
+        toast.error(
+          "Update failed: " + (err.response?.data?.error || err.message),
+        );
       }
     } else {
       setIsPersonalEditing(true);
     }
-  }
+  };
+
+  // Configuration for the colorful tiles
+  const lifestyleConfig = [
+    {
+      key: "smoking",
+      label: "Smoking",
+      icon: Cigarette,
+      color: "text-orange-500",
+      bg: "bg-orange-50",
+    },
+    {
+      key: "alcoholism",
+      label: "Alcohol",
+      icon: Wine,
+      color: "text-purple-500",
+      bg: "bg-purple-50",
+    },
+    {
+      key: "tobacco",
+      label: "Tobacco",
+      icon: Coffee,
+      color: "text-amber-700",
+      bg: "bg-amber-50",
+    },
+    {
+      key: "exercise",
+      label: "Exercise",
+      icon: Activity,
+      color: "text-green-500",
+      bg: "bg-green-50",
+    },
+    {
+      key: "pregnancy",
+      label: "Pregnancy",
+      icon: Baby,
+      color: "text-pink-500",
+      bg: "bg-pink-50",
+    },
+  ];
+
+  // Helper to toggle checkbox when tile is clicked
+  const handleTileClick = (key) => {
+    if (!isLifestyleEditing) return;
+    // Manually trigger the handleChange logic
+    handleChange({
+      target: { id: key, type: "checkbox", checked: !data[key] },
+    });
+  };
 
   return (
     <div className="w-full min-h-screen bg-gray-100">
@@ -130,7 +195,6 @@ export default function ProfileSettings() {
       <NavButton />
 
       <div className="flex flex-col items-center gap-8 px-4 sm:px-6 lg:px-12 pb-10">
-
         {/* Personal Details Section */}
         <div className="w-full max-w-7xl relative">
           <PersonalDetails
@@ -141,91 +205,154 @@ export default function ProfileSettings() {
           {/* Edit Button for Personal Details */}
           <button
             onClick={togglePersonalEdit}
-            className={`absolute bottom-4 right-4 p-3 rounded-full shadow-lg transition-all active:scale-95 z-10 ${isPersonalEditing ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-            title={isPersonalEditing ? "Save Personal Details" : "Edit Personal Details"}
+            className={`absolute bottom-4 right-4 p-3 rounded-full shadow-lg transition-all active:scale-95 z-10 ${isPersonalEditing ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+            title={
+              isPersonalEditing
+                ? "Save Personal Details"
+                : "Edit Personal Details"
+            }
           >
             {isPersonalEditing ? <FaCheck /> : <FaPencilAlt />}
           </button>
         </div>
 
-
         {/* Lifestyle */}
-        <div className={`w-full max-w-7xl bg-white border rounded-lg p-4 sm:p-6 md:p-6 shadow-sm relative gap-2 flex flex-col transition-all ${isLifestyleEditing ? 'ring-2 ring-blue-500/20' : ''}`}>
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg sm:text-xl font-semibold text-[#0751A7]">
-              Lifestyle
-            </h3>
-            {isLifestyleEditing && <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">Editing Mode</span>}
+        {/* LIFESTYLE CARD SECTION */}
+        <div
+          className={`w-full max-w-7xl bg-white rounded-3xl overflow-hidden transition-all duration-300 ${isLifestyleEditing ? "shadow-xl ring-2 ring-blue-500/20" : "shadow-sm border border-slate-100"}`}
+        >
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-slate-50 flex justify-between items-center bg-white">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-rose-50 text-rose-600 rounded-lg">
+                <Activity size={20} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-800">
+                  Lifestyle & Habits
+                </h3>
+                <p className="text-slate-400 text-sm hidden sm:block">
+                  Manage medical alerts and history
+                </p>
+              </div>
+            </div>
+
+            {/* Edit/Save Button */}
+            <button
+              onClick={toggleLifestyleEdit}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-all duration-200 ${
+                isLifestyleEditing
+                  ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {isLifestyleEditing ? (
+                <>
+                  <Save size={16} /> Save
+                </>
+              ) : (
+                <>
+                  <Pencil size={14} /> Edit
+                </>
+              )}
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1 pb-2 items-start">
-            {/* Habits */}
-            <div className="flex flex-col gap-2">
-              {[
-                { key: "smoking", label: "Smoking" },
-                { key: "alcoholism", label: "Alcoholism" },
-                { key: "tobacco", label: "Tobacco" },
-                { key: "exercise", label: "Exercise habit" },
-                { key: "pregnancy", label: "Pregnancy" },
-              ].map(({ key, label }) => (
-                <div
-                  key={key}
-                  className="flex items-center gap-2 text-gray-800"
+          {/* Body Content */}
+          <div className="p-6 md:p-8 flex flex-col gap-8">
+            {/* 1. Habits Tiles Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {lifestyleConfig.map(({ key, label, icon: Icon, color, bg }) => {
+                const isActive = data[key] || false;
+                return (
+                  <div
+                    key={key}
+                    onClick={() => handleTileClick(key)}
+                    className={`
+              relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 select-none
+              ${isLifestyleEditing ? "cursor-pointer hover:scale-[1.02] active:scale-95" : "cursor-default"}
+              ${isActive ? `${bg} ${color} border-current shadow-sm` : "bg-white border-slate-100 text-slate-400 grayscale"}
+            `}
+                  >
+                    {/* Hidden Input for Form Logic */}
+                    <input
+                      type="checkbox"
+                      id={key}
+                      checked={isActive}
+                      readOnly
+                      className="hidden"
+                    />
+
+                    {/* Active Dot */}
+                    {isActive && (
+                      <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-current animate-pulse" />
+                    )}
+
+                    <Icon size={28} className="mb-2" />
+                    <span className="font-semibold text-sm">{label}</span>
+                    <span className="text-[10px] mt-1 font-medium opacity-80">
+                      {isActive ? "Active" : "None"}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 2. Text Areas (Others & Allergies) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              {/* Other Habits */}
+              <div className="flex flex-col gap-3">
+                <label
+                  htmlFor="others"
+                  className="text-sm font-bold text-slate-700 flex items-center gap-2"
                 >
-                  <input
-                    type="checkbox"
-                    id={key}
-                    className="form-checkbox text-blue-500 rounded focus:ring-0 w-4 h-4 cursor-pointer"
-                    checked={data[key] || false}
-                    onChange={handleChange}
-                    disabled={!isLifestyleEditing}
-                  />
-                  <label htmlFor={key} className={`cursor-pointer ${!isLifestyleEditing && 'cursor-default'}`}>{label}</label>
-                </div>
-              ))}
-            </div>
+                  <FileText size={16} className="text-blue-500" /> Other Habits
+                </label>
+                <textarea
+                  id="others"
+                  className={`w-full p-4 rounded-xl text-sm leading-relaxed outline-none transition-all resize-none ${
+                    isLifestyleEditing
+                      ? "bg-white border-2 border-blue-100 focus:border-blue-400 focus:ring-4 focus:ring-blue-50 text-slate-800 shadow-sm min-h-[120px]"
+                      : "bg-slate-50 border border-transparent text-slate-600 min-h-[100px]"
+                  }`}
+                  value={data.others || ""}
+                  onChange={handleChange}
+                  readOnly={!isLifestyleEditing}
+                  placeholder={
+                    isLifestyleEditing
+                      ? "Enter other habits..."
+                      : "No additional habits recorded."
+                  }
+                />
+              </div>
 
-            {/* Other habits */}
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="others"
-                className="text-sm text-gray-600 mb-1"
-              >
-                Other habits (if any)
-              </label>
-              <textarea
-                id="others"
-                className={`border-2 rounded px-4 py-2 w-full h-24 resize-none transition-colors ${isLifestyleEditing ? 'bg-white border-blue-200' : 'bg-gray-50 border-gray-200'}`}
-                value={data.others || ""}
-                onChange={handleChange}
-                readOnly={!isLifestyleEditing}
-                placeholder={isLifestyleEditing ? "Enter other habits..." : "--"}
-              />
-            </div>
-
-            {/* Allergies */}
-            <div className="flex flex-col gap-2">
-              <label htmlFor="allergy" className="text-sm text-gray-600 mb-1">
-                Allergies (if any)
-              </label>
-              <textarea
-                id="allergy"
-                className={`border-2 rounded px-4 py-2 w-full h-24 resize-none transition-colors ${isLifestyleEditing ? 'bg-white border-blue-200' : 'bg-gray-50 border-gray-200'}`}
-                value={data.allergy || ""}
-                onChange={handleChange}
-                readOnly={!isLifestyleEditing}
-                placeholder={isLifestyleEditing ? "Enter alleries..." : "None"}
-              />
+              {/* Allergies */}
+              <div className="flex flex-col gap-3">
+                <label
+                  htmlFor="allergy"
+                  className="text-sm font-bold text-slate-700 flex items-center gap-2"
+                >
+                  <AlertCircle size={16} className="text-rose-500" /> Allergies
+                </label>
+                <textarea
+                  id="allergy"
+                  className={`w-full p-4 rounded-xl text-sm leading-relaxed outline-none transition-all resize-none ${
+                    isLifestyleEditing
+                      ? "bg-white border-2 border-rose-100 focus:border-rose-400 focus:ring-4 focus:ring-rose-50 text-slate-800 shadow-sm min-h-[120px]"
+                      : "bg-rose-50/50 border border-transparent text-slate-600 min-h-[100px]"
+                  }`}
+                  value={data.allergy || ""}
+                  onChange={handleChange}
+                  readOnly={!isLifestyleEditing}
+                  placeholder={
+                    isLifestyleEditing
+                      ? "List allergies here..."
+                      : "No known allergies."
+                  }
+                />
+              </div>
             </div>
           </div>
-
-          <button
-            onClick={toggleLifestyleEdit}
-            className={`absolute bottom-4 right-4 p-3 rounded-full shadow-lg transition-all active:scale-95 ${isLifestyleEditing ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-            title={isLifestyleEditing ? "Save Changes" : "Edit Details"}
-          >
-            {isLifestyleEditing ? <FaCheck /> : <FaPencilAlt />}
-          </button>
         </div>
       </div>
     </div>

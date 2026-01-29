@@ -139,14 +139,14 @@ export default function PatientRecord() {
             >
               Add Record
             </button>
-            {/* {role === "doctor" && (
+            {role === "doctor" && (
               <button
-                onClick={() => navigate("/patient/profile", { state: { userProfile } })}
+                onClick={() => navigate(`/${role}/patientprofile?qr_code=${qr_code}&shc_code=${shc_code}`) }
                 className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
               >
                 User Profile
               </button>
-            )} */}
+            )}
             <button
               onClick={() => setShowOrbyChat(true)}
               className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"

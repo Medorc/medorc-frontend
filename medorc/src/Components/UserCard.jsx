@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import Loading from "./Loading";
 import axios from "axios";
-// Added FaSignOutAlt to imports
-import { FaSearch, FaTimes, FaUser, FaQrcode, FaChevronRight, FaSignOutAlt } from "react-icons/fa";
+import { FaSearch, FaTimes, FaQrcode, FaChevronRight, FaSignOutAlt } from "react-icons/fa";
 import { QRCodeCanvas } from "qrcode.react";
-// Ensure you are using the installed package name here
-import { QrReader } from "@blackbox-vision/react-qr-reader"; 
+
+// ✅ NEW MODULE IMPORT
+import { Scanner } from "@yudiel/react-qr-scanner";
+
+// import { useAuth } from "../Context/AuthContext"; // Uncomment if available
 
 export default function UserCard({ user, role, navigate, token }) {
   const url = "http://localhost:3000";
@@ -15,26 +17,24 @@ export default function UserCard({ user, role, navigate, token }) {
   const [qrResult, setQrResult] = useState("");
   const [shcCode, setShcCode] = useState("");
 
-  // -----------------------------
-  // LOGOUT LOGIC
-  // -----------------------------
   const handleLogout = () => {
-    // 1. Clear storage (Adjust keys based on your app)
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    
-    // 2. Navigate to login
-    navigate("/login"); 
+    navigate("/");
   };
+ 
+  console.log(user);
 
   // -----------------------------
-  // QR CODE SCANNING
+  // QR CODE SCANNING (Updated for @yudiel/react-qr-scanner)
   // -----------------------------
-  const handleScan = async (result, error) => {
-    if (result) {
-      const code = result?.text;
-      if (!code) return;
+  const handleScan = async (detectedCodes) => {
+    // This library returns an array of detected objects
+    if (detectedCodes && detectedCodes.length > 0) {
+      const code = detectedCodes[0].rawValue; // Access the raw string
       
+      if (!code) return;
+
       setIsScanning(false);
       setQrResult(code);
       setLoading(true);
@@ -60,9 +60,6 @@ export default function UserCard({ user, role, navigate, token }) {
     }
   };
 
-  // -----------------------------
-  // SEARCH USING SHC CODE
-  // -----------------------------
   const handleSearch = async () => {
     if (!shcCode) return;
 
@@ -104,7 +101,7 @@ export default function UserCard({ user, role, navigate, token }) {
         <div className="flex justify-center w-full min-h-screen p-4 md:p-8">
           <div className="w-full max-w-6xl flex flex-col gap-10">
             
-            {/* 1. HEADER SECTION (Updated with Logout) */}
+            {/* 1. HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">
@@ -115,7 +112,6 @@ export default function UserCard({ user, role, navigate, token }) {
                 </p>
               </div>
 
-              {/* LOGOUT BUTTON */}
               <button 
                 onClick={handleLogout}
                 className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-red-600 bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-300 font-medium border border-red-100"
@@ -148,9 +144,9 @@ export default function UserCard({ user, role, navigate, token }) {
                     <h2 className="text-2xl font-bold text-slate-800">
                       {user?.full_name}
                     </h2>
-                    <p className="text-blue-600 font-semibold text-sm uppercase tracking-wide mb-1">
-                      Senior Cardiologist
-                    </p>
+                    {role==="doctor" && <p className="text-blue-600 font-semibold text-sm uppercase tracking-wide mb-1">
+                      {user?.specializations}   t{user?.years_of_experience}
+                    </p>}
                     <p className="text-slate-400 text-sm mb-3">{user?.email}</p>
 
                     {(role === "hospital" || role === "extern") && (
@@ -187,7 +183,7 @@ export default function UserCard({ user, role, navigate, token }) {
               </div>
             )}
 
-            {/* 4. ACTION CARDS GRID */}
+            {/* 4. CARDS GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* Card A: Patient Search */}
@@ -259,20 +255,21 @@ export default function UserCard({ user, role, navigate, token }) {
           </div>
 
           <div className="relative w-80 h-80 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20 border-4 border-slate-700 bg-black">
-            <QrReader
-              onResult={handleScan}
-              constraints={{ facingMode: 'environment' }}
-              scanDelay={500}
-              className="w-full h-full object-cover"
-              containerStyle={{ width: '100%', height: '100%' }}
-              videoStyle={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            
+            {/* ✅ NEW SCANNER COMPONENT */}
+            <Scanner 
+                onScan={handleScan}
+                // We disable the default 'finder' border so we can use our custom one below
+                components={{ finder: false }}
+                styles={{ container: { width: '100%', height: '100%' } }}
             />
             
-            <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-blue-500 rounded-tl-xl"></div>
-            <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-blue-500 rounded-tr-xl"></div>
-            <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-blue-500 rounded-bl-xl"></div>
-            <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-blue-500 rounded-br-xl"></div>
-            <div className="absolute left-0 w-full h-0.5 bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,1)] animate-[scan_2s_infinite_ease-in-out] z-10"></div>
+            {/* CUSTOM OVERLAY (Preserved from your design) */}
+            <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-blue-500 rounded-tl-xl pointer-events-none"></div>
+            <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-blue-500 rounded-tr-xl pointer-events-none"></div>
+            <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-blue-500 rounded-bl-xl pointer-events-none"></div>
+            <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-blue-500 rounded-br-xl pointer-events-none"></div>
+            <div className="absolute left-0 w-full h-0.5 bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,1)] animate-[scan_2s_infinite_ease-in-out] z-10 pointer-events-none"></div>
           </div>
 
           <p className="mt-8 text-sm text-slate-400 font-medium bg-slate-800/50 px-4 py-2 rounded-full">

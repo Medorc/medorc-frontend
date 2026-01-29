@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
+import { motion } from "framer-motion";
 
 export default function Tabs() {
   const { role } = useAuth();
@@ -36,18 +37,17 @@ export default function Tabs() {
     navigate(`/${userRole}${tabId}`);
   };
 
-  // FIX: detect active tab with startsWith()
   const isTabActive = (tabId) => {
     return location.pathname.startsWith(`/${userRole}${tabId}`);
   };
 
-  return (
-    <div className="w-full">
-      <nav className="flex flex-wrap justify-center gap-4 sm:gap-8 md:gap-[35px] py-3 sm:py-4" role="tablist">
-        {tabs.map((tab) => {
-          const hasAccess = tab.access[userRole];
-          if (!hasAccess) return null;
+  // Filter valid tabs for current role to ensure proper layout
+  const visibleTabs = tabs.filter((tab) => tab.access[userRole]);
 
+  return (
+    <div className="w-full flex justify-center py-6">
+      <div className="bg-white/50 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl flex flex-wrap justify-center gap-2 shadow-sm">
+        {visibleTabs.map((tab) => {
           const active = isTabActive(tab.id);
 
           return (
@@ -56,18 +56,23 @@ export default function Tabs() {
               onClick={() => handleTabClick(tab.id)}
               role="tab"
               aria-selected={active}
-              className={`px-4 sm:px-5 md:px-10 py-1 sm:py-2 rounded-full text-xs sm:text-sm md:text-base font-medium transition
-                ${
-                  active
-                    ? "bg-[#4A90E2] text-white shadow"
-                    : "text-black hover:text-[#4A90E2] border border-transparent hover:border-[#4A90E2]"
-                }`}
+              className={`relative px-6 py-2.5 text-sm md:text-base font-semibold rounded-xl transition-colors duration-200 z-10 ${
+                active ? "text-blue-600" : "text-slate-500 hover:text-slate-700"
+              }`}
             >
+              {active && (
+                <motion.div
+                  layoutId="active-tab"
+                  className="absolute inset-0 bg-white shadow-md border border-slate-100 rounded-xl -z-10"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
               {tab.label}
             </button>
           );
         })}
-      </nav>
+      </div>
     </div>
   );
 }
