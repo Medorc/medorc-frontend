@@ -13,7 +13,7 @@ import ProfileSettings from "./Pages/Patient/ProfileSettings";
 import Account from "./Pages/Patient/Account";
 import Emergency from "./Pages/Patient/Emergency";
 import Logs from "./Pages/Patient/Logs";
-import CreateRecordPage from "./Pages/Patient/CreateRecordPage";
+
 import Records from "./Pages/Patient/Records";
 
 { /* {Doctor} */ }
@@ -59,7 +59,7 @@ function App() {
           <Route path="/patient/security" element={<Account />} />
           <Route path="/patient/emergency" element={<Emergency />} />
           <Route path="/patient/logs" element={<Logs />} />
-          <Route path="/patient/addrecord" element={<CreateRecordPage />} />
+          <Route path="/patient/addrecord" element={<CreateRecord />} />
           <Route path="/patient/records" element={<Records />} />
 
           {/* {Doctor} */}
