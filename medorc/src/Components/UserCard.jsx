@@ -145,7 +145,7 @@ export default function UserCard({ user, role, navigate, token }) {
                       {user?.full_name}
                     </h2>
                     {role==="doctor" && <p className="text-blue-600 font-semibold text-sm uppercase tracking-wide mb-1">
-                      {user?.specializations}   t{user?.years_of_experience}
+                      {user?.specializations}   { user?.years_of_experience} years of experience
                     </p>}
                     <p className="text-slate-400 text-sm mb-3">{user?.email}</p>
 
