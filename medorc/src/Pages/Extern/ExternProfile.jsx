@@ -4,7 +4,18 @@ import axios from "axios";
 import NavBar from "../../Components/NavBar";
 import { toast } from "react-toastify";
 import BackButton from "../../Components/BackButton";
-import { FaPen, FaSave, FaTimes } from "react-icons/fa";
+import {
+  FaPen,
+  FaSave,
+  FaTimes,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaGlobe,
+  FaFileContract,
+  FaCalendarAlt,
+  FaInfoCircle,
+  FaFileUpload,
+} from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
 import Loading from "../../Components/Loading";
 import PesonalDetails from "../../Components/PesonalDetails";
@@ -24,13 +35,14 @@ export default function ExternProfile() {
   const getProfile = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/extern/profile`,
+        `${url}/api/v1/extern/profile/personal`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
+      response.data.data.address = response.data.data.org_address;
       setProfile(response.data.data);
       setLoading(false);
     } catch (error) {
@@ -46,27 +58,25 @@ export default function ExternProfile() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
+      response.data.data.address = response.data.data.org_address;
       setOrganization(response.data.data);
+
       setLoading(false);
     } catch (error) {
       console.log(error);
     }
   };
-
+    
   useEffect(() => {
     getProfile();
     getOrganization();
   }, []);
 
-  
   const [isEditingOrg, setIsEditingOrg] = useState(false);
 
   const [originalOrganization, setOriginalOrganization] = useState({});
-
-  
-
 
   const handleOrgEdit = () => {
     setOriginalOrganization({ ...Organization });
@@ -89,33 +99,28 @@ export default function ExternProfile() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
+        },
       );
       setLoading(false);
       setIsEditingOrg(false);
       setOrganization(response.data.data);
       toast.success("Organization updated successfully");
-    
     } catch (error) {
       console.error("Error updating organization:", error);
       toast.error("Failed to update organization details");
     }
   };
 
-  
-
   const handleOrgChange = (e, field) => {
     setOrganization({ ...Organization, [field]: e.target.value });
   };
-
-  
 
   if (!token || role !== "extern") {
     navigate("/");
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center ">
+    <div className="w-full min-h-screen bg-slate-50 flex flex-col items-center pb-12 font-sans">
       <NavBar />
       <BackButton />
       <NavButton />
@@ -123,144 +128,272 @@ export default function ExternProfile() {
       {loading ? (
         <Loading />
       ) : (
-        <div className="w-full mx-auto px-4 py-6 flex flex-col gap-6  items-center sm:px-8">
-          {/* Tabs */}
-
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
           {/* Personal Details Card */}
-          <PesonalDetails data={profile}/>
+          <PesonalDetails data={profile} />
 
           {/* Organization Details Card */}
-          <div className="bg-white rounded-xl w-full max-w-7xl border border-gray-400 p-8 relative">
-            <h2 className="text-[#0751A7] text-xl  font-semibold mb-6 text-start">
-              Organization details
-            </h2>
+          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8 md:p-10 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/80">
+            {/* Background Decoration */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">Name:</label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_name || ""}
-                  onChange={(e) => handleOrgChange(e, "org_name")}
-                  disabled={!isEditingOrg}
-                />
+            <div className="flex justify-between items-center mb-8 relative z-10">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg">
+                    <FaBuilding size={24} />
+                  </div>
+                  Organization Details
+                </h2>
+                <p className="text-slate-500 text-sm mt-1 ml-14">
+                  Manage your organization's profile and credentials.
+                </p>
               </div>
+
+              {isEditingOrg ? (
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleOrgCancel}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-600 bg-slate-100 hover:bg-slate-200 font-medium transition-colors"
+                  >
+                    <FaTimes /> Cancel
+                  </button>
+                  <button
+                    onClick={handleOrgSave}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-white bg-emerald-600 hover:bg-emerald-700 font-medium shadow-lg shadow-emerald-500/30 transition-all hover:-translate-y-0.5"
+                  >
+                    <FaSave /> Save Changes
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={handleOrgEdit}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-emerald-600 bg-emerald-50 hover:bg-emerald-100 font-semibold transition-colors border border-emerald-200"
+                >
+                  <FaPen size={14} /> Edit Details
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 relative z-10">
               <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">Address:</label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_address || ""}
-                  onChange={(e) => handleOrgChange(e, "org_address")}
-                  disabled={!isEditingOrg}
-                />
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  Name
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaBuilding />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_name || ""}
+                    onChange={(e) => handleOrgChange(e, "org_name")}
+                    disabled={!isEditingOrg}
+                    placeholder="Organization Name"
+                  />
+                </div>
               </div>
+
               <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">Type:</label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_type || ""}
-                  onChange={(e) => handleOrgChange(e, "org_type")}
-                  disabled={!isEditingOrg}
-                />
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaMapMarkerAlt />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_address || ""}
+                    onChange={(e) => handleOrgChange(e, "org_address")}
+                    disabled={!isEditingOrg}
+                    placeholder="Full Address"
+                  />
+                </div>
               </div>
-              {/* Spacer for alignment if needed, or Description spans rows */}
-              <div className="row-span-2 flex flex-col gap-2">
-                <label className="text-black font-medium">Description:</label>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  Type
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaInfoCircle />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_type || ""}
+                    onChange={(e) => handleOrgChange(e, "org_type")}
+                    disabled={!isEditingOrg}
+                    placeholder="e.g. Private Limited"
+                  />
+                </div>
+              </div>
+
+              <div className="md:row-span-2 flex flex-col gap-2">
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  Description
+                </label>
                 <textarea
-                  className="border border-black rounded px-3 py-2 w-full h-full resize-none"
+                  className={`w-full px-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 h-full resize-none ${
+                    isEditingOrg
+                      ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                      : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                  }`}
                   rows="3"
                   value={Organization.org_description || ""}
                   onChange={(e) => handleOrgChange(e, "org_description")}
                   disabled={!isEditingOrg}
+                  placeholder="Brief description of the organization..."
                 ></textarea>
               </div>
+
               <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">Founded on:</label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_founded_on || ""}
-                  onChange={(e) => handleOrgChange(e, "org_founded_on")}
-                  disabled={!isEditingOrg}
-                />
-              </div>
-              {/* Empty div to maintain grid structure if needed, or adjust grid */}
-              {/* Moving Website to left column */}
-              <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">Website:</label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_website || ""}
-                  onChange={(e) => handleOrgChange(e, "org_website")}
-                  disabled={!isEditingOrg}
-                />
-              </div>
-              <div className="flex flex-col gap-2 justify-end">
-                <label className="text-black font-medium">
-                  Verification documents:
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  Founded On
                 </label>
-                <div className="bg-gray-300 h-10 w-full md:w-48 rounded flex items-center justify-center overflow-hidden">
-                  {/* REMOVED VALUE PROP FROM FILE INPUT */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaCalendarAlt />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_founded_on || ""}
+                    onChange={(e) => handleOrgChange(e, "org_founded_on")}
+                    disabled={!isEditingOrg}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  Website
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaGlobe />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_website || ""}
+                    onChange={(e) => handleOrgChange(e, "org_website")}
+                    disabled={!isEditingOrg}
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  License Number
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaFileContract />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_license_number || ""}
+                    onChange={(e) => handleOrgChange(e, "org_license_number")}
+                    disabled={!isEditingOrg}
+                    placeholder="License #"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-slate-700 text-sm font-semibold ml-1">
+                  License Valid Till
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <FaCalendarAlt />
+                  </div>
+                  <input
+                    type="text"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border appearance-none outline-none transition-all duration-200 ${
+                      isEditingOrg
+                        ? "bg-white border-emerald-300 ring-4 ring-emerald-500/10 focus:border-emerald-500 focus:ring-emerald-500/20"
+                        : "bg-slate-50 border-transparent text-slate-600 cursor-default"
+                    }`}
+                    value={Organization.org_license_valid_till || ""}
+                    onChange={(e) =>
+                      handleOrgChange(e, "org_license_valid_till")
+                    }
+                    disabled={!isEditingOrg}
+                    placeholder="YYYY-MM-DD"
+                  />
+                </div>
+              </div>
+
+              {/* Verification Documents Area */}
+              <div className="md:col-span-2 mt-4 pt-6 border-t border-slate-100">
+                <label className="text-slate-700 text-sm font-bold mb-3 block flex items-center gap-2">
+                  <FaFileUpload className="text-emerald-500" /> Verification
+                  Documents
+                </label>
+                <div className="group bg-slate-50 border-2 border-dashed border-slate-200 hover:border-emerald-400 rounded-2xl p-8 flex flex-col items-center justify-center text-center transition-all duration-300 cursor-pointer">
+                  <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <FaFileUpload size={20} />
+                  </div>
+                  {isEditingOrg ? (
+                    <>
+                      <p className="text-slate-700 font-medium text-sm">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-slate-400 text-xs mt-1">
+                        SVG, PNG, JPG or PDF (max. 5MB)
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-slate-500 font-medium text-sm">
+                      No documents uploaded
+                    </p>
+                  )}
+
                   <input
                     type="file"
-                    className="w-full text-center text-sm"
+                    className="mt-4 w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 mx-auto max-w-xs"
                     disabled={!isEditingOrg}
                     accept="image/*"
-                    // Note: File uploads usually require different handling (FormData)
-                    // and cannot be controlled via 'value' prop.
                     onChange={(e) =>
                       handleOrgChange(e, "org_verification_documents")
                     }
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">
-                  License number:
-                </label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_license_number || ""}
-                  onChange={(e) => handleOrgChange(e, "org_license_number")}
-                  disabled={!isEditingOrg}
-                />
-              </div>
-              <div></div> {/* Spacer */}
-              <div className="flex flex-col gap-2">
-                <label className="text-black font-medium">
-                  License valid till:
-                </label>
-                <input
-                  type="text"
-                  className="border border-black rounded px-3 py-2 w-full"
-                  value={Organization.org_license_valid_till || ""}
-                  onChange={(e) => handleOrgChange(e, "org_license_valid_till")}
-                  disabled={!isEditingOrg}
-                />
-              </div>
             </div>
-            {isEditingOrg ? (
-              <div className="absolute bottom-4 right-4 flex gap-2">
-                <button onClick={handleOrgSave} className="text-green-600">
-                  <FaSave size={20} />
-                </button>
-                <button onClick={handleOrgCancel} className="text-red-600">
-                  <FaTimes size={20} />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleOrgEdit}
-                className="absolute bottom-4 right-4 text-black"
-              >
-                <FaPen />
-              </button>
-            )}
           </div>
         </div>
       )}

@@ -25,7 +25,7 @@ export default function ExternHome() {
   useEffect(() => {
     const getUser = async () => { 
       try {
-        const response = await axios.get(`${url}/api/v1/extern/profile/`, {
+        const response = await axios.get(`${url}/api/v1/extern/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
