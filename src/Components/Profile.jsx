@@ -38,9 +38,10 @@ const Styles = () => (
 );
 
 export default function Profile({ onFileSelect, photo }) {
-  const [imagePreview, setImagePreview] = useState(photo || null);
+  const [imagePreview, setImagePreview] = useState(photo);
   const fileInputRef = useRef(null);
 
+  
   const handlePhotoClick = () => {
     fileInputRef.current.click();
   };
@@ -50,7 +51,7 @@ export default function Profile({ onFileSelect, photo }) {
     if (file) {
       setImagePreview(URL.createObjectURL(file)); // Show preview immediately
       onFileSelect(file); // 👈 Send file to Signup for Cloudinary upload
-      console.log("Selected file:", file.name);
+      
     }
   };
 

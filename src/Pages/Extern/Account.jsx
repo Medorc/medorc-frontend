@@ -37,7 +37,7 @@ export default function Account() {
             "Content-Type": "application/json",
           },
         });
-        
+        console.log(res.data);
         setData(res.data.data);
        
       } catch (err) {

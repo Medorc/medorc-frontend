@@ -15,7 +15,12 @@ export default function Account() {
   const url="http://localhost:3000";
 
   
-  const [data, setData] = useState();
+  const [data, setData] = useState({
+      email:"",
+      phone_no:"",
+      password:"",
+      photo:""
+    });
   const { token,role } = useAuth();
 
   const navigate = useNavigate();
@@ -33,8 +38,8 @@ export default function Account() {
           },
         });
         
-        setData(res.data.data);
         console.log(res.data);
+        setData(res.data.data);
        
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));

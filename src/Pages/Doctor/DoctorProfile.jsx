@@ -97,6 +97,20 @@ export default function DoctorProfile() {
           },
         },
       );
+
+      
+        const document = await axios.patch(
+          `${url}/api/v1/doctor/profile/documents`,
+          {
+            newDocument: Credentials.org_verification_documents,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+      
       console.log(response.data);
       setLoading(false);
       setIsEditingOrg(false);
@@ -307,7 +321,7 @@ export default function DoctorProfile() {
                     type="file"
                     className="mt-4 w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mx-auto max-w-xs"
                     disabled={!isEditingOrg}
-                    accept="image/*"
+                    accept="image/* , application/pdf"
                     onChange={(e) =>
                       handleOrgChange(e, "org_verification_documents")
                     }

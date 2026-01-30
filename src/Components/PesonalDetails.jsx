@@ -90,7 +90,7 @@ export default function PersonalDetails({ data, isEditing, onChange }) {
       ></div>
 
       <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
             <User size={24} />
           </div>

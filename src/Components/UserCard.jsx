@@ -105,7 +105,7 @@ export default function UserCard({ user, role, navigate, token }) {
         <Loading />
       ) : (
         <div className="flex justify-center w-full min-h-screen p-4 md:p-8">
-          <div className="w-full max-w-6xl flex flex-col gap-10">
+          <div className="w-full max-w-6xl flex flex-col gap-8">
             {/* 1. HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div className="flex flex-col gap-2">
@@ -151,7 +151,7 @@ export default function UserCard({ user, role, navigate, token }) {
                     <div className="absolute bottom-2 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full shadow-sm"></div>
                   </div>
 
-                  <div className="flex flex-col justify-center">
+                  <div className="flex flex-col justify-center gap-2">
                     <h2 className="text-2xl font-bold text-slate-800">
                       {user?.full_name}
                     </h2>
@@ -211,7 +211,7 @@ export default function UserCard({ user, role, navigate, token }) {
             {/* 4. CARDS GRID */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Card A: Patient Search */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group">
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-2 group">
                 <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
                   <FaSearch />
                 </div>

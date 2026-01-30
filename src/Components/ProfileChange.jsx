@@ -16,7 +16,7 @@ export default function ProfileChange({ data }) {
 
   const [profile, setProfile] = useState({
     email: data.email || "",
-    phone_no: data.phone_no || "",
+    phone: data.phone_no || "",
     password: "",
     photo: data.photo || "",
   });
@@ -26,7 +26,7 @@ export default function ProfileChange({ data }) {
     setProfile((prev) => ({
       ...prev,
       email: data.email || "",
-      phone_no: data.phone_no || "",
+      phone: data.phone_no || "",
       photo: data.photo || "",
     }));
   }, [data]);
@@ -47,8 +47,8 @@ export default function ProfileChange({ data }) {
 
     if (field == "email") {
       payload.newEmail = profile.email;
-    } else if (field == "phone_no") {
-      payload.newPhoneNo = profile.phone_no;
+    } else if (field == "phone") {
+      payload.newPhone = profile.phone;
     } else if (field == "password") {
       payload.newPassword = profile.password;
     } else {
@@ -135,7 +135,7 @@ export default function ProfileChange({ data }) {
             </div>
 
             {/* Right Column: Edit Forms */}
-            <div className="w-full md:w-2/3 flex flex-col gap-6">
+            <div className="w-full md:w-2/3 flex flex-col gap-10">
               <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-2">
                 Account Settings
               </h2>
@@ -163,7 +163,7 @@ export default function ProfileChange({ data }) {
                     onClick={() => changeHandler("email")}
                     className="bg-slate-900 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-slate-900/10 active:scale-95 flex items-center gap-2"
                   >
-                    <span>Save</span>
+                    <span>Change</span>
                   </button>
                 </div>
               </div>
@@ -180,18 +180,18 @@ export default function ProfileChange({ data }) {
                     </div>
                     <input
                       type="tel"
-                      name="phone_no"
-                      value={profile.phone_no}
+                      name="phone"
+                      value={profile.phone}
                       onChange={handleChange}
                       placeholder="+1 (555) 000-0000"
                       className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none group-hover:bg-white"
                     />
                   </div>
                   <button
-                    onClick={() => changeHandler("phone_no")}
+                    onClick={() => changeHandler("phone")}
                     className="bg-slate-900 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-slate-900/10 active:scale-95"
                   >
-                    Save
+                    Change
                   </button>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export default function ProfileChange({ data }) {
                     onClick={() => changeHandler("password")}
                     className="bg-slate-900 hover:bg-blue-600 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-slate-900/10 active:scale-95"
                   >
-                    Save
+                    Change
                   </button>
                 </div>
               </div>
