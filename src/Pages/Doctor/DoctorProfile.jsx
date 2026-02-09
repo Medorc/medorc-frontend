@@ -144,7 +144,7 @@ export default function DoctorProfile() {
           <PesonalDetails data={profile} />
 
           {/* Organization Details Card */}
-          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 p-8 md:p-10 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/80">
+          <div className="bg-white rounded-3xl flex flex-col gap-4 shadow-xl shadow-slate-200/60 border border-slate-100 p-8 md:p-10 relative overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-slate-200/80">
             {/* Background Decoration */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
 

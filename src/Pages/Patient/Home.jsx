@@ -266,8 +266,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="p-6 bg-white">
-                <div className="flex justify-center mb-6">
+              <div className="p-6 bg-white flex flex-col gap-1">
+                <div className="flex justify-center mb-8">
                   <div className="p-3 bg-white border-2 border-gray-100 rounded-2xl shadow-sm">
                     <QRCodeCanvas
                       value={data.qr_code || "no-code-available"}

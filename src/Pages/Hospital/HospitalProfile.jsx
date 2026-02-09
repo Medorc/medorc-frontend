@@ -294,8 +294,8 @@ export default function HospitalProfile() {
                 {/* Photo Placeholder */}
                 <div className="relative mb-6 group cursor-pointer">
                     <div className="w-40 h-40 rounded-full border-4 border-white shadow-lg p-1 relative overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {profileData.hospital_photo ? (
-                            <img src={profileData.hospital_photo} alt="Hospital Logo" className="w-full h-full object-cover rounded-full" />
+                        {profileData.photo ? (
+                            <img src={profileData.photo} alt="Hospital Logo" className="w-full h-full object-cover rounded-full" />
                         ) : (
                             <div className="flex flex-col items-center text-gray-400">
                                 <FaCamera size={32} />

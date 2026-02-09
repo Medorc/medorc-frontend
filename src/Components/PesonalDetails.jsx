@@ -82,7 +82,7 @@ export default function PersonalDetails({ data, isEditing, onChange }) {
 
   return (
     <div
-      className={`w-full max-w-7xl mx-auto bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50 transition-all duration-300 relative overflow-hidden ${isEditing ? "ring-2 ring-blue-500 ring-offset-2" : ""}`}
+      className={`w-full max-w-7xl mx-auto bg-white rounded-3xl p-8 flex flex-col gap-3 border border-slate-100 shadow-xl shadow-slate-200/50 transition-all duration-300 relative overflow-hidden ${isEditing ? "ring-2 ring-blue-500 ring-offset-2" : ""}`}
     >
       {/* Visual Header Indicator */}
       <div
@@ -90,7 +90,7 @@ export default function PersonalDetails({ data, isEditing, onChange }) {
       ></div>
 
       <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-4">
+        <div className="flex  items-center gap-2">
           <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
             <User size={24} />
           </div>
