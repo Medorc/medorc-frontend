@@ -13,7 +13,7 @@ export default function ProfileChange({ data }) {
   const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   // local editable state
-
+console.log(data);
   const [profile, setProfile] = useState({
     email: data.email || "",
     phone: data.phone_no || "",
