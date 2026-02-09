@@ -31,15 +31,15 @@ export default function Account() {
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/api/v1/${role}/profile/basic`, {
+        const res = await axios.get(`${url}/api/v1/${role}/details`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
-        
+        res.data.data.full_name=res.data.data.name;
         setData(res.data.data);
-        console.log(res.data.data);
+        
        
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));
