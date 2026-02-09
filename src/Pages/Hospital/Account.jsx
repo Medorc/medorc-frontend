@@ -39,6 +39,7 @@ export default function Account() {
         });
         
         setData(res.data.data);
+        console.log(res.data.data);
        
       } catch (err) {
         toast.error("API Error: " + (err.response?.data || err.message));

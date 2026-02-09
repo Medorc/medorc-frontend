@@ -24,7 +24,7 @@ export default function HospitalProfile() {
   const getProfile = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/doctor/profile`,
+        `${url}/api/v1/hospital/details`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -33,6 +33,7 @@ export default function HospitalProfile() {
       );
       setProfile(response.data.data);
       setLoading(false);
+      console.log(response.data.data);
     } catch (error) {
       console.log(error);
     }
@@ -41,7 +42,7 @@ export default function HospitalProfile() {
   const getOrganization = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/hospital/profile/organization`,
+        `${url}/api/v1/hospital/profile`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -81,7 +82,7 @@ export default function HospitalProfile() {
   const handleOrgSave = async () => {
     try {
       const response = await axios.patch(
-        `${url}/api/v1/hospital/profile/organization`,
+        `${url}/api/v1/hospital/profile`,
         {
           newOrganizationCredentials: Organization,
         },

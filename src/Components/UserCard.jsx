@@ -116,9 +116,15 @@ export default function UserCard({ user, role, navigate, token }) {
                 </h1>
                 <p className="text-slate-500 text-lg">
                   Welcome back,{" "}
-                  <span className="font-semibold text-slate-700">
-                    {user?.full_name || "Doctor"}
-                  </span>
+                  {role === "doctor" ? (
+                    <span className="font-semibold text-slate-700">
+                      {user?.full_name || "Doctor"}
+                    </span>
+                  ) : (
+                    <span className="font-semibold text-slate-700">
+                      {user?.name || "Hospital"}
+                    </span>
+                  )}
                   .
                 </p>
               </div>
@@ -167,11 +173,17 @@ export default function UserCard({ user, role, navigate, token }) {
                     )}
                     <p className="text-slate-400 text-sm mb-3">{user?.email}</p>
 
-                    {(role === "hospital" || role === "extern") && (
-                      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
-                        🏢 {user?.org_name} • LIC Pvt. Ltd
-                      </span>
-                    )}
+                    
+                      {role === "hospital" ? (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
+                          🏢 {user?.name} • LIC Pvt. Ltd
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
+                          🏢 {user?.org_name} • LIC Pvt. Ltd
+                        </span>
+                      )}
+                  
                   </div>
                 </div>
 
@@ -239,7 +251,7 @@ export default function UserCard({ user, role, navigate, token }) {
               </div>
 
               {/* Card B: QR Verification */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group">
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group gap-2">
                 <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
                   <FaQrcode />
                 </div>
@@ -250,9 +262,7 @@ export default function UserCard({ user, role, navigate, token }) {
                   Tap below to scan a patient's digital ID or prescription.
                 </p>
 
-                <div className="mb-6 p-2 bg-white border border-slate-100 rounded-xl shadow-sm opacity-60 grayscale group-hover:grayscale-0 transition-all">
-                  <QRCodeCanvas value="https://medorc.in" size={60} />
-                </div>
+                
 
                 <button
                   onClick={() => setIsScanning(true)}
