@@ -164,12 +164,12 @@ export default function ExternProfile() {
   const uploadImageToCloudinary = async (file) => {
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET);
-    data.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
+    data.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+    data.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
     try {
       const res = await axios.post(
-        process.env.CLOUDINARY_URL,
+        import.meta.env.VITE_CLOUDINARY_URL,
         data,
       );
       return res.data.url;

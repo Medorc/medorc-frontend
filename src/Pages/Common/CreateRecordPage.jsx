@@ -7,9 +7,10 @@ import { useAuth } from "../../Context/AuthContext";
 import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
+
 // --- CLOUDINARY DETAILS ---
-const CLOUDINARY_URL = process.env.CLOUDINARY_URL;
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 // -------------------------
 
 const url = "http://localhost:3000";

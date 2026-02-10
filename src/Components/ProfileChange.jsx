@@ -9,8 +9,8 @@ export default function ProfileChange({ data }) {
   const url = "http://localhost:3000";
   const { token, role } = useAuth();
 
-  const CLOUDINARY_URL = process.env.CLOUDINARY_URL;
-  const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
+  const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
+  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   // local editable state
 

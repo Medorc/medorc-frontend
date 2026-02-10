@@ -5,8 +5,8 @@ import { toast } from "react-toastify";
 import axios from "axios";
 
 // Cloudinary Config (Same as Patient)
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
-const CLOUDINARY_UPLOAD_PRESET = "Medorc";
+const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 // Reusable Input Component (Matches Patient Design)
 const FormInput = ({ id, name, label, type = "text", value, onChange, placeholder }) => (
