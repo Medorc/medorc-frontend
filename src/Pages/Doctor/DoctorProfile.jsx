@@ -101,12 +101,12 @@ export default function DoctorProfile() {
   const uploadImageToCloudinary = async (file) => {
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "Medorc"); // REPLACE WITH YOUR PRESET
-    data.append("cloud_name", "dr8hcq37p"); // REPLACE WITH YOUR CLOUD NAME
+    data.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET);
+    data.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
 
     try {
       const res = await axios.post(
-        "https://api.cloudinary.com/v1_1/dr8hcq37p/image/upload", // REPLACE WITH YOUR CLOUD NAME
+        process.env.CLOUDINARY_URL,
         data,
       );
       return res.data.url;

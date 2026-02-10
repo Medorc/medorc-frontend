@@ -8,8 +8,8 @@ import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 // --- CLOUDINARY DETAILS ---
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
-const CLOUDINARY_UPLOAD_PRESET = "Medorc"; // ✓ Correct: Use preset name for unsigned uploads
+const CLOUDINARY_URL = process.env.CLOUDINARY_URL;
+const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
 // -------------------------
 
 const url = "http://localhost:3000";

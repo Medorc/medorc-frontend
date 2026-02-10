@@ -155,12 +155,12 @@ export default function HospitalProfile() {
   const uploadImageToCloudinary = async (file) => {
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "Medorc"); // Using same preset as Doctor
-    data.append("cloud_name", "dr8hcq37p"); // Using same cloud name as Doctor
+    data.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET);
+    data.append("cloud_name", process.env.CLOUDINARY_CLOUD_NAME);
 
     try {
       const res = await axios.post(
-        "https://api.cloudinary.com/v1_1/dr8hcq37p/image/upload",
+        process.env.CLOUDINARY_URL,
         data,
       );
       return res.data.url;

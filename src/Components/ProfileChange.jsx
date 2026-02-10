@@ -9,8 +9,8 @@ export default function ProfileChange({ data }) {
   const url = "http://localhost:3000";
   const { token, role } = useAuth();
 
-  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
-  const CLOUDINARY_UPLOAD_PRESET = "Medorc";
+  const CLOUDINARY_URL = process.env.CLOUDINARY_URL;
+  const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
 
   // local editable state
 
