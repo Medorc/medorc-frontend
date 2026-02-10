@@ -85,7 +85,7 @@ export default function DoctorProfile() {
 
   const handleOrgSave = async () => {
     try {
-      console.log(Credentials);
+      delete Credentials.verification_documents;
       const response = await axios.patch(
         `${url}/api/v1/doctor/profile/credentials`,
         {
@@ -97,19 +97,6 @@ export default function DoctorProfile() {
           },
         },
       );
-
-      
-        const document = await axios.patch(
-          `${url}/api/v1/doctor/profile/documents`,
-          {
-            newDocument: Credentials.org_verification_documents,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
       
       console.log(response.data);
       setLoading(false);
@@ -248,7 +235,7 @@ export default function DoctorProfile() {
                         ? "bg-white border-blue-300 ring-4 ring-blue-500/10 focus:border-blue-500 focus:ring-blue-500/20"
                         : "bg-slate-50 border-transparent text-slate-600 cursor-default"
                     }`}
-                    value={profile.hospital_affiliation || ""}
+                    value={Credentials.hospital_affiliation || ""}
                     onChange={(e) => handleOrgChange(e, "hospital_affiliation")}
                     disabled={!isEditingOrg}
                     placeholder="Hospital Name"

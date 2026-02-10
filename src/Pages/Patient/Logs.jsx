@@ -92,6 +92,7 @@ export default function Logs() {
   const handleViewDetails = async (log) => {
     const doctor_id = log.userId;
     try {
+      console.log(doctor_id);
       let endpoint =
         log.role === "DOCTOR"
           ? `/api/v1/doctor/profile`

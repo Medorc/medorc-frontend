@@ -134,7 +134,7 @@ export default function PatientRecord() {
               <FaArrowLeft /> Back
             </button>
             <button
-              onClick={() => navigate("/patient/addrecord")}
+              onClick={() => navigate(`/${role}/addrecord?qr_code=${qr_code}&shc_code=${shc_code}`)}
               className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
             >
               Add Record

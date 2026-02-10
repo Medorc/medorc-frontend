@@ -8,7 +8,6 @@ import {
   FaChevronRight,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { QRCodeCanvas } from "qrcode.react";
 
 // ✅ NEW MODULE IMPORT
 import { Scanner } from "@yudiel/react-qr-scanner";
@@ -54,7 +53,7 @@ export default function UserCard({ user, role, navigate, token }) {
         const visibility = response?.data?.visibility;
 
         if (visibility) {
-          navigate(`/${role}/patientrecords?qr_code=${code}`);
+          navigate(`/${role}/records?qr_code=${code}`);
         } else {
           navigate(`/${role}/PatientBasicDetails?qr_code=${code}`);
         }
@@ -79,7 +78,7 @@ export default function UserCard({ user, role, navigate, token }) {
       const visibility = response?.data?.visibility;
 
       if (visibility) {
-        navigate(`/${role}/patientrecords?shc_code=${shcCode}`);
+        navigate(`/${role}/records?shc_code=${shcCode}`);
       } else {
         navigate(`/${role}/PatientBasicDetails?shc_code=${shcCode}`);
       }
@@ -180,7 +179,7 @@ export default function UserCard({ user, role, navigate, token }) {
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
-                          🏢 {user?.org_name} • LIC Pvt. Ltd
+                          🏢 {user?.hospital_affiliation}
                         </span>
                       )}
                   

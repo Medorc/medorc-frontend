@@ -66,7 +66,7 @@ function App() {
           <Route path="/doctor/home" element={<DoctorHome />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route path="/doctor/security" element={<DoctorSecurity />} />
-          <Route path="/doctor/patientrecords" element={<PatientRecords />} />
+          <Route path="/doctor/records" element={<PatientRecords />} />
           <Route path="/doctor/addrecord" element={<CreateRecord />} />
           <Route path="/doctor/patientbasicdetails" element={<PatientDetails />} />
           <Route path="/doctor/patientprofile" element={<PatientProfile />} />
@@ -75,7 +75,7 @@ function App() {
           <Route path="/hospital/home" element={<HospitalHome />} />
           <Route path="/hospital/profile" element={<HospitalProfile />} />
           <Route path="/hospital/security" element={<HospitalSecurity />} />
-          <Route path="/hospital/patientrecords" element={<PatientRecords />} />
+          <Route path="/hospital/records" element={<PatientRecords />} />
           <Route path="/hospital/addrecord" element={<CreateRecord />} />
           <Route path="/hospital/patientbasicdetails" element={<PatientDetails />} />
           <Route path="/hospital/patientprofile" element={<PatientProfile />} />

@@ -5,8 +5,7 @@ import AddRecordForm from "./AddRecordForm";
 import AddRecordForm2 from "./AddRecordForm2";
 import { useAuth } from "../../Context/AuthContext";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 // --- CLOUDINARY DETAILS ---
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dr8hcq37p/upload";
@@ -16,9 +15,13 @@ const CLOUDINARY_UPLOAD_PRESET = "Medorc"; // ✓ Correct: Use preset name for u
 const url = "http://localhost:3000";
 
 function CreateRecordPage() {
-  const { token } = useAuth();
-  const navigate = useNavigate(); 
+  const { token,role } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
+  const qr_code = searchParams.get("qr_code");
+  const shc_code = searchParams.get("shc_code");
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     basicDetails: {
@@ -150,6 +153,9 @@ function CreateRecordPage() {
     const isoDateString = dateOnly ? `${dateOnly}T00:00:00.000Z` : "";
 
     const dataToSend = {
+      shc_code: shc_code,
+      qr_code: qr_code,
+
       basicDetails: {
         ...formData.basicDetails,
         appointment_date: isoDateString,
@@ -175,14 +181,15 @@ function CreateRecordPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
-      if (response.status === 201){
+      if (response.status === 201) {
         toast.success("Medical record created successfully!");
-        navigate("/patient/records");
-      }
-      else toast.error("Failed to create record. Please try again.");
+        if(role=="hospital"||role=="doctor")
+        navigate(`/${role}/records?qr_code=${qr_code}&shc_code=${shc_code}`);
+        else navigate(`/${role}/records`);
+      } else toast.error("Failed to create record. Please try again.");
 
       // Reset form or redirect
       setFormData({
@@ -222,7 +229,7 @@ function CreateRecordPage() {
       console.error("Error:", error);
       toast.error(
         "Failed to create record: " +
-        (error.response?.data?.message || error.message)
+          (error.response?.data?.message || error.message),
       );
     }
   };
