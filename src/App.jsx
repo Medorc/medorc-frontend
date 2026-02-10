@@ -84,6 +84,7 @@ function App() {
           <Route path="/extern/home" element={<ExternHome />} />
           <Route path="/sExternal" element={<SExternal />} />
           <Route path="/extern/profile" element={<ExternProfile />} />
+          <Route path="/extern/records" element={<PatientRecords />} />
           <Route path="/extern/patientbasicdetails" element={<PatientDetails />} />
           <Route path="/extern/patientrecords" element={<PatientRecords />} />
           <Route path="/extern/security" element={<ExternAccount />} />

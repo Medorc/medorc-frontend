@@ -36,6 +36,9 @@ export default function Logs() {
   const [search, setSearch] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
   const { token, shc_code } = useAuth();
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // 🔹 Parse log string
   const parseLog = (log) => {
@@ -84,21 +87,36 @@ export default function Logs() {
     fetchLogs();
   }, [token, shc_code]);
 
-  const filteredLogs = data.filter((log) =>
-    log.raw.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filteredLogs = data
+    .filter((log) => {
+      const matchesSearch = log.raw
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      if (!matchesSearch) return false;
+
+      const logDate = new Date(log.timestamp);
+      // Append time to ensure local time parsing instead of UTC
+      const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
+      const end = endDate ? new Date(`${endDate}T23:59:59.999`) : null;
+
+      if (start && logDate < start) return false;
+      if (end && logDate > end) return false;
+
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.timestamp);
+      const dateB = new Date(b.timestamp);
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
 
   // 🔹 Fetch profile when eye clicked
   const handleViewDetails = async (log) => {
-    const doctor_id = log.userId;
     try {
-      console.log(doctor_id);
-      let endpoint =
-        log.role === "DOCTOR"
-          ? `/api/v1/doctor/profile`
-          : `/api/v1/extern/profile`;
+      let endpoint = `/api/v1/${log.role.toLowerCase()}/profile`;
 
-      const res = await axios.get(`${baseUrl}${endpoint}`,doctor_id, {
+      const res = await axios.get(`${baseUrl}${endpoint}`, {
+        params: { viewer_id: log.userId },
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -113,7 +131,10 @@ export default function Logs() {
     return {
       role: log.role,
       themeColor: log.role === "DOCTOR" ? "blue" : "red",
-      name: profile.name || "Unknown User",
+      name:
+        log.role === "DOCTOR" || log.role === "EXTERN"
+          ? profile.full_name
+          : profile.name || "Unknown User",
       photo: profile.photo || null,
       details: [
         { icon: <FaIdBadge />, label: "User ID", value: log.userId },
@@ -137,7 +158,6 @@ export default function Logs() {
         <NavButton />
       </div>
       <div className="w-full max-w-7xl mx-auto px-8 py-2 flex flex-col gap-3">
-        
         {/* Navigation Header */}
 
         {/* Title Section */}
@@ -148,21 +168,53 @@ export default function Logs() {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative mb-6">
-          <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search logs..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-full border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-          />
+        {/* Search & Filters */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search logs..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 items-center justify-between sm:justify-end">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 text-sm"
+            />
+            <span className="text-slate-400 font-medium">to</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 text-sm"
+            />
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 text-sm font-medium"
+            >
+              <option value="desc">Newest First</option>
+              <option value="asc">Oldest First</option>
+            </select>
+          </div>
         </div>
 
         {/* Results Count */}
         <p className="text-sm text-slate-500 mb-4 px-1">
-          Showing <span className="font-semibold text-slate-700">{filteredLogs.length}</span> logs
+          Showing{" "}
+          <span className="font-semibold text-slate-700">
+            {filteredLogs.length}
+          </span>{" "}
+          logs
         </p>
 
         {/* Logs List */}
@@ -175,12 +227,16 @@ export default function Logs() {
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm font-semibold text-slate-700">{log.action}</p>
+                    <p className="text-sm font-semibold text-slate-700">
+                      {log.action}
+                    </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      <span className={`font-medium ${log.role === 'DOCTOR' ? 'text-blue-600' : 'text-red-600'}`}>
+                      <span
+                        className={`font-medium ${log.role === "DOCTOR" ? "text-blue-600" : "text-red-600"}`}
+                      >
                         {log.role}
-                      </span> 
-                      {" • "} 
+                      </span>
+                      {" • "}
                       {log.formattedDate}
                     </p>
                   </div>
@@ -205,7 +261,7 @@ export default function Logs() {
       {/* Modal Overlay */}
       {selectedLog && creator && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 "
           onClick={() => setSelectedLog(null)}
         >
           {/* Modal Content */}
@@ -214,7 +270,9 @@ export default function Logs() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className={`h-28 ${headerColors[creator.themeColor]} relative`}>
+            <div
+              className={`h-28 ${headerColors[creator.themeColor]} relative`}
+            >
               <button
                 onClick={() => setSelectedLog(null)}
                 className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
@@ -224,16 +282,22 @@ export default function Logs() {
             </div>
 
             {/* Profile Image & Name */}
-            <div className="px-6 flex flex-col items-center -mt-14 relative z-10">
+            <div className="px-6 flex flex-col items-center mt-14 relative z-10 gap-2">
               <div className="h-28 w-28 rounded-full border-4 border-white bg-gray-50 flex items-center justify-center shadow-md overflow-hidden">
                 {creator.photo ? (
-                  <img src={creator.photo} alt={creator.name} className="w-full h-full object-cover" />
+                  <img
+                    src={creator.photo}
+                    alt={creator.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <FaUserMd className="text-4xl text-slate-400" />
                 )}
               </div>
 
-              <h3 className="mt-3 text-xl font-bold text-slate-800 text-center">{creator.name}</h3>
+              <h3 className="mt-3 text-xl font-bold text-slate-800 text-center">
+                {creator.name}
+              </h3>
               <span
                 className={`mt-1 px-3 py-1 text-xs font-medium border rounded-full ${badgeColors[creator.themeColor]}`}
               >
@@ -242,7 +306,7 @@ export default function Logs() {
             </div>
 
             {/* Modal Details */}
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 flex flex-col gap-3">
               {creator.details.map(
                 (d, i) =>
                   d.value && (
@@ -250,9 +314,13 @@ export default function Logs() {
                       <div className="p-2 bg-slate-50 rounded-lg text-slate-500 shrink-0">
                         {d.icon}
                       </div>
-                      <div className="overflow-hidden">
-                        <p className="text-xs text-slate-400 uppercase tracking-wider">{d.label}</p>
-                        <p className="text-sm font-medium text-slate-700 break-words">{d.value}</p>
+                      <div className="overflow-hidden mt-1">
+                        <p className="text-xs text-slate-400 uppercase tracking-wider">
+                          {d.label}
+                        </p>
+                        <p className="text-sm font-medium text-slate-700 break-words">
+                          {d.value}
+                        </p>
                       </div>
                     </div>
                   ),

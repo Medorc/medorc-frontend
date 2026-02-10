@@ -115,7 +115,7 @@ export default function UserCard({ user, role, navigate, token }) {
                 </h1>
                 <p className="text-slate-500 text-lg">
                   Welcome back,{" "}
-                  {role === "doctor" ? (
+                  {role === "doctor" || role === "extern" ? (
                     <span className="font-semibold text-slate-700">
                       {user?.full_name || "Doctor"}
                     </span>
@@ -173,7 +173,7 @@ export default function UserCard({ user, role, navigate, token }) {
                     <p className="text-slate-400 text-sm mb-3">{user?.email}</p>
 
                     
-                      {role === "hospital" ? (
+                      {role === "hospital" || role === "extern" ? (
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
                           🏢 {user?.name} • LIC Pvt. Ltd
                         </span>
