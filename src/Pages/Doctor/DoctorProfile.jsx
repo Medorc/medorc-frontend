@@ -22,6 +22,7 @@ import { useAuth } from "../../Context/AuthContext";
 import Loading from "../../Components/Loading";
 import PesonalDetails from "../../Components/PesonalDetails";
 import NavButton from "../../Components/NavButton";
+import { delay } from "framer-motion";
 
 export default function DoctorProfile() {
   const { token, role } = useAuth();
@@ -30,7 +31,7 @@ export default function DoctorProfile() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({});
   const [Credentials, setCredentials] = useState({});
-  
+
   // New State for Document Viewing
   const [docPreview, setDocPreview] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function DoctorProfile() {
     try {
       const response = await axios.get(
         `${url}/api/v1/doctor/profile/credentials`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
       setCredentials(response.data.data);
       setLoading(false);
@@ -69,7 +70,9 @@ export default function DoctorProfile() {
   // --- PREVIEW LOGIC ---
   useEffect(() => {
     // Determine the document source (Backend URL or New File Object)
-    const currentDoc = Credentials.verification_documents || Credentials.org_verification_documents;
+    const currentDoc =
+      Credentials.verification_documents ||
+      Credentials.org_verification_documents;
 
     if (!currentDoc) {
       setDocPreview(null);
@@ -94,6 +97,26 @@ export default function DoctorProfile() {
   const [isEditingOrg, setIsEditingOrg] = useState(false);
   const [originalOrganization, setOriginalOrganization] = useState({});
 
+  /* --- CLOUDINARY UPLOAD HELPER --- */
+  const uploadImageToCloudinary = async (file) => {
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", "Medorc"); // REPLACE WITH YOUR PRESET
+    data.append("cloud_name", "dr8hcq37p"); // REPLACE WITH YOUR CLOUD NAME
+
+    try {
+      const res = await axios.post(
+        "https://api.cloudinary.com/v1_1/dr8hcq37p/image/upload", // REPLACE WITH YOUR CLOUD NAME
+        data,
+      );
+      return res.data.url;
+    } catch (error) {
+      console.error("Cloudinary Upload Error:", error);
+      toast.error("File upload failed");
+      return null;
+    }
+  };
+
   const handleOrgEdit = () => {
     setOriginalOrganization({ ...Credentials });
     setIsEditingOrg(true);
@@ -107,24 +130,74 @@ export default function DoctorProfile() {
 
   const handleOrgSave = async () => {
     try {
-      // Note: If you are uploading files, you likely need FormData instead of JSON.
-      // Keeping original logic as requested, but be aware of backend requirements.
+      setLoading(true);
       const dataToSend = { ...Credentials };
-      delete dataToSend.verification_documents; // Prevent sending file object in JSON if backend expects separate upload
+
+      // 1. Check if there's a new file to upload
+      if (dataToSend.verification_documents instanceof File) {
+        const fileUrl = await uploadImageToCloudinary(
+          dataToSend.verification_documents,
+        );
+
+        if (!fileUrl) {
+          setLoading(false);
+          return; // Stop if upload failed
+        }
+
+        // Replace file object with the returned URL
+        dataToSend.verification_documents = fileUrl;
+
+        // Also update the separate endpoint for document if needed,
+        // OR just send it as part of credentials if backend supports it.
+        // Based on your backend 'handleUpdateDoctorVerificationDocument',
+        // you might need a separate call. For now, we'll try sending it in credentials
+        // or add the separate call here.
+
+        // OPTION A: Separate Call (Recommended based on backend controller)
+        try {
+          await axios.patch(
+            `${url}/api/v1/doctor/profile/documents`, // Endpoint inferred from controller
+            { newDocument: fileUrl },
+            { headers: { Authorization: `Bearer ${token}` } },
+          );
+        } catch (docErr) {
+          console.error("Doc update error", docErr);
+          // We continue to save other details even if this fails, or throw.
+        }
+      }
+
+      // 2. Prepare payload for text fields (excluding the file object if it wasn't uploaded/replaced)
+      // If we used the separate endpoint above, we might not need to send it in newCredentials
+      // But we should ensure we don't send the File object.
+      if (dataToSend.verification_documents instanceof File) {
+        delete dataToSend.verification_documents;
+      }
+
+      // Ensure numerical types are sent correctly
+      if (dataToSend.years_of_experience) {
+        dataToSend.years_of_experience = parseInt(
+          dataToSend.years_of_experience,
+          10,
+        );
+      }
+
+      delete dataToSend.verification_documents;
 
       const response = await axios.patch(
         `${url}/api/v1/doctor/profile/credentials`,
         { newCredentials: dataToSend },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}` } },
       );
 
       setLoading(false);
       setIsEditingOrg(false);
       setCredentials(response.data.data);
-      toast.success("Organization updated successfully");
+      toast.success("Organization details updated successfully");
+      
     } catch (error) {
       console.error("Error updating organization:", error);
       toast.error("Failed to update organization details");
+      setLoading(false);
     }
   };
 
@@ -164,15 +237,15 @@ export default function DoctorProfile() {
                 <FaIdCard /> Document Preview
               </h3>
               <div className="flex gap-3">
-                 <a 
-                   href={docPreview} 
-                   download="document"
-                   target="_blank"
-                   rel="noreferrer"
-                   className="px-4 py-2 text-sm bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors font-semibold"
-                 >
-                   Download / Open New Tab
-                 </a>
+                <a
+                  href={docPreview}
+                  download="document"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 text-sm bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors font-semibold"
+                >
+                  Download / Open New Tab
+                </a>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
                   className="p-2 bg-slate-200 hover:bg-red-100 hover:text-red-600 rounded-lg transition-colors"
@@ -181,7 +254,7 @@ export default function DoctorProfile() {
                 </button>
               </div>
             </div>
-            
+
             {/* Modal Body */}
             <div className="flex-1 bg-slate-50 relative overflow-auto flex items-center justify-center p-4">
               {fileType === "pdf" ? (
@@ -255,7 +328,6 @@ export default function DoctorProfile() {
             {/* Body */}
             <div className="p-6 md:p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                
                 {/* Inputs */}
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
@@ -315,7 +387,11 @@ export default function DoctorProfile() {
                   <input
                     type="text"
                     disabled={!isEditingOrg}
-                    value={Credentials.specialization || Credentials.specializations || ""}
+                    value={
+                      Credentials.specialization ||
+                      Credentials.specializations ||
+                      ""
+                    }
                     onChange={(e) => handleOrgChange(e, "specialization")}
                     className={`w-full px-4 py-3 rounded-xl border outline-none transition-all duration-200 font-medium ${
                       isEditingOrg
@@ -328,31 +404,37 @@ export default function DoctorProfile() {
                 {/* --- REDESIGNED DOCUMENT UPLOAD / PREVIEW --- */}
                 <div className="md:col-span-2 mt-4 pt-4 border-t border-slate-50">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 mb-3">
-                    <FaFileUpload className="text-blue-400" /> Verification Documents
+                    <FaFileUpload className="text-blue-400" /> Verification
+                    Documents
                   </label>
 
                   {/* Logic: If doc exists, show Small Preview Box. Else, show Upload Box */}
                   {docPreview ? (
                     <div className="flex items-start gap-4">
                       {/* SMALL PREVIEW BOX */}
-                      <div 
+                      <div
                         onClick={() => setIsViewModalOpen(true)}
                         className="group relative w-40 h-40 bg-slate-100 rounded-xl border border-slate-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all"
                       >
                         {/* Thumbnail Content */}
                         {fileType === "image" ? (
-                          <img 
-                            src={docPreview} 
-                            alt="Doc thumbnail" 
-                            className="w-full h-full object-cover" 
+                          <img
+                            src={docPreview}
+                            alt="Doc thumbnail"
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
-                            <FaFilePdf size={40} className="text-red-500 mb-2"/>
-                            <span className="text-xs font-medium">PDF Document</span>
+                            <FaFilePdf
+                              size={40}
+                              className="text-red-500 mb-2"
+                            />
+                            <span className="text-xs font-medium">
+                              PDF Document
+                            </span>
                           </div>
                         )}
-                        
+
                         {/* Hover Overlay */}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2 backdrop-blur-[1px]">
                           <FaEye size={18} />
@@ -370,10 +452,14 @@ export default function DoctorProfile() {
                           </button>
                         )}
                       </div>
-                      
+
                       <div className="flex flex-col gap-1 pt-2">
-                        <p className="text-sm font-semibold text-slate-700">Document Uploaded</p>
-                        <p className="text-xs text-slate-500">Click the thumbnail to view full details.</p>
+                        <p className="text-sm font-semibold text-slate-700">
+                          Document Uploaded
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Click the thumbnail to view full details.
+                        </p>
                         {isEditingOrg && (
                           <p className="text-xs text-blue-500 mt-2">
                             To replace, remove this file first.
@@ -383,31 +469,41 @@ export default function DoctorProfile() {
                     </div>
                   ) : (
                     // UPLOAD BOX (Shown when no document)
-                    <div className={`relative w-full rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center p-8 text-center overflow-hidden ${
-                      isEditingOrg
-                        ? "border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-400 cursor-pointer group"
-                        : "border-slate-100 bg-slate-50 opacity-60"
-                    }`}>
+                    <div
+                      className={`relative w-full rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center p-8 text-center overflow-hidden ${
+                        isEditingOrg
+                          ? "border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-400 cursor-pointer group"
+                          : "border-slate-100 bg-slate-50 opacity-60"
+                      }`}
+                    >
                       {isEditingOrg ? (
                         <>
                           <input
                             type="file"
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             accept="image/*, application/pdf"
-                            onChange={(e) => handleOrgChange(e, "verification_documents")}
+                            onChange={(e) =>
+                              handleOrgChange(e, "verification_documents")
+                            }
                           />
                           <div className="w-14 h-14 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-blue-500 group-hover:scale-110 transition-transform duration-200">
                             <FaFileUpload size={24} />
                           </div>
-                          <p className="text-slate-800 font-medium">Click to upload credentials</p>
-                          <p className="text-slate-500 text-sm mt-1">PDF, JPG or PNG (Max 5MB)</p>
+                          <p className="text-slate-800 font-medium">
+                            Click to upload credentials
+                          </p>
+                          <p className="text-slate-500 text-sm mt-1">
+                            PDF, JPG or PNG (Max 5MB)
+                          </p>
                         </>
                       ) : (
                         <div className="flex flex-col items-center">
-                           <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3 text-slate-500">
+                          <div className="w-12 h-12 bg-slate-200 rounded-full flex items-center justify-center mb-3 text-slate-500">
                             <FaIdCard size={20} />
                           </div>
-                          <p className="text-slate-500 font-medium">No documents uploaded</p>
+                          <p className="text-slate-500 font-medium">
+                            No documents uploaded
+                          </p>
                         </div>
                       )}
                     </div>

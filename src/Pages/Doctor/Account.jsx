@@ -38,7 +38,6 @@ export default function Account() {
           },
         });
         
-        console.log(res.data);
         setData(res.data.data);
        
       } catch (err) {
