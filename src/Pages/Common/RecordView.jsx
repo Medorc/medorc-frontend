@@ -7,11 +7,14 @@ import Loading from "../../Components/Loading";
 import { FaEye } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 
+
+
 export default function RecordView() {
-  const { record_id } = useParams();
+  const { record_id, shc_code } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
   const url = "http://localhost:3000";
+  
 
   const [activeTab, setActiveTab] = useState("General");
   const [loading, setLoading] = useState(true);
@@ -19,6 +22,8 @@ export default function RecordView() {
   const [hospitalization, setHospitalization] = useState(null);
   const [surgery, setSurgery] = useState(null);
   const [documents, setDocuments] = useState(null);
+  console.log(shc_code);
+
 
   useEffect(() => {
     if (!token || !record_id) return;
@@ -26,7 +31,7 @@ export default function RecordView() {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${token}`, shc_code: shc_code.shc_code };
 
         // 1. Fetch main record list to find the basic details (including reg_no)
         const recordRes = await axios.post(
@@ -56,8 +61,8 @@ export default function RecordView() {
         if (surgRes.status === "fulfilled") setSurgery(surgRes.value.data);
         if (docRes.status === "fulfilled") setDocuments(docRes.value.data);
 
-      } catch (err) {
-        console.error("Failed to load record details:", err);
+      } catch (error) {
+        console.error("Failed to load record details:", error);
       } finally {
         setLoading(false);
       }

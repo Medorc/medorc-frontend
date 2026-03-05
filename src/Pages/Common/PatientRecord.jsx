@@ -212,7 +212,7 @@ export default function PatientRecord() {
         <div className="flex flex-col gap-2">
           {records.length ? (
             records.map((r) => (
-              <RecordCard key={r.record_id} record={r} />
+              <RecordCard key={r.record_id} record={r} shc_code={shc_code} />
             ))
           ) : (
             <p className="text-center text-gray-500 py-10">No records found</p>
