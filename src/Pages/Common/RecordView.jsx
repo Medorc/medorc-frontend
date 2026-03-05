@@ -10,7 +10,7 @@ import { IoMdClose } from "react-icons/io";
 
 
 export default function RecordView() {
-  const { record_id, shc_code } = useParams();
+  const { record_id} = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
   const url = "http://localhost:3000";
@@ -22,7 +22,6 @@ export default function RecordView() {
   const [hospitalization, setHospitalization] = useState(null);
   const [surgery, setSurgery] = useState(null);
   const [documents, setDocuments] = useState(null);
-  console.log(shc_code);
 
 
   useEffect(() => {
@@ -31,7 +30,7 @@ export default function RecordView() {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const headers = { Authorization: `Bearer ${token}`, shc_code: shc_code.shc_code };
+        const headers = { Authorization: `Bearer ${token}` };
 
         // 1. Fetch main record list to find the basic details (including reg_no)
         const recordRes = await axios.post(

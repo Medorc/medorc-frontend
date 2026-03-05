@@ -40,6 +40,7 @@ export default function Logs() {
   const [endDate, setEndDate] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
 
+  console.log(shc_code);
   // 🔹 Parse log string
   const parseLog = (log) => {
     const regex = /^(.+?) - (\w+) \[(.+?)\] (.+)$/;
@@ -64,9 +65,11 @@ export default function Logs() {
     const fetchLogs = async () => {
       try {
         const res = await axios.get(
-          `${baseUrl}/api/v1/patient/profile/data-logs?sch_code=${shc_code}`,
+          `${baseUrl}/api/v1/patient/profile/data-logs?shc_code=${shc_code}`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
+
+        
 
         const rawLogs = res.data?.data?.data_logs || "";
 
@@ -77,7 +80,10 @@ export default function Logs() {
           .reverse();
 
         setData(logs);
+
+        console.log(logs);
       } catch (err) {
+        console.log(err);
         toast.error(
           "API Error: " + (err.response?.data?.message || err.message),
         );

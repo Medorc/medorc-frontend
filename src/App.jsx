@@ -91,7 +91,7 @@ function App() {
           <Route path="/extern/patientprofile" element={<PatientProfile />} />
 
 
-          <Route path="/recordview/:record_id/:shc_code" element={<RecordView />} />
+          <Route path="/recordview/:record_id" element={<RecordView />} />
 
         </Routes>
       </BrowserRouter>

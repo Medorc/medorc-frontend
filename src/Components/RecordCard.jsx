@@ -6,7 +6,7 @@ import {
 } from "react-icons/fa";
 import { FiCalendar, FiClock, FiEye, FiX } from "react-icons/fi";
 
-export default function RecordCard({ record, shc_code }) {
+export default function RecordCard({ record }) {
   const [showCreatorInfo, setShowCreatorInfo] = useState(false);
   const navigate = useNavigate(); 
 
@@ -170,7 +170,7 @@ export default function RecordCard({ record, shc_code }) {
         </div>
 
         <button 
-          onClick={() => navigate(`/recordview/${record.record_id},${shc_code}`)}
+          onClick={() => navigate(`/recordview/${record.record_id}`)}
           className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-white bg-gray-50 text-gray-700 transition-colors"
         >
           View
