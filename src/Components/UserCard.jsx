@@ -147,7 +147,7 @@ export default function UserCard({ user, role, navigate, token }) {
                     <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-blue-500 to-cyan-400">
                       <div className="w-full h-full rounded-full overflow-hidden border-4 border-white bg-white">
                         <img
-                          src={user?.photo || "image.png"}
+                          src={user?.photo || "/image.png"}
                           className="w-full h-full object-cover"
                           alt="profile"
                         />

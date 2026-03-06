@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams,useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
 import NavBar from "../../Components/NavBar";
@@ -10,7 +10,11 @@ import { IoMdClose } from "react-icons/io";
 
 
 export default function RecordView() {
-  const { record_id} = useParams();
+  const { record_id } = useParams();
+ const [searchParams] = useSearchParams();
+
+const shc_code = searchParams.get("shc_code");
+const qr_code = searchParams.get("qr_code");
   const navigate = useNavigate();
   const { token } = useAuth();
   const url = "http://localhost:3000";
@@ -30,19 +34,19 @@ export default function RecordView() {
     const fetchAllData = async () => {
       setLoading(true);
       try {
-        const headers = { Authorization: `Bearer ${token}` };
+        const headers = { Authorization: `Bearer ${token}`};
 
         // 1. Fetch main record list to find the basic details (including reg_no)
         const recordRes = await axios.post(
           `${url}/api/v1/patient/records`,
-          { searchOptions: { sort_by: "Time Desc", entry_type: "All" }, searchQuery: "" },
+          { searchOptions: { sort_by: "Time Desc", entry_type: "All" }, searchQuery: "",shc_code,qr_code },
           { headers }
         );
 
         const currentRecord = recordRes.data?.data?.find(r => r.record_id === record_id);
         if (!currentRecord) throw new Error("Record not found");
         setRecord(currentRecord);
-
+        
         // 2. Fetch parallel sub-details using the CORRECT backend routes
         // Backend expects: /api/v1/patient/records/:record_id/:details_type
         const [hospRes, surgRes, docRes] = await Promise.allSettled([
@@ -54,12 +58,11 @@ export default function RecordView() {
             : Promise.reject(),
           axios.get(`${url}/api/v1/patient/records/${record_id}/documents`, { headers })
         ]);
-
         // 3. Update state if the requests were successful
         if (hospRes.status === "fulfilled") setHospitalization(hospRes.value.data);
         if (surgRes.status === "fulfilled") setSurgery(surgRes.value.data);
         if (docRes.status === "fulfilled") setDocuments(docRes.value.data);
-
+        
       } catch (error) {
         console.error("Failed to load record details:", error);
       } finally {

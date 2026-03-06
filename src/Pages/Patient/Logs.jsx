@@ -40,7 +40,6 @@ export default function Logs() {
   const [endDate, setEndDate] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
 
-  console.log(shc_code);
   // 🔹 Parse log string
   const parseLog = (log) => {
     const regex = /^(.+?) - (\w+) \[(.+?)\] (.+)$/;
@@ -80,8 +79,6 @@ export default function Logs() {
           .reverse();
 
         setData(logs);
-
-        console.log(logs);
       } catch (err) {
         console.log(err);
         toast.error(

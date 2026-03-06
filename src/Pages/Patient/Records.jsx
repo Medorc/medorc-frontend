@@ -108,7 +108,7 @@ export default function Records() {
 
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate("/patient/home")}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#4A82B3] text-white text-sm font-semibold hover:bg-[#4A82B3]/80"
             >
               <FaArrowLeft /> Back

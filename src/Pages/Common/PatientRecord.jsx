@@ -128,7 +128,7 @@ export default function PatientRecord() {
 
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(`/${role}/home`)}
               className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#4A82B3] text-white text-sm font-semibold hover:bg-[#4A82B3]/80"
             >
               <FaArrowLeft /> Back
@@ -212,7 +212,7 @@ export default function PatientRecord() {
         <div className="flex flex-col gap-2">
           {records.length ? (
             records.map((r) => (
-              <RecordCard key={r.record_id} record={r} />
+              <RecordCard key={r.record_id} record={r} shc_code={userProfile.shc_code} qr_code={userProfile.qr_code} />
             ))
           ) : (
             <p className="text-center text-gray-500 py-10">No records found</p>

@@ -4,17 +4,25 @@ import {
   FaStethoscope, FaHospital, FaUserMd, FaUser, FaPhoneAlt, 
   FaEnvelope, FaMapMarkerAlt, FaIdBadge, FaGlobe, FaVenusMars 
 } from "react-icons/fa";
+import { useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "../Context/AuthContext";
 import { FiCalendar, FiClock, FiEye, FiX } from "react-icons/fi";
 
-export default function RecordCard({ record }) {
+export default function RecordCard({ record, shc_code, qr_code }) {
   const [showCreatorInfo, setShowCreatorInfo] = useState(false);
   const navigate = useNavigate(); 
 
+
+  const {token} = useAuth();
+  const url = "http://localhost:3000";
 
   // --- LOGIC TO IDENTIFY CREATOR ---
   const entryType = record.entry_type || "";
   const isDoctor = entryType.includes("Doctor");
   const isHospital = entryType.includes("Hospital");
+
+  const [docCount, setDocCount] = useState(1);
   // Robust check for Self/Patient
   const isSelf = entryType.includes("Self") || (!isDoctor && !isHospital);
 
@@ -38,6 +46,18 @@ export default function RecordCard({ record }) {
         })
       : "--:--";
 
+      useEffect(() => {
+        const fetchDocumentCount = async () => {
+          try {
+            const response = await axios.get(`${url}/api/v1/patient/records/${record.record_id}/documents`, { headers: { Authorization: `Bearer ${token}` } });
+            const count = (response?.data?.prescriptions ? 1 : 0) + (response?.data?.lab_results ? 1 : 0);
+            setDocCount(count);
+          } catch (error) {
+            console.error("Error fetching document count:", error);
+          }
+        };
+        fetchDocumentCount();
+      }, [record.record_id]);
   // --- HELPER TO EXTRACT DETAILS ---
   const getCreatorDetails = () => {
     // Debugging: Check if backend is actually sending the objects
@@ -170,7 +190,7 @@ export default function RecordCard({ record }) {
         </div>
 
         <button 
-          onClick={() => navigate(`/recordview/${record.record_id}`)}
+          onClick={() => navigate(`/recordview/${record.record_id}?shc_code=${shc_code}&qr_code=${qr_code}`)}
           className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-white bg-gray-50 text-gray-700 transition-colors"
         >
           View
@@ -232,7 +252,7 @@ export default function RecordCard({ record }) {
           ))}
 
           <span className="px-3 py-1 text-xs rounded-full bg-blue-50 text-blue-600 border border-blue-200 font-medium">
-            {record.document_count || 0} Document(s)
+            {docCount || 0} Document(s)
           </span>
         </div>
 

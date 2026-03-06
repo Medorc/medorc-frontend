@@ -40,6 +40,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const shcstore = (newShc_code) => {
+    localStorage.setItem('shc_code', newShc_code);
+    setShc_code(newShc_code);
+  }
+
   const register = async (userData, userRole) => {
     try {
       // Calls POST http://localhost:3000/api/v1/auth/signup
@@ -75,6 +80,7 @@ export const AuthProvider = ({ children }) => {
     role,
     user,
     login,
+    shcstore,
     register, // Expose register to the app
     logout,
   };

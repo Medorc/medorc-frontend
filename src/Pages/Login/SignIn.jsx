@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check } from "lucide-react";
 
 export default function SignIn() {
-  const { login } = useAuth();
+  const { login,shcstore } = useAuth();
   const navigate = useNavigate();
 
   const [data, setData] = useState({
@@ -47,6 +47,9 @@ export default function SignIn() {
       if (response.status === 200) {
         toast.success("Login Successful");
         login(response.data.token, response.data.role);
+        if(response.data.role==="patient"){
+          shcstore(response.data.shc_code);
+        }
         navigate(`/${role}/home`);
       }
     } catch (error) {
