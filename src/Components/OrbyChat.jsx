@@ -11,6 +11,8 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
     const activeShc = shcCode || profileData?.shc_code || localStorage.getItem("shc_code");
     const activeQr = qrCode || profileData?.qr_code;
 
+    const [senderId] = useState(() => `orby_${activeShc || "user"}_${Date.now()}`);
+
     const [messages, setMessages] = useState([
         {
             role: "bot",
@@ -40,7 +42,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
 
         try {
             const response = await axios.post(`${RASA_URL}/webhooks/rest/webhook`, {
-                sender: activeShc || "default_user",
+                sender: senderId,
                 message: trimmedInput,
                 metadata: {
                     shc_code: activeShc,
