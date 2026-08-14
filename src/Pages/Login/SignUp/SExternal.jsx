@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { API_BASE_URL } from "../../../config/api";
 import { FaCloudUploadAlt, FaCheckCircle } from "react-icons/fa";
 
 // Cloudinary Config
@@ -49,13 +50,13 @@ const FormTextarea = ({ id, name, label, value, onChange, placeholder }) => (
   </div>
 );
 
+
+
 export default function SExternal() {
   const navigate = useNavigate();
   const [uploadingDoc, setUploadingDoc] = useState(false);
 
-  // Flat state for form handling
   const [formData, setFormData] = useState({
-    // Personal Details
     full_name: "",
     email: "",
     phone_no: "",
@@ -64,8 +65,6 @@ export default function SExternal() {
     gender: "",
     date_of_birth: "",
     photo: "", 
-    
-    // Organization Details (We keep them flat here for easier binding, but will nest them on submit)
     org_name: "",
     org_type: "",
     org_address: "",
@@ -77,7 +76,6 @@ export default function SExternal() {
     verification_documents: ""
   });
 
-  // Handle Photo Upload
   const handlePhotoUpload = async (file) => {
     if (!file) return;
     const uploadData = new FormData();
@@ -94,7 +92,6 @@ export default function SExternal() {
     }
   };
 
-  // Handle Document Upload
   const handleDocUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -121,8 +118,6 @@ export default function SExternal() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const url = "http://localhost:3000/api/v1/auth/signup";
-
   const Signup = async (e) => {
     e.preventDefault();
 
@@ -131,7 +126,6 @@ export default function SExternal() {
       return;
     }
 
-    // Basic Validation
     if (
       !formData.full_name ||
       !formData.email ||
@@ -144,19 +138,17 @@ export default function SExternal() {
       return;
     }
 
-    // Prepare payload structure to match Backend "createExtern" service expectations
     const payload = {
-      role: "extern", // FIXED: Changed from "external" to "extern"
+      role: "extern",
       full_name: formData.full_name,
       email: formData.email,
       phone_no: formData.phone_no,
       password: formData.password,
       gender: formData.gender,
-      date_of_birth: formData.date_of_birth ? new Date(formData.date_of_birth).toISOString() : null, // ISO Format
+      date_of_birth: formData.date_of_birth ? new Date(formData.date_of_birth).toISOString() : null,
       photo: formData.photo,
       verification_documents: formData.verification_documents,
       
-      // Backend expects these fields inside an "organization_details" object
       organization_details: {
         org_name: formData.org_name,
         org_type: formData.org_type,
@@ -170,14 +162,14 @@ export default function SExternal() {
     };
 
     try {
-      const response = await axios.post(url, payload);
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, payload);
       if (response.status === 201) {
         toast.success("Registration Successful");
         navigate("/");
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || error.response?.data?.error || "Signup failed");
+      console.error("External Signup Error Details:", error);
+      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed");
     }
   };
 

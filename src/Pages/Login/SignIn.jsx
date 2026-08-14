@@ -5,6 +5,7 @@ import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Check } from "lucide-react";
+import { API_BASE_URL } from "../../config/api";
 
 export default function SignIn() {
   const { login,shcstore } = useAuth();
@@ -32,8 +33,6 @@ export default function SignIn() {
     }));
   };
 
-  const url = "http://localhost:3000/api/v1/auth/signin";
-
   const handlesubmit = async (e) => {
     e.preventDefault();
     const { role, email, password } = data;
@@ -43,7 +42,7 @@ export default function SignIn() {
     }
 
     try {
-      const response = await axios.post(url, data);
+      const response = await axios.post(`${API_BASE_URL}/auth/signin`, data);
       if (response.status === 200) {
         toast.success("Login Successful");
         login(response.data.token, response.data.role);
@@ -53,7 +52,8 @@ export default function SignIn() {
         navigate(`/${role}/home`);
       }
     } catch (error) {
-      toast.error(error.response?.data?.error || "Login Failed");
+      console.error("SignIn Error Details:", error);
+      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Login Failed");
     }
   };
 

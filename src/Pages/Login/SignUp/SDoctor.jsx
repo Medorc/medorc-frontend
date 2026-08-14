@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { API_BASE_URL } from "../../../config/api";
 
 // Cloudinary Config (Same as Patient)
 const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
@@ -47,6 +48,8 @@ const FormTextarea = ({ id, name, label, value, onChange }) => (
   </div>
 );
 
+
+
 export default function SDoctor() {
   const navigate = useNavigate();
 
@@ -61,7 +64,6 @@ export default function SDoctor() {
     gender: "",
     address: "",
     photo: "",
-    // Doctor Specific Fields
     specializations: "",
     license_no: "",
     years_of_experience: "",
@@ -96,8 +98,6 @@ export default function SDoctor() {
     }));
   };
 
-  const url = "http://localhost:3000/api/v1/auth/signup";
-
   const Signup = async (e) => {
     e.preventDefault();
 
@@ -106,7 +106,6 @@ export default function SDoctor() {
       return;
     }
 
-    // Basic Validation
     if (
       !data.full_name ||
       !data.phone_no ||
@@ -121,7 +120,6 @@ export default function SDoctor() {
 
     const submissionData = { ...data };
 
-    // Ensure years_of_experience is an integer
     if (submissionData.years_of_experience) {
       submissionData.years_of_experience = parseInt(submissionData.years_of_experience, 10);
     } else {
@@ -131,14 +129,14 @@ export default function SDoctor() {
     delete submissionData.confirmPassword;
 
     try {
-      const response = await axios.post(url, submissionData);
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, submissionData);
       if (response.status === 201) {
         toast.success("Doctor Registration Successful");
         navigate("/");
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.error || "Signup failed");
+      console.error("Doctor Signup Error Details:", error);
+      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed");
     }
   };
 

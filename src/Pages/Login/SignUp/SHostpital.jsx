@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { API_BASE_URL } from "../../../config/api";
 import { FaCloudUploadAlt, FaFileAlt, FaCheckCircle } from "react-icons/fa"; // Added icons for upload UI
 
 // Cloudinary Config
@@ -48,9 +49,11 @@ const FormTextarea = ({ id, name, label, value, onChange }) => (
   </div>
 );
 
+
+
 export default function SHospital() {
   const navigate = useNavigate();
-  const [uploadingDoc, setUploadingDoc] = useState(false); // State for doc upload loader
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   const [data, setData] = useState({
     role: "hospital",
@@ -66,10 +69,9 @@ export default function SHospital() {
     website: "",
     type: "",
     founded_on: "",
-    verification_documents: "" // Added field for document
+    verification_documents: ""
   });
 
-  // Handle Logo Upload
   const handlePhotoUpload = async (file) => {
     if (!file) return;
     const formData = new FormData();
@@ -86,7 +88,6 @@ export default function SHospital() {
     }
   };
 
-  // Handle Document Upload (PDF/Image)
   const handleDocUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -113,8 +114,6 @@ export default function SHospital() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const url = "http://localhost:3000/api/v1/auth/signup";
-
   const Signup = async (e) => {
     e.preventDefault();
 
@@ -130,7 +129,7 @@ export default function SHospital() {
       !data.phone_no ||
       !data.license_no ||
       !data.address ||
-      !data.verification_documents // Ensure doc is uploaded
+      !data.verification_documents
     ) {
       toast.error("Please fill all fields and upload verification documents");
       return;
@@ -140,14 +139,14 @@ export default function SHospital() {
     delete submissionData.confirmPassword;
 
     try {
-      const response = await axios.post(url, submissionData);
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, submissionData);
       if (response.status === 201) {
         toast.success("Hospital Registration Successful");
         navigate("/");
       }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Signup failed");
+      console.error("Hospital Signup Error Details:", error);
+      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed");
     }
   };
 

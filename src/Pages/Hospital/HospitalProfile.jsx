@@ -507,17 +507,6 @@ export default function HospitalProfile() {
                             </span>
                           </div>
                         )}
-                        ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-50">
-                            <FaFilePdf
-                              size={40}
-                              className="text-red-500 mb-2"
-                            />
-                            <span className="text-xs font-medium">
-                              PDF Document
-                            </span>
-                          </div>
-                        )}
 
                         {/* Hover Overlay */}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2 backdrop-blur-[1px]">
