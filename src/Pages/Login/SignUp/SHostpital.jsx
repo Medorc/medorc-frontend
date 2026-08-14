@@ -72,38 +72,38 @@ export default function SHospital() {
     verification_documents: ""
   });
 
+  // Handle Logo Upload
   const handlePhotoUpload = async (file) => {
     if (!file) return;
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("photo", file);
 
     try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
-      setData((prev) => ({ ...prev, photo: res.data.secure_url }));
+      const res = await axios.post(`${API_BASE_URL}/cloudinary/photo`, formData);
+      setData((prev) => ({ ...prev, photo: res.data.url }));
       toast.success("Logo uploaded successfully!");
     } catch (error) {
       console.error(error);
-      toast.error("Logo upload failed.");
+      toast.error(error.response?.data?.error || "Logo upload failed.");
     }
   };
 
+  // Handle Document Upload (PDF/Image)
   const handleDocUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploadingDoc(true);
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("doc", file);
 
     try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
-      setData((prev) => ({ ...prev, verification_documents: res.data.secure_url }));
+      const res = await axios.post(`${API_BASE_URL}/cloudinary/doc`, formData);
+      setData((prev) => ({ ...prev, verification_documents: res.data.url }));
       toast.success("Document uploaded successfully!");
     } catch (error) {
       console.error(error);
-      toast.error("Document upload failed.");
+      toast.error(error.response?.data?.error || "Document upload failed.");
     } finally {
       setUploadingDoc(false);
     }

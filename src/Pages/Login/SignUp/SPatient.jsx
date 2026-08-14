@@ -74,22 +74,20 @@ export default function SPatient() {
     if (!file) return;
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
+    formData.append("photo", file);
 
     try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
+      const res = await axios.post(`${API_BASE_URL}/cloudinary/photo`, formData);
 
       setData((prev) => ({
         ...prev,
-        photo: res.data.secure_url,
+        photo: res.data.url,
       }));
 
       toast.success("Photo uploaded successfully!");
     } catch (error) {
-      console.log("Cloudinary error response:", error.response?.data);
-      toast.error("Upload failed. Check preset is unsigned.");
+      console.error("Cloudinary error response:", error.response?.data || error.message);
+      toast.error(error.response?.data?.error || "Photo upload failed.");
     }
   };
 

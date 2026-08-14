@@ -5,15 +5,11 @@ import { toast } from "react-toastify";
 import Profile from "./Profile";
 import { FaEnvelope, FaPhone, FaLock, FaCheck } from "react-icons/fa";
 
+import { API_BASE_URL } from "../config/api";
+
 export default function ProfileChange({ data }) {
-  const url = "http://localhost:3000";
   const { token, role } = useAuth();
 
-  const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
-  const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-  // local editable state
-console.log(data);
   const [profile, setProfile] = useState({
     email: data.email || "",
     phone: data.phone_no || "",
@@ -21,7 +17,6 @@ console.log(data);
     photo: data.photo || "",
   });
 
-  // Sync state with data prop when it changes
   React.useEffect(() => {
     setProfile((prev) => ({
       ...prev,
@@ -36,7 +31,6 @@ console.log(data);
   };
   const payload = {};
   const changeHandler = async (field) => {
-    // Confirmation dialog
     if (
       !window.confirm(
         `Are you sure you want to update your ${field.replace("_", " ")}?`,
@@ -57,7 +51,7 @@ console.log(data);
 
     try {
       const res = await axios.patch(
-        `${url}/api/v1/${role}/profile/${field}`,
+        `${API_BASE_URL}/${role}/profile/${field}`,
         payload,
         {
           headers: {
@@ -69,7 +63,7 @@ console.log(data);
 
       toast.success(`${field.replace("_", " ")} updated successfully`);
     } catch (err) {
-      toast.error("API Error: " + (err.response?.data || err.message));
+      toast.error("API Error: " + (err.response?.data?.error || err.message));
     }
   };
 
@@ -77,15 +71,14 @@ console.log(data);
     if (!file) return;
 
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("photo", file);
 
     try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
+      const res = await axios.post(`${API_BASE_URL}/cloudinary/photo`, formData);
 
-      const uploadRes = await axios.patch(
-        `${url}/api/v1/${role}/profile/photo`,
-        { newPhoto: res.data.secure_url },
+      await axios.patch(
+        `${API_BASE_URL}/${role}/profile/photo`,
+        { newPhoto: res.data.url },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -96,8 +89,8 @@ console.log(data);
 
       toast.success("Photo uploaded successfully!");
     } catch (error) {
-      console.log("Cloudinary error response:", error.response?.data);
-      toast.error("Upload failed. Check preset is unsigned.");
+      console.error("Photo upload error response:", error.response?.data || error.message);
+      toast.error(error.response?.data?.error || "Photo upload failed.");
     }
   };
 
