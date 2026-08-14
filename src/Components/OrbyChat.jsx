@@ -44,30 +44,16 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
             console.log("Rasa response:", response.data);
 
             const botResponses = response.data;
-            let hasText = false;
             if (Array.isArray(botResponses) && botResponses.length > 0) {
                 botResponses.forEach((res) => {
                     if (res.text) {
-                        hasText = true;
                         setMessages((prev) => [...prev, { role: "bot", content: res.text }]);
                     }
                 });
-            }
-
-            if (!hasText) {
-                let fallbackMsg = "I can assist you with your health records, emergency contacts, diagnoses, and medical profile. What would you like to know?";
-                const lowerMsg = trimmedInput.toLowerCase();
-                if (lowerMsg.includes("emergency") || lowerMsg.includes("contact")) {
-                    fallbackMsg = "Your registered emergency contacts can be viewed and updated in your Personal Profile Settings under Emergency Contacts.";
-                } else if (lowerMsg.includes("record") || lowerMsg.includes("history") || lowerMsg.includes("diagnosis")) {
-                    fallbackMsg = "You can view your full medical history, diagnoses, and prescriptions in the Medical Records section.";
-                } else if (lowerMsg.includes("tip") || lowerMsg.includes("health")) {
-                    fallbackMsg = "💡 Health Tip: Stay hydrated with 2.5–3L of water daily and take regular breaks during work!";
-                }
-
+            } else {
                 setMessages((prev) => [...prev, {
                     role: "bot",
-                    content: fallbackMsg
+                    content: "I didn't quite catch that. Could you rephrase your question about your health records or medical details?"
                 }]);
             }
         } catch (error) {
