@@ -2,12 +2,19 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
 import { RASA_URL } from "../config/api";
+import { useAuth } from "../Context/AuthContext";
 
-const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
+const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistant" }) => {
+    const { user, role, profileData } = useAuth();
+
+    const displayName = userName || profileData?.full_name || user?.full_name || "User";
+    const activeShc = shcCode || profileData?.shc_code || localStorage.getItem("shc_code");
+    const activeQr = qrCode || profileData?.qr_code;
+
     const [messages, setMessages] = useState([
         {
             role: "bot",
-            content: `Hi ${userName}! I'm Orby, your medical records assistant. Ask me anything about your health records, medications, or appointments.`,
+            content: `Hello ${displayName}! I'm Orby, your Medorc AI Assistant. How can I help you today?`,
         },
     ]);
     const [input, setInput] = useState("");
@@ -33,11 +40,11 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
 
         try {
             const response = await axios.post(`${RASA_URL}/webhooks/rest/webhook`, {
-                sender: shcCode || "default_user",
+                sender: activeShc || "default_user",
                 message: trimmedInput,
                 metadata: {
-                    shc_code: shcCode,
-                    qr_code: qrCode
+                    shc_code: activeShc,
+                    qr_code: activeQr
                 }
             });
 
@@ -85,12 +92,12 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 border-3 border-white/30 flex items-center justify-center shadow-lg">
                             <span className="text-white font-bold text-lg">
-                                {userName?.charAt(0)?.toUpperCase() || "U"}
+                                {displayName?.charAt(0)?.toUpperCase() || "O"}
                             </span>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-white">Medical Records</h1>
-                            <p className="text-teal-200 text-sm">{userName}</p>
+                            <h1 className="text-xl font-bold text-white">{title}</h1>
+                            <p className="text-teal-200 text-sm font-medium">{displayName}</p>
                         </div>
                     </div>
                     <button
@@ -100,7 +107,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back to home
+                        Back
                     </button>
                 </div>
             </div>
