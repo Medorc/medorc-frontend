@@ -103,34 +103,44 @@ export default function ProfileChange({ data }) {
 
         <div className="p-8 md:p-12 relative z-10">
           <div className="flex flex-col md:flex-row gap-12 items-start">
-            {/* Left Column: Photo & Static Info */}
+            {/* Left Column: Security Overview & Avatar */}
             <div className="w-full md:w-1/3 flex flex-col items-center">
               <div className="relative group">
                 <div className="absolute inset-0 bg-blue-500 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
-                <div className="relative">
-                  <Profile
-                    onFileSelect={(file) => handlePhotoUpload(file)}
-                    photo={data.photo}
-                  />
-                  {/* Edit icon overlay could go here if Profile component allowed it */}
+                <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
+                  {data.photo ? (
+                    <img
+                      src={data.photo}
+                      alt={data.full_name || "User"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-3xl font-bold text-blue-600 uppercase">
+                      {(data.full_name || "U")[0]}
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="mt-6 text-center">
                 <h3 className="text-xl font-bold text-slate-800">
                   {role === "doctor" ? "Dr. " : ""}
-                  {data.full_name || "User Name"}
+                  {data.full_name || "User Account"}
                 </h3>
                 <p className="text-slate-500 text-sm mt-1 uppercase tracking-wider font-medium">
                   {role || "User Role"}
                 </p>
+
+                <div className="mt-4 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold border border-blue-100">
+                  Security & Access Controls
+                </div>
               </div>
             </div>
 
-            {/* Right Column: Edit Forms */}
-            <div className="w-full md:w-2/3 flex flex-col gap-10">
+            {/* Right Column: Security Forms */}
+            <div className="w-full md:w-2/3 flex flex-col gap-8">
               <h2 className="text-2xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-2">
-                Account Settings
+                Account & Security
               </h2>
 
               {/* Email Section */}

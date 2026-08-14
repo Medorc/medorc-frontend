@@ -9,7 +9,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 import BackButton from "../../Components/BackButton";
-import PersonalDetails from "../../Components/PesonalDetails";
+import PersonalDetails from "../../Components/PersonalDetails";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -29,10 +29,10 @@ export default function ProfileSettings() {
   const { token } = useAuth();
 
   const [data, setData] = useState({
-    // Initial state matching interface
     full_name: "",
     date_of_birth: "",
     gender: "",
+    blood_group: "",
     address: "",
     photo: "",
     smoking: false,
@@ -44,7 +44,6 @@ export default function ProfileSettings() {
     allergy: "",
   });
 
-  // Separate editing states for sections
   const [isLifestyleEditing, setIsLifestyleEditing] = useState(false);
   const [isPersonalEditing, setIsPersonalEditing] = useState(false);
 
@@ -57,7 +56,6 @@ const urlLifestyle = `${API_BASE_URL}/patient/profile/lifestyle`;
     }
   }, [token, navigate]);
 
-  // Fetch initial data
   useEffect(() => {
     if (!token) return;
 
@@ -78,7 +76,6 @@ const urlLifestyle = `${API_BASE_URL}/patient/profile/lifestyle`;
     fetchData();
   }, [token]);
 
-  // Handle Input Change
   const handleChange = (e) => {
     const { id, type, checked, value } = e.target;
     setData((prev) => ({
@@ -87,7 +84,10 @@ const urlLifestyle = `${API_BASE_URL}/patient/profile/lifestyle`;
     }));
   };
 
-  // Toggle Edit / Save for Lifestyle
+  const handlePhotoUpdate = (newPhotoUrl) => {
+    setData((prev) => ({ ...prev, photo: newPhotoUrl }));
+  };
+
   const toggleLifestyleEdit = async () => {
     if (isLifestyleEditing) {
       try {
@@ -110,18 +110,18 @@ const urlLifestyle = `${API_BASE_URL}/patient/profile/lifestyle`;
     }
   };
 
-  // Toggle Edit / Save for Personal
   const togglePersonalEdit = async () => {
     if (isPersonalEditing) {
       try {
         await axios.patch(
           urlPersonal,
-          // Send only the relevant fields for personal details
           {
             full_name: data.full_name,
             date_of_birth: data.date_of_birth,
             gender: data.gender,
+            blood_group: data.blood_group,
             address: data.address,
+            photo: data.photo,
           },
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -202,6 +202,7 @@ const urlLifestyle = `${API_BASE_URL}/patient/profile/lifestyle`;
             data={data}
             isEditing={isPersonalEditing}
             onChange={handleChange}
+            onPhotoUpdate={handlePhotoUpdate}
           />
           {/* Edit Button for Personal Details */}
           <button

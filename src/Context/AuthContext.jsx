@@ -75,12 +75,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const [profileData, setProfileData] = useState(() => {
+    try {
+      const savedProfile = localStorage.getItem('profileData');
+      return savedProfile ? JSON.parse(savedProfile) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const updateUserProfile = (newProfile) => {
+    setProfileData((prev) => {
+      const updated = { ...prev, ...newProfile };
+      localStorage.setItem('profileData', JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('shc_code');
+    localStorage.removeItem('profileData');
     setToken(null);
     setRole(null);
     setUser(null);
+    setProfileData(null);
   };
 
   const authContextValue = {
@@ -89,9 +109,11 @@ export const AuthProvider = ({ children }) => {
     token,
     role,
     user,
+    profileData,
+    updateUserProfile,
     login,
     shcstore,
-    register, // Expose register to the app
+    register,
     logout,
   };
 

@@ -164,6 +164,13 @@ export default function UserCard({ user, role, navigate, token }) {
                         </span>
                       </div>
                     )}
+                    {user?.blood_group && (
+                      <div className="flex items-center gap-2 mt-1 mb-1">
+                        <span className="bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">
+                          🩸 Blood Group: {user.blood_group}
+                        </span>
+                      </div>
+                    )}
                     <p className="text-slate-400 text-sm mb-3">{user?.email}</p>
 
                     

@@ -58,6 +58,7 @@ export default function SPatient() {
     confirmPassword: "",
     date_of_birth: "",
     gender: "",
+    blood_group: "",
     address: "",
     allergy: "",
     photo: "",
@@ -207,22 +208,48 @@ export default function SPatient() {
               onChange={changehandle}
               value={data.date_of_birth}
             />
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                Gender
-              </label>
-              <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-                <select
-                  name="gender"
-                  value={data.gender}
-                  onChange={changehandle}
-                  className="w-full bg-transparent outline-none"
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Gender
+                </label>
+                <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+                  <select
+                    name="gender"
+                    value={data.gender}
+                    onChange={changehandle}
+                    className="w-full bg-transparent outline-none"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">
+                  Blood Group
+                </label>
+                <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
+                  <select
+                    name="blood_group"
+                    value={data.blood_group}
+                    onChange={changehandle}
+                    className="w-full bg-transparent outline-none"
+                  >
+                    <option value="">Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </select>
+                </div>
               </div>
             </div>
             <FormTextarea
