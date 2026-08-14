@@ -9,24 +9,23 @@ import { IoMdClose } from "react-icons/io";
 
 
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function RecordView() {
   const { record_id } = useParams();
- const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
-const shc_code = searchParams.get("shc_code");
-const qr_code = searchParams.get("qr_code");
+  const shc_code = searchParams.get("shc_code");
+  const qr_code = searchParams.get("qr_code");
   const navigate = useNavigate();
   const { token } = useAuth();
-  const url = "http://localhost:3000";
   
-
   const [activeTab, setActiveTab] = useState("General");
   const [loading, setLoading] = useState(true);
   const [record, setRecord] = useState(null);
   const [hospitalization, setHospitalization] = useState(null);
   const [surgery, setSurgery] = useState(null);
   const [documents, setDocuments] = useState(null);
-
 
   useEffect(() => {
     if (!token || !record_id) return;
@@ -36,9 +35,8 @@ const qr_code = searchParams.get("qr_code");
       try {
         const headers = { Authorization: `Bearer ${token}`};
 
-        // 1. Fetch main record list to find the basic details (including reg_no)
         const recordRes = await axios.post(
-          `${url}/api/v1/patient/records`,
+          `${API_BASE_URL}/patient/records`,
           { searchOptions: { sort_by: "Time Desc", entry_type: "All" }, searchQuery: "",shc_code,qr_code },
           { headers }
         );
@@ -47,16 +45,14 @@ const qr_code = searchParams.get("qr_code");
         if (!currentRecord) throw new Error("Record not found");
         setRecord(currentRecord);
         
-        // 2. Fetch parallel sub-details using the CORRECT backend routes
-        // Backend expects: /api/v1/patient/records/:record_id/:details_type
         const [hospRes, surgRes, docRes] = await Promise.allSettled([
           currentRecord.is_hospitalized
-            ? axios.get(`${url}/api/v1/patient/records/${record_id}/hospitalization`, { headers })
+            ? axios.get(`${API_BASE_URL}/patient/records/${record_id}/hospitalization`, { headers })
             : Promise.reject(),
           currentRecord.is_surgery
-            ? axios.get(`${url}/api/v1/patient/records/${record_id}/surgery`, { headers })
+            ? axios.get(`${API_BASE_URL}/patient/records/${record_id}/surgery`, { headers })
             : Promise.reject(),
-          axios.get(`${url}/api/v1/patient/records/${record_id}/documents`, { headers })
+          axios.get(`${API_BASE_URL}/patient/records/${record_id}/documents`, { headers })
         ]);
         // 3. Update state if the requests were successful
         if (hospRes.status === "fulfilled") setHospitalization(hospRes.value.data);

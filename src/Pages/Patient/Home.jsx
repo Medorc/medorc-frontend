@@ -8,12 +8,13 @@ import { toast } from "react-toastify";
 import { FiLogOut, FiActivity, FiClock, FiFileText, FiUser, FiSettings, FiShield, FiEye, FiEyeOff, FiTrendingUp } from "react-icons/fi";
 import { FaHeartbeat } from "react-icons/fa";
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function Home() {
   const [enabled, setEnabled] = useState(false);
   const [showShcInfo, setShowShcInfo] = useState(false);
   const navigator = useNavigate();
 
-  const url = "http://localhost:3000/api/v1/patient/profile";
   const { token, logout } = useAuth();
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -31,7 +32,7 @@ export default function Home() {
 
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(url, {
+        const res = await axios.get(`${API_BASE_URL}/patient/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -56,7 +57,11 @@ export default function Home() {
     fetchProfile();
   }, [token]);
 
-  const [healthTip, setHealthTip] = useState(null);
+  // Health tip state
+  const [healthTip, setHealthTip] = useState({
+    category: "General",
+    tip_text: "Stay hydrated and get at least 7-8 hours of sleep each night."
+  });
   const [fade, setFade] = useState(true);
 
   useEffect(() => {
@@ -64,7 +69,7 @@ export default function Home() {
       try {
         setFade(false); // Start fade out
         setTimeout(async () => {
-          const res = await axios.get("http://localhost:3000/api/v1/health-tips/random");
+          const res = await axios.get(`${API_BASE_URL}/health-tips/random`);
           if (res.data?.healthTip) {
             setHealthTip(res.data.healthTip);
           }
@@ -85,7 +90,7 @@ export default function Home() {
   const visibility = async () => {
     try {
       const res = await axios.patch(
-        `${url}/shc-visibility`,
+        `${API_BASE_URL}/patient/profile/shc-visibility`,
         { curVisibility: enabled },
         {
           headers: {

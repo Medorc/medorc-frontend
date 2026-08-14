@@ -10,8 +10,9 @@ import NavButton from "../../Components/NavButton";
 import ProfileChange from "../../Components/ProfileChange";
 import { useNavigate } from "react-router-dom";
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function Account() {
-  var url = "http://localhost:3000";
   const navigate = useNavigate();
 
   const [data, setData] = useState({
@@ -24,11 +25,11 @@ export default function Account() {
 
   useEffect(() => {
     if (!token) navigate("/");
-    if (!role) return; // Wait for role to be available
+    if (!role) return;
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/api/v1/${role}/profile/basic`, {
+        const res = await axios.get(`${API_BASE_URL}/${role}/profile/basic`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -24,9 +24,10 @@ import PesonalDetails from "../../Components/PesonalDetails";
 import NavButton from "../../Components/NavButton";
 import { delay } from "framer-motion";
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function DoctorProfile() {
   const { token, role } = useAuth();
-  const url = "http://localhost:3000";
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState({});
@@ -39,7 +40,7 @@ export default function DoctorProfile() {
 
   const getProfile = async () => {
     try {
-      const response = await axios.get(`${url}/api/v1/doctor/profile`, {
+      const response = await axios.get(`${API_BASE_URL}/doctor/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProfile(response.data.data);
@@ -52,7 +53,7 @@ export default function DoctorProfile() {
   const getOrganization = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/doctor/profile/credentials`,
+        `${API_BASE_URL}/doctor/profile/credentials`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
       setCredentials(response.data.data);
@@ -156,24 +157,19 @@ export default function DoctorProfile() {
         // OPTION A: Separate Call (Recommended based on backend controller)
         try {
           await axios.patch(
-            `${url}/api/v1/doctor/profile/documents`, // Endpoint inferred from controller
+            `${API_BASE_URL}/doctor/profile/documents`, // Endpoint inferred from controller
             { newDocument: fileUrl },
             { headers: { Authorization: `Bearer ${token}` } },
           );
         } catch (docErr) {
           console.error("Doc update error", docErr);
-          // We continue to save other details even if this fails, or throw.
         }
       }
 
-      // 2. Prepare payload for text fields (excluding the file object if it wasn't uploaded/replaced)
-      // If we used the separate endpoint above, we might not need to send it in newCredentials
-      // But we should ensure we don't send the File object.
       if (dataToSend.verification_documents instanceof File) {
         delete dataToSend.verification_documents;
       }
 
-      // Ensure numerical types are sent correctly
       if (dataToSend.years_of_experience) {
         dataToSend.years_of_experience = parseInt(
           dataToSend.years_of_experience,
@@ -184,7 +180,7 @@ export default function DoctorProfile() {
       delete dataToSend.verification_documents;
 
       const response = await axios.patch(
-        `${url}/api/v1/doctor/profile/credentials`,
+        `${API_BASE_URL}/doctor/profile/credentials`,
         { newCredentials: dataToSend },
         { headers: { Authorization: `Bearer ${token}` } },
       );

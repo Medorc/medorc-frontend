@@ -1,30 +1,40 @@
 import React, { createContext, useState, useContext } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios'; // Ensure axios is imported
+import { API_BASE_URL } from "../config/api";
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-
-  const [shc_code, setShc_code] = useState(localStorage.getItem('shc_code'));
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [role, setRole] = useState(localStorage.getItem('role'));
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [shc_code, setShc_code] = useState(localStorage.getItem('shc_code') || null);
+  
   const [user, setUser] = useState(() => {
     const savedToken = localStorage.getItem('token');
-    
     if (savedToken) {
       try {
         return jwtDecode(savedToken);
-      } catch (error) {
-        localStorage.removeItem('token');
+      } catch (e) {
+        console.error("Failed to decode token:", e);
+        return null;
+      }
+    }
+    return null;
+  });
+  const [role, setRole] = useState(() => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      try {
+        const decoded = jwtDecode(savedToken);
+        return decoded.role || localStorage.getItem('role') || null;
+      } catch (e) {
         return null;
       }
     }
     return null;
   });
 
-  // Base URL for API - adjust port if needed (defaulting to 3000 based on backend)
-  const API_URL = 'http://localhost:3000/api/v1';
+  const API_URL = API_BASE_URL;
 
   const login = (newToken, newRole) => {
     localStorage.setItem('token', newToken);

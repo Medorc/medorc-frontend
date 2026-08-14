@@ -8,7 +8,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import BackButton from "../../Components/BackButton";
 
-const URL = "http://localhost:3000/api/v1/patient/profile/";
+import { API_BASE_URL } from "../../config/api";
+
+const URL = `${API_BASE_URL}/patient/profile/`;
 const CONTACTS_ENDPOINT = "emergency-contacts";
 const CONTACT_ENDPOINT = "emergency-contact";
 

@@ -17,9 +17,9 @@ import {
   Baby,
 } from "lucide-react";
 
-export default function PatientProfile() {
-  const url = "http://localhost:3000";
+import { API_BASE_URL } from "../../config/api";
 
+export default function PatientProfile() {
   const { token, role } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -36,7 +36,7 @@ export default function PatientProfile() {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${url}/api/v1/patient/profile/personal`, {
+        const res = await axios.get(`${API_BASE_URL}/patient/profile/personal`, {
           params: { qr_code, shc_code },
           headers: { Authorization: `Bearer ${token}` },
         });

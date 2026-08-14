@@ -9,8 +9,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
 import OrbyChat from "../../Components/OrbyChat";
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function Records() {
-  const url = "http://localhost:3000";
   const [searchTerm, setSearchTerm] = useState("");
   const [entryType, setEntryType] = useState("All");
   const [sortBy, setSortBy] = useState("Time Desc");
@@ -35,7 +36,7 @@ export default function Records() {
           searchQuery: searchTerm,
         };
 
-        const res = await axios.post(`${url}/api/v1/patient/records`, payload, {
+        const res = await axios.post(`${API_BASE_URL}/patient/records`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

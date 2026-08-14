@@ -13,7 +13,7 @@ const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 // -------------------------
 
-const url = "http://localhost:3000";
+import { API_BASE_URL } from "../../config/api";
 
 function CreateRecordPage() {
   const { token,role } = useAuth();
@@ -28,44 +28,54 @@ function CreateRecordPage() {
     basicDetails: {
       entry_type: "Self",
       diagnosis_name: "",
+      symptoms: "",
+      treatment_summary: "",
+      prescribed_medications: "",
+      follow_up_advice: "",
+      dietary_restrictions: "",
+      reg_no: "",
+      doctor_notes: "",
       doctor_name: "",
       hospital_name: "",
+      specialization: "",
       appointment_date: "",
-      history_of_present_illness: "",
-      treatment_undergone: "",
+      alternative_medicine: false,
     },
     hospitalizationDetails: {
-      reason: "",
-      duration: "",
-      room_no: "",
-      treatment_undergone: "",
+      admission_date: "",
+      discharge_date: "",
+      room_type: "",
+      icu_stay: false,
+      discharge_summary: "",
     },
     surgeryDetails: {
-      type: "",
-      duration: "",
-      bed_no: "",
-      medical_condition: "",
-      outcome: "",
+      surgery_name: "",
+      surgery_date: "",
+      surgeon_name: "",
+      anesthesia_type: "",
+      implant_details: "",
+      complications: "",
     },
     documents: {
       prescriptions: "",
       lab_results: "",
+      discharge_summary_doc: "",
+      other_records: "",
     },
     ui: {
-      showHospitalization: true,
-      showSurgery: true,
+      showHospitalization: false,
+      showSurgery: false,
     },
   });
 
   const [uploading, setUploading] = useState({
     prescriptions: false,
     lab_results: false,
+    discharge_summary_doc: false,
+    other_records: false,
   });
 
-  const [uploadedFiles, setUploadedFiles] = useState({
-    prescriptions: null,
-    lab_results: null,
-  });
+  const [uploadedFiles, setUploadedFiles] = useState({});
 
   // Handle input changes
   const handleChange = (section, field, value) => {
@@ -96,17 +106,11 @@ function CreateRecordPage() {
     setUploading((prev) => ({ ...prev, [documentType]: true }));
 
     const formDataUpload = new FormData();
-    formDataUpload.append("file", file);
-    formDataUpload.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formDataUpload.append("doc", file);
 
     try {
-      const response = await axios.post(CLOUDINARY_URL, formDataUpload, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const fileUrl = response.data.secure_url;
+      const response = await axios.post(`${API_BASE_URL}/cloudinary/doc`, formDataUpload);
+      const fileUrl = response.data.url;
 
       // Save URL to form data
       handleChange("documents", documentType, fileUrl);
@@ -175,7 +179,7 @@ function CreateRecordPage() {
       delete dataToSend.basicDetails.alternative_medicine;
 
       const response = await axios.post(
-        `${url}/api/v1/patient/createrecord`,
+        `${API_BASE_URL}/patient/createrecord`,
         dataToSend,
         {
           headers: {

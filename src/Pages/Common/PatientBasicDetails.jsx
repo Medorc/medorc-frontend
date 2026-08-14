@@ -8,13 +8,13 @@ import Loading from "../../Components/Loading";
 import EmergencyContacts from "../../Components/EmergencyContacts";
 import PersonalDetails from "../../Components/PesonalDetails";  // 🔥 Fixed import
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function PatientBasicDetails() {
   const { token } = useAuth();
   const [searchParams] = useSearchParams();
   const qr_code = searchParams.get("qr_code");
   const shc_code = searchParams.get("shc_code");
-
-  const BASE_URL = "http://localhost:3000";
 
   const [data, setData] = useState({ profile: null, emergency: [] });
   const [loading, setLoading] = useState(true);
@@ -22,18 +22,16 @@ export default function PatientBasicDetails() {
 
   useEffect(() => {
     const fetchData = async () => {
-      
-      
       setLoading(true);
       setError("");
 
       try {
         const [profileRes, emergencyRes] = await Promise.all([
-          axios.get(`${BASE_URL}/api/v1/patient/profile/personal`, {
+          axios.get(`${API_BASE_URL}/patient/profile/personal`, {
             params: { qr_code: qr_code, shc_code: shc_code},
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${BASE_URL}/api/v1/patient/profile/emergency-contacts`, {
+          axios.get(`${API_BASE_URL}/patient/profile/emergency-contacts`, {
             params: { qr_code: qr_code, shc_code: shc_code },
             headers: { Authorization: `Bearer ${token}` },
           }),

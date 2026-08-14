@@ -4,7 +4,7 @@ import { FaUserInjured, FaUserMd, FaHospital, FaUserTie } from "react-icons/fa";
 const roleOptions = [
   {
     label: "Patient",
-    path: "/patient",
+    path: "/signup/patient",
     icon: FaUserInjured,
     description: "Register to manage your health records",
     color: "from-blue-500 to-blue-600",
@@ -12,7 +12,7 @@ const roleOptions = [
   },
   {
     label: "Doctor",
-    path: "/sDoctor",
+    path: "/signup/doctor",
     icon: FaUserMd,
     description: "Join as a healthcare professional",
     color: "from-emerald-500 to-emerald-600",
@@ -20,7 +20,7 @@ const roleOptions = [
   },
   {
     label: "Hospital",
-    path: "/sHospital",
+    path: "/signup/hospital",
     icon: FaHospital,
     description: "Register your healthcare facility",
     color: "from-purple-500 to-purple-600",
@@ -28,7 +28,7 @@ const roleOptions = [
   },
   {
     label: "External",
-    path: "/sExternal",
+    path: "/signup/external",
     icon: FaUserTie,
     description: "External partner or viewer access",
     color: "from-amber-500 to-amber-600",

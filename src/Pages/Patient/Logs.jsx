@@ -30,8 +30,9 @@ const badgeColors = {
   gray: "bg-slate-100 text-slate-700 border-slate-200",
 };
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function Logs() {
-  const baseUrl = "http://localhost:3000";
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
@@ -42,11 +43,10 @@ export default function Logs() {
 
   // 🔹 Parse log string
   const parseLog = (log) => {
-    const regex = /^(.+?) - (\w+) \[(.+?)\] (.+)$/;
-    const match = log.match(regex);
-    if (!match) return null;
-
-    const [, timestamp, role, userId, action] = match;
+    const timestamp = log.timestamp || log.created_at || Date.now();
+    const role = log.viewer_type || log.role || "Unknown";
+    const userId = log.viewer_id || log.userId || "N/A";
+    const action = log.action || "ACCESSED_RECORD";
 
     return {
       raw: log,
@@ -64,7 +64,7 @@ export default function Logs() {
     const fetchLogs = async () => {
       try {
         const res = await axios.get(
-          `${baseUrl}/api/v1/patient/profile/data-logs?shc_code=${shc_code}`,
+          `${API_BASE_URL}/patient/profile/data-logs?shc_code=${shc_code}`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
 

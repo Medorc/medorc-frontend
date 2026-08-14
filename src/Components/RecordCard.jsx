@@ -9,13 +9,14 @@ import axios from "axios";
 import { useAuth } from "../Context/AuthContext";
 import { FiCalendar, FiClock, FiEye, FiX } from "react-icons/fi";
 
+import { API_BASE_URL } from "../config/api";
+
 export default function RecordCard({ record, shc_code, qr_code }) {
   const [showCreatorInfo, setShowCreatorInfo] = useState(false);
   const navigate = useNavigate(); 
 
 
   const {token} = useAuth();
-  const url = "http://localhost:3000";
 
   // --- LOGIC TO IDENTIFY CREATOR ---
   const entryType = record.entry_type || "";
@@ -49,7 +50,7 @@ export default function RecordCard({ record, shc_code, qr_code }) {
       useEffect(() => {
         const fetchDocumentCount = async () => {
           try {
-            const response = await axios.get(`${url}/api/v1/patient/records/${record.record_id}/documents`, { headers: { Authorization: `Bearer ${token}` } });
+            const response = await axios.get(`${API_BASE_URL}/patient/records/${record.record_id}/documents`, { headers: { Authorization: `Bearer ${token}` } });
             const count = (response?.data?.prescriptions ? 1 : 0) + (response?.data?.lab_results ? 1 : 0);
             setDocCount(count);
           } catch (error) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import NavBar from "../../Components/NavBar";
 import { FaPencilAlt, FaCheck } from "react-icons/fa"; // Using consistent icons
+import { API_BASE_URL } from "../../config/api";
 
 import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
@@ -47,8 +48,8 @@ export default function ProfileSettings() {
   const [isLifestyleEditing, setIsLifestyleEditing] = useState(false);
   const [isPersonalEditing, setIsPersonalEditing] = useState(false);
 
-  const urlPersonal = "http://localhost:3000/api/v1/patient/profile/personal";
-  const urlLifestyle = "http://localhost:3000/api/v1/patient/profile/lifestyle";
+const urlPersonal = `${API_BASE_URL}/patient/profile/personal`;
+const urlLifestyle = `${API_BASE_URL}/patient/profile/lifestyle`;
 
   useEffect(() => {
     if (!token) {

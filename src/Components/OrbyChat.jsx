@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
+import { RASA_URL } from "../config/api";
 
 const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
     const [messages, setMessages] = useState([
@@ -19,7 +20,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages, isLoading]);
 
     const handleSend = async () => {
         const trimmedInput = input.trim();
@@ -31,7 +32,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
         setIsLoading(true);
 
         try {
-            const response = await axios.post("http://localhost:5005/webhooks/rest/webhook", {
+            const response = await axios.post(`${RASA_URL}/webhooks/rest/webhook`, {
                 sender: shcCode || "default_user",
                 message: trimmedInput,
                 metadata: {

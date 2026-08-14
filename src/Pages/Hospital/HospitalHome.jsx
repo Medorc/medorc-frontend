@@ -5,8 +5,9 @@ import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import UserCard from "../../Components/UserCard";
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function HospitalHome() {
-  const url = "http://localhost:3000";
   const navigate = useNavigate();
 
   const { token, role } = useAuth();
@@ -17,7 +18,7 @@ export default function HospitalHome() {
   // Validate Login
   useEffect(() => {
     if (!token || role !== "hospital") {
-      navigate("/signup");
+      navigate("/");
     }
   }, [token, role]);
 
@@ -25,7 +26,7 @@ export default function HospitalHome() {
   useEffect(() => {
     const getUser = async () => { 
       try {
-        const response = await axios.get(`${url}/api/v1/hospital/profile/`, {
+        const response = await axios.get(`${API_BASE_URL}/hospital/profile/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

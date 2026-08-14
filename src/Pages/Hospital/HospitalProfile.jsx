@@ -63,10 +63,11 @@ const ProfileInput = ({
   </div>
 );
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function HospitalProfile() {
   const { token, role } = useAuth();
   const navigate = useNavigate();
-  const url = "http://localhost:3000";
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("profile");
@@ -94,12 +95,12 @@ export default function HospitalProfile() {
 
   const getProfile = async () => {
     try {
-      const detailsRes = await axios.get(`${url}/api/v1/hospital/details`, {
+      const detailsRes = await axios.get(`${API_BASE_URL}/hospital/details`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const credentialsRes = await axios.get(
-        `${url}/api/v1/hospital/profile/credentials`,
+        `${API_BASE_URL}/hospital/profile/credentials`,
         { headers: { Authorization: `Bearer ${token}` } },
       );
 
@@ -193,7 +194,7 @@ export default function HospitalProfile() {
         // Call separate endpoint for document if needed (similar to Doctor profile)
         try {
           await axios.patch(
-            `${url}/api/v1/hospital/profile/documents`, // Confirmed endpoint in hospital.routes.ts
+            `${API_BASE_URL}/hospital/profile/documents`, // Confirmed endpoint in hospital.routes.ts
             { newDocument: fileUrl },
             { headers: { Authorization: `Bearer ${token}` } },
           );
@@ -202,17 +203,12 @@ export default function HospitalProfile() {
         }
       }
 
-      // 2. Cleanup payload before main update
       if (dataToSend.verification_documents instanceof File) {
         delete dataToSend.verification_documents;
       }
 
-      // If backend handles document update separately, we might not want to send it here,
-      // but let's send the text URL if it's there.
-      // However, if it's a File object that we just uploaded, we replaced it with URL above.
-
       await axios.patch(
-        `${url}/api/v1/hospital/profile/credentials`,
+        `${API_BASE_URL}/hospital/profile/credentials`,
         { newCredentials: dataToSend },
         {
           headers: { Authorization: `Bearer ${token}` },

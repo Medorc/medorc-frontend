@@ -14,9 +14,9 @@ import { Scanner } from "@yudiel/react-qr-scanner";
 
 // import { useAuth } from "../Context/AuthContext"; // Uncomment if available
 
-export default function UserCard({ user, role, navigate, token }) {
-  const url = "http://localhost:3000";
+import { API_BASE_URL } from "../config/api";
 
+export default function UserCard({ user, role, navigate, token }) {
   const [loading, setLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [qrResult, setQrResult] = useState("");
@@ -28,15 +28,9 @@ export default function UserCard({ user, role, navigate, token }) {
     navigate("/");
   };
 
-
-
-  // -----------------------------
-  // QR CODE SCANNING (Updated for @yudiel/react-qr-scanner)
-  // -----------------------------
   const handleScan = async (detectedCodes) => {
-    // This library returns an array of detected objects
     if (detectedCodes && detectedCodes.length > 0) {
-      const code = detectedCodes[0].rawValue; // Access the raw string
+      const code = detectedCodes[0].rawValue;
 
       if (!code) return;
 
@@ -45,7 +39,7 @@ export default function UserCard({ user, role, navigate, token }) {
       setLoading(true);
 
       try {
-        const response = await axios.get(`${url}/api/v1/patient/profile`, {
+        const response = await axios.get(`${API_BASE_URL}/patient/profile`, {
           params: { qr_code: code },
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -70,7 +64,7 @@ export default function UserCard({ user, role, navigate, token }) {
 
     setLoading(true);
     try {
-      const response = await axios.get(`${url}/api/v1/patient/profile`, {
+      const response = await axios.get(`${API_BASE_URL}/patient/profile`, {
         params: { shc_code: shcCode },
         headers: { Authorization: `Bearer ${token}` },
       });

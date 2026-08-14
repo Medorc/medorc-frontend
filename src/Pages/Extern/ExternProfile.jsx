@@ -64,9 +64,10 @@ const ProfileInput = ({
   </div>
 );
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function ExternProfile() {
   const { token, role } = useAuth();
-  const url = "http://localhost:3000";
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -86,7 +87,7 @@ export default function ExternProfile() {
   const getProfile = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/extern/profile/personal`,
+        `${API_BASE_URL}/extern/profile/personal`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -103,7 +104,7 @@ export default function ExternProfile() {
   const getOrganization = async () => {
     try {
       const response = await axios.get(
-        `${url}/api/v1/extern/profile/organization`,
+        `${API_BASE_URL}/extern/profile/organization`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -201,7 +202,7 @@ export default function ExternProfile() {
       }
       
       const uploadedDoc = await axios.patch(
-        `${url}/api/v1/extern/profile/documents`,
+        `${API_BASE_URL}/extern/profile/documents`,
         {newDocument: dataToSend.verification_documents},
         {
           headers: {
@@ -213,7 +214,7 @@ export default function ExternProfile() {
       delete dataToSend.verification_documents
 
       const response = await axios.patch(
-        `${url}/api/v1/extern/profile/organization`,
+        `${API_BASE_URL}/extern/profile/organization`,
         {
           newOrganizationCredentials: dataToSend,
         },

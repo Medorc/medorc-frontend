@@ -6,8 +6,9 @@ import Loading from "../../Components/Loading";
 import { useNavigate } from "react-router-dom";
 import UserCard from "../../Components/UserCard";
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function DoctorHome() {
-  const url = "http://localhost:3000";
   const navigate = useNavigate();
 
   const { token, role } = useAuth();
@@ -18,7 +19,7 @@ export default function DoctorHome() {
   // Validate Login
   useEffect(() => {
     if (!token || role !== "doctor") {
-      navigate("/signup");
+      navigate("/");
     }
   }, [token, role]);
 
@@ -26,7 +27,7 @@ export default function DoctorHome() {
   useEffect(() => {
     const getUser = async () => { 
       try {
-        const response = await axios.get(`${url}/api/v1/doctor/profile/`, {
+        const response = await axios.get(`${API_BASE_URL}/doctor/profile/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

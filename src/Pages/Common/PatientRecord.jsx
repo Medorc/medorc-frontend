@@ -9,9 +9,10 @@ import { useNavigate, useLocation } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
 import { useSearchParams } from "react-router-dom";
 import OrbyChat from "../../Components/OrbyChat";
+import { API_BASE_URL } from "../../config/api";
+
 /* ================= MAIN PAGE ================= */
 export default function PatientRecord() {
-  const url = "http://localhost:3000";
   const [searchTerm, setSearchTerm] = useState("");
   const [entryType, setEntryType] = useState("All");
   const [sortBy, setSortBy] = useState("Time Desc");
@@ -19,7 +20,7 @@ export default function PatientRecord() {
   const [userProfile, setUserProfile] = useState(null);
 
   const location = useLocation();
-  const { token } = useAuth();
+  const { token, role } = useAuth();
 
   // Check if navigated with openOrby flag
   const [showOrbyChat, setShowOrbyChat] = useState(location.state?.openOrby || false);
@@ -29,7 +30,6 @@ export default function PatientRecord() {
   const shc_code = searchParams.get("shc_code");
 
   const navigate = useNavigate();
-  const { role } = useAuth();
 
   // Fetch records (depends on search filters)
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function PatientRecord() {
           shc_code,
         };
 
-        const res = await axios.post(`${url}/api/v1/patient/records`, payload, {
+        const res = await axios.post(`${API_BASE_URL}/patient/records`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

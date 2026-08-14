@@ -10,28 +10,27 @@ import NavButton from "../../Components/NavButton";
 import ProfileChange from "../../Components/ProfileChange";
 
 
+import { API_BASE_URL } from "../../config/api";
+
 export default function Account() {
-
-  const url="http://localhost:3000";
-
-  
-  const [data, setData] = useState({
-    email:"",
-    phone_no:"",
-    password:"",
-    photo:""
-  });
-  const { token,role } = useAuth();
-
   const navigate = useNavigate();
+
+  const [data, setData] = useState({
+    email: "",
+    phone_no: "",
+    password: "",
+    photo: "",
+  });
+  const { token, role } = useAuth();
    
 
     useEffect(() => {
     if (!token) navigate("/");
+    if (!role) return;
 
     const fetchData = async () => {
       try {
-        const res = await axios.get(`${url}/api/v1/${role}/profile/basic`, {
+        const res = await axios.get(`${API_BASE_URL}/${role}/profile/basic`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
