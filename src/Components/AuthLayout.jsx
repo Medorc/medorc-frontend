@@ -27,11 +27,8 @@ export default function AuthLayout({ title, subtitle, children }) {
         />
 
         <div className="relative z-10 p-12">
-          <div className="inline-flex items-center gap-3 rounded-2xl bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-xl border border-white/40">
+          <div className="inline-flex items-center rounded-2xl bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-xl border border-white/40">
             <img src="/Logo.png" alt="Medorc Logo" className="h-10 w-auto object-contain" />
-            <span className="font-display text-xl font-extrabold tracking-tight text-slate-900">
-              MEDORC
-            </span>
           </div>
         </div>
 
@@ -60,11 +57,8 @@ export default function AuthLayout({ title, subtitle, children }) {
       {/* Right content */}
       <main className="flex w-full flex-col items-center justify-center px-4 py-10 sm:px-8 lg:w-1/2">
         <div className="mb-8 lg:hidden">
-          <div className="inline-flex items-center gap-3 rounded-2xl bg-surface px-4 py-2.5 shadow-md border border-border">
+          <div className="inline-flex items-center rounded-2xl bg-surface px-4 py-2.5 shadow-md border border-border">
             <img src="/Logo.png" alt="Medorc Logo" className="h-9 w-auto object-contain" />
-            <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
-              MEDORC
-            </span>
           </div>
         </div>
 
