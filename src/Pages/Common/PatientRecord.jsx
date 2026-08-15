@@ -80,11 +80,19 @@ export default function PatientRecord() {
 
     fetchUser();
   }, [role, qr_code, shc_code, token]);
+  const handleOrbyBack = () => {
+    if (location.state?.openOrby) {
+      navigate(-1);
+    } else {
+      setShowOrbyChat(false);
+    }
+  };
+
   if (showOrbyChat) {
     return (
       <OrbyChat
         userName={userProfile?.full_name || "User"}
-        onBack={() => setShowOrbyChat(false)}
+        onBack={handleOrbyBack}
         shcCode={userProfile?.shc_code}
         qrCode={userProfile?.qr_code}
       />
