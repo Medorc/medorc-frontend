@@ -50,8 +50,32 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
 
   const formatContent = (content) => {
     if (!content) return "";
-    const formatted = content.replace(/\n/g, "<br />");
-    return DOMPurify.sanitize(formatted);
+    let formatted = content;
+
+    // Convert markdown bold **text** -> <strong>text</strong>
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    // Convert markdown links [title](url)
+    formatted = formatted.replace(
+      /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-teal-600 font-semibold underline hover:text-teal-800">$1</a>'
+    );
+
+    // Convert raw standalone URLs (not already inside href="...")
+    formatted = formatted.replace(
+      /(?<!href=["'])(https?:\/\/[^\s<]+)(?![^<]*>)/gi,
+      (match) => {
+        if (match.endsWith(".pdf") || match.includes("cloudinary.com")) {
+          return `<a href="${match}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200 font-semibold text-xs transition-colors my-1">📄 Open Document</a>`;
+        }
+        return `<a href="${match}" target="_blank" rel="noopener noreferrer" class="text-teal-600 font-semibold underline hover:text-teal-800">${match}</a>`;
+      }
+    );
+
+    // Convert newlines to <br />
+    formatted = formatted.replace(/\n/g, "<br />");
+
+    return DOMPurify.sanitize(formatted, { ADD_ATTR: ["target", "rel", "class"] });
   };
 
   const handleSend = async () => {
