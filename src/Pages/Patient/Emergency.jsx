@@ -186,24 +186,27 @@ export default function Emergency() {
       >
         <div className="flex flex-col gap-4">
           <Input
+            id="emergency-contact-name"
             label="Name"
             placeholder="Full name"
             value={form.full_name}
-            onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, full_name: e.target.value }))}
           />
           <Input
+            id="emergency-contact-phone"
             label="Phone"
             type="tel"
             inputMode="numeric"
             placeholder="10-digit phone number"
             value={form.phone_no}
-            onChange={(e) => setForm({ ...form, phone_no: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, phone_no: e.target.value }))}
           />
           <Input
+            id="emergency-contact-relation"
             label="Relation"
             placeholder="e.g. Spouse, Parent"
             value={form.relation}
-            onChange={(e) => setForm({ ...form, relation: e.target.value })}
+            onChange={(e) => setForm((prev) => ({ ...prev, relation: e.target.value }))}
           />
         </div>
         <div className="mt-6 flex justify-end gap-3">

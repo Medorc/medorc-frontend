@@ -22,22 +22,29 @@ export function Modal({
   hideClose = false,
 }) {
   const panelRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement;
     const onKeyDown = (e) => {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape") onCloseRef.current?.();
     };
     document.addEventListener("keydown", onKeyDown);
     document.body.style.overflow = "hidden";
-    panelRef.current?.focus();
+
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
-      if (previous instanceof HTMLElement) previous.focus();
+      if (previous instanceof HTMLElement && typeof previous.focus === "function") {
+        previous.focus();
+      }
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (typeof document === "undefined") return null;
 
