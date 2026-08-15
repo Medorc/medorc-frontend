@@ -1,23 +1,44 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+
 import axios from "axios";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import NavBar from "../../Components/NavBar";
-import { useAuth } from "../../Context/AuthContext";
 import Loading from "../../Components/Loading";
-import PersonalDetails from "../../Components/PesonalDetails";
+import { useAuth } from "../../Context/AuthContext";
+import { PageHeader } from "../../Components/PageHeader";
+import { EmptyState } from "../../Components/ui/EmptyState";
+import { Button } from "../../Components/ui/Button";
+import PersonalDetails from "../../Components/PersonalDetails";
 import {
+  Dna,
   Activity,
   Cigarette,
   Wine,
   AlertTriangle,
-  Dna,
   Coffee,
-  ArrowLeft,
   HeartPulse,
   Baby,
 } from "lucide-react";
 
 import { API_BASE_URL } from "../../config/api";
+
+const toneMap = {
+  orange: {
+    soft: "bg-warning-soft text-warning",
+  },
+  purple: {
+    soft: "bg-info-soft text-info",
+  },
+  amber: {
+    soft: "bg-primary-soft text-primary",
+  },
+  green: {
+    soft: "bg-success-soft text-success",
+  },
+  pink: {
+    soft: "bg-danger-soft text-danger",
+  },
+};
 
 export default function PatientProfile() {
   const { token, role } = useAuth();
@@ -53,170 +74,108 @@ export default function PatientProfile() {
     fetchUser();
   }, [role, qr_code, shc_code, token]);
 
-  const LifestyleItem = ({ label, value, icon: Icon, colorClass }) => (
-    <div
-      className={`flex items-center gap-4 p-4 rounded-xl border transition-all ${
-        value
-          ? `bg-white border-${colorClass}-200 shadow-sm`
-          : "bg-slate-50 border-slate-100 opacity-60"
-      }`}
-    >
+  const LifestyleItem = ({ label, value, icon: Icon, colorClass }) => {
+    const active = !!value;
+    return (
       <div
-        className={`p-3 rounded-full flex-shrink-0 ${
-          value ? `bg-${colorClass}-50 text-${colorClass}-600` : "bg-slate-200 text-slate-400"
+        className={`flex items-center gap-4 rounded-xl border p-4 transition-all ${
+          active
+            ? "border-border bg-surface shadow-card"
+            : "border-transparent bg-surface-hover opacity-60"
         }`}
       >
-        <Icon size={20} />
-      </div>
-      <div>
-        <p
-          className={`font-semibold ${
-            value ? "text-slate-800" : "text-slate-500"
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+            active ? toneMap[colorClass].soft : "bg-surface text-subtle"
           }`}
         >
-          {label}
-        </p>
-        <p className="text-xs text-slate-400">{value ? "Active" : "None"}</p>
+          <Icon size={20} aria-hidden="true" />
+        </div>
+        <div>
+          <p className={`font-semibold ${active ? "text-foreground" : "text-muted"}`}>{label}</p>
+          <p className="text-xs text-subtle">{active ? "Active" : "None"}</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-background font-sans">
       <NavBar />
 
       {loading ? (
         <Loading />
       ) : (
-        <div className="flex justify-center w-full min-h-screen pt-8 pb-20 px-4 md:px-8">
-          <div className="w-full max-w-5xl flex flex-col gap-8">
-            
-            {/* 1. HEADER SECTION (Aligned Left with Back Button) */}
-            <div className="flex items-center gap-2 mb-4">
-              <button
-                onClick={() => navigate(-1)}
-                className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all shadow-sm group"
-                aria-label="Go back"
-              >
-                <ArrowLeft
-                  size={20}
-                  className="text-slate-600 group-hover:text-blue-600 group-hover:-translate-x-1 transition-transform"
-                />
-              </button>
-
-              <div className="flex flex-col">
-                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  Patient Profile
-                </h1>
-                <p className="text-slate-500 text-sm md:text-base">
-                  Comprehensive Health Overview & History
-                </p>
-              </div>
-            </div>
+        <div className="flex min-h-screen w-full justify-center px-4 pb-20 pt-8 md:px-8">
+          <div className="flex w-full max-w-5xl flex-col gap-8">
+            <PageHeader
+              title="Patient Profile"
+              description="Comprehensive Health Overview & History"
+              back
+              className="mb-2"
+            />
 
             {user ? (
-              <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                
-                {/* 2. PERSONAL DETAILS (Full Width Card) */}
-                <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-                   <PersonalDetails data={user} />
-                </div>
+              <div className="flex animate-fade-in-down flex-col gap-8">
+                <PersonalDetails data={user} />
 
-                {/* 3. LIFESTYLE & HISTORY SECTION */}
-                <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50">
-                  
-                  {/* Section Title */}
-                  <div className="flex items-center gap-3 mb-8 pb-4 border-b border-slate-100">
-                    <div className="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
-                      <Activity size={24} />
+                {/* Lifestyle & History */}
+                <section className="rounded-2xl border border-border bg-surface p-6 shadow-card sm:p-8">
+                  <div className="mb-8 flex items-center gap-3 border-b border-border pb-4">
+                    <div className="rounded-xl bg-danger-soft p-2.5 text-danger">
+                      <Activity size={24} aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-slate-800">
+                      <h3 className="font-display text-xl font-bold text-foreground">
                         Lifestyle & History
                       </h3>
-                      <p className="text-slate-500 text-sm">
+                      <p className="text-sm text-muted">
                         Habits, pregnancy status, and medical alerts
                       </p>
                     </div>
                   </div>
 
-                  {/* Lifestyle Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-                    <LifestyleItem
-                      label="Smoking"
-                      value={user?.smoking}
-                      icon={Cigarette}
-                      colorClass="orange"
-                    />
-                    <LifestyleItem
-                      label="Alcohol"
-                      value={user?.alcoholism}
-                      icon={Wine}
-                      colorClass="purple"
-                    />
-                    <LifestyleItem
-                      label="Tobacco"
-                      value={user?.tobacco}
-                      icon={Coffee}
-                      colorClass="amber"
-                    />
-                    <LifestyleItem
-                      label="Exercise"
-                      value={user?.exercise}
-                      icon={HeartPulse}
-                      colorClass="green"
-                    />
-                    <LifestyleItem
-                      label="Pregnancy"
-                      value={user?.pregnancy}
-                      icon={Baby}
-                      colorClass="pink"
-                    />
+                  <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                    <LifestyleItem label="Smoking" value={user?.smoking} icon={Cigarette} colorClass="orange" />
+                    <LifestyleItem label="Alcohol" value={user?.alcoholism} icon={Wine} colorClass="purple" />
+                    <LifestyleItem label="Tobacco" value={user?.tobacco} icon={Coffee} colorClass="amber" />
+                    <LifestyleItem label="Exercise" value={user?.exercise} icon={HeartPulse} colorClass="green" />
+                    <LifestyleItem label="Pregnancy" value={user?.pregnancy} icon={Baby} colorClass="pink" />
                   </div>
 
-                  {/* Notes Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Other Habits */}
+                  <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                     <div className="flex flex-col gap-3">
-                      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                        <Dna size={16} className="text-blue-500" /> Other Habits
-                      </label>
-                      <div className="w-full p-5 bg-slate-50/80 border border-slate-200 rounded-2xl min-h-[120px] text-slate-600 text-sm leading-relaxed shadow-inner">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <Dna size={16} className="text-primary" aria-hidden="true" /> Other Habits
+                      </p>
+                      <div className="min-h-[120px] rounded-2xl border border-border bg-surface-hover p-5 text-sm leading-relaxed text-muted">
                         {user?.others || "No other habits recorded."}
                       </div>
                     </div>
 
-                    {/* Allergies */}
                     <div className="flex flex-col gap-3">
-                      <label className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-                        <AlertTriangle size={16} className="text-red-500" />
-                        Allergies
-                      </label>
-                      <div className="w-full p-5 bg-red-50/40 border border-red-100 rounded-2xl min-h-[120px] text-slate-700 text-sm leading-relaxed shadow-inner">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                        <AlertTriangle size={16} className="text-danger" aria-hidden="true" /> Allergies
+                      </p>
+                      <div className="min-h-[120px] rounded-2xl border border-danger/20 bg-danger-soft/40 p-5 text-sm leading-relaxed text-muted">
                         {user?.allergy || "No known allergies."}
                       </div>
                     </div>
                   </div>
-                </div>
+                </section>
               </div>
             ) : (
-              // Empty State
-              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-slate-300 shadow-sm">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                  <Dna size={40} className="text-slate-300" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-700">
-                  No Patient Data Found
-                </h3>
-                <p className="text-slate-400">
-                  Could not retrieve profile information. Please try again.
-                </p>
-                <button 
-                  onClick={() => navigate(-1)}
-                  className="mt-6 px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
-                >
-                  Go Back
-                </button>
+              <div className="rounded-3xl border border-border bg-surface shadow-card">
+                <EmptyState
+                  icon={Dna}
+                  title="No Patient Data Found"
+                  description="Could not retrieve profile information. Please try again."
+                  action={
+                    <Button variant="outline" onClick={() => navigate(-1)}>
+                      Go Back
+                    </Button>
+                  }
+                />
               </div>
             )}
           </div>

@@ -1,14 +1,20 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import NavBar from "../../Components/NavBar";
-import { FaTimesCircle } from "react-icons/fa";
+import { FiUser, FiPhone, FiUsers, FiPlus, FiTrash2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import NavButton from "../../Components/NavButton";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import BackButton from "../../Components/BackButton";
-
 import { API_BASE_URL } from "../../config/api";
+import { Card } from "../../Components/ui/Card";
+import { Button } from "../../Components/ui/Button";
+import { Input } from "../../Components/ui/Field";
+import { Modal } from "../../Components/ui/Modal";
+import { EmptyState } from "../../Components/ui/EmptyState";
+import { Loading } from "../../Components/Loading";
 
 const URL = `${API_BASE_URL}/patient/profile/`;
 const CONTACTS_ENDPOINT = "emergency-contacts";
@@ -17,17 +23,18 @@ const CONTACT_ENDPOINT = "emergency-contact";
 export default function Emergency() {
   const [contacts, setContacts] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({
-    full_name: "",
-    phone_no: "",
-    relation: "",
-  });
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({ full_name: "", phone_no: "", relation: "" });
 
   const navigate = useNavigate();
   const { token } = useAuth();
 
   useEffect(() => {
-    if (!token) navigate("/");
+    if (!token) {
+      navigate("/");
+      return;
+    }
 
     const fetchData = async () => {
       try {
@@ -36,13 +43,13 @@ export default function Emergency() {
         });
         setContacts(res.data.data.patient_emergency_contacts || []);
       } catch (err) {
-        toast.error(
-          "API Error: " + (err.response?.data?.message || err.message),
-        );
+        toast.error("API Error: " + (err.response?.data?.message || err.message));
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
-  }, [token]);
+  }, [token, navigate]);
 
   const resetFormAndCloseModal = () => {
     setShowModal(false);
@@ -60,19 +67,20 @@ export default function Emergency() {
         return;
       }
 
+      setSaving(true);
       const res = await axios.post(
         URL + CONTACT_ENDPOINT,
         { newEmergencyContact: form },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setContacts([...contacts, res.data.data]);
       toast.success("Contact saved!");
       resetFormAndCloseModal();
     } catch (err) {
-      toast.error(
-        "Save Error: " + (err.response?.data?.message || err.message),
-      );
+      toast.error("Save Error: " + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -85,9 +93,7 @@ export default function Emergency() {
       setContacts(contacts.filter((c) => c.emg_id !== emgIdToDelete));
       toast.success("Contact deleted!");
     } catch (err) {
-      toast.error(
-        "Delete Error: " + (err.response?.data?.message || err.message),
-      );
+      toast.error("Delete Error: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -97,121 +103,118 @@ export default function Emergency() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-blue-100 flex flex-col items-center  ">
+    <div className="flex min-h-screen w-full flex-col items-center bg-background">
       <NavBar />
-      <div className=" w-full  flex flex-col ">
+      <div className="flex w-full flex-col">
         <BackButton />
         <NavButton />
       </div>
 
-      <div className="w-full max-w-4xl my-10 flex flex-col items-center gap-6 px-4">
-        <div className="w-full flex flex-col gap-4 ">
-          {contacts.map((contact) => (
-            <div
-              key={contact.emg_id}
-              className="w-full backdrop-blur-md bg-white/70 border border-white/40 p-6 md:p-8 rounded-2xl shadow-lg hover:shadow-xl transition duration-300"
-            >
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-                <div className="flex flex-col md:flex-row gap-4 flex-grow">
-                  {["Name", "Phone", "Relation"].map((label, i) => {
-                    const key = ["full_name", "phone_no", "relation"][i];
-                    return (
-                      <div key={i} className="flex flex-col flex-1">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-                          {label}
-                        </label>
-                        <p className="rounded-lg px-3 py-2 bg-white shadow-inner border border-gray-200 text-gray-700">
-                          {contact[key]}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center self-end mt-4 md:mt-0 md:self-center md:ml-4">
-                  <button
-                    className="text-gray-400 hover:text-red-500 hover:scale-110 transition duration-200"
-                    onClick={() => handleDelete(contact.emg_id)}
-                  >
-                    <FaTimesCircle size={22} />
-                  </button>
-                </div>
-              </div>
+      {loading ? (
+        <Loading />
+      ) : (
+        <div className="my-8 flex w-full max-w-4xl flex-col items-center gap-6 px-4 pb-12">
+          {contacts.length > 0 ? (
+            <div className="flex w-full flex-col gap-4">
+              {contacts.map((contact) => (
+                <Card key={contact.emg_id} className="p-5 transition-shadow hover:shadow-lift sm:p-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="flex flex-1 flex-wrap gap-4">
+                      {[
+                        { key: "full_name", label: "Name", icon: FiUser },
+                        { key: "phone_no", label: "Phone", icon: FiPhone },
+                        { key: "relation", label: "Relation", icon: FiUsers },
+                      ].map(({ key, label, icon: Icon }) => (
+                        <div key={key} className="flex min-w-[140px] flex-1 flex-col">
+                          <span className="mb-1 text-xs font-semibold uppercase tracking-wide text-subtle">
+                            {label}
+                          </span>
+                          <span className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground">
+                            <Icon size={14} className="text-subtle" aria-hidden="true" />
+                            {contact[key]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(contact.emg_id)}
+                      aria-label={`Delete ${contact.full_name}`}
+                      className="self-end rounded-lg p-2 text-subtle transition-colors hover:bg-danger-soft hover:text-danger sm:self-center"
+                    >
+                      <FiTrash2 size={18} aria-hidden="true" />
+                    </button>
+                  </div>
+                </Card>
+              ))}
             </div>
-          ))}
-        </div>
-
-        {contacts.length > 0 && (
-          <div className="text-center text-gray-500 text-sm mt-6">
-            You can add{" "}
-            <span className="font-semibold text-blue-600">
-              {3 - contacts.length}
-            </span>{" "}
-            more contacts.
-          </div>
-        )}
-        {contacts.length < 3 && (
-          <button
-            className="max-w-md mx-auto bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold py-3 px-8 rounded-xl shadow-md hover:shadow-xl hover:scale-105 active:scale-95 transition duration-200 mb-10"
-            onClick={handleAddNew}
-          >
-            + Add Contact
-          </button>
-        )}
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50 p-4">
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 shadow-2xl w-full max-w-md border border-white/40">
-            <h2 className="text-2xl font-bold mb-6 text-blue-400">
-              Add Emergency Contact
-            </h2>
-
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Name"
-                className="w-full border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none rounded-xl px-4 py-3 bg-white/80 shadow-sm transition"
-                value={form.full_name}
-                onChange={(e) =>
-                  setForm({ ...form, full_name: e.target.value })
+          ) : (
+            <Card className="w-full">
+              <EmptyState
+                icon={FiUsers}
+                title="No emergency contacts yet"
+                description="Add up to 3 trusted contacts who can be reached in an emergency."
+                action={
+                  <Button onClick={handleAddNew} icon={FiPlus}>
+                    Add Contact
+                  </Button>
                 }
               />
-              <input
-                type="tel"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Phone"
-                className="w-full border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none rounded-xl px-4 py-3 bg-white/80 shadow-sm transition"
-                value={form.phone_no}
-                onChange={(e) => setForm({ ...form, phone_no: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="Relation"
-                className="w-full border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none rounded-xl px-4 py-3 bg-white/80 shadow-sm transition"
-                value={form.relation}
-                onChange={(e) => setForm({ ...form, relation: e.target.value })}
-              />
-            </div>
+            </Card>
+          )}
 
-            <div className="flex justify-end gap-4 mt-6 pt-3">
-              <button
-                className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition"
-                onClick={resetFormAndCloseModal}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg transition"
-                onClick={handleSave}
-              >
-                Save
-              </button>
-            </div>
-          </div>
+          {contacts.length > 0 && (
+            <p className="text-center text-sm text-muted">
+              You can add{" "}
+              <span className="font-semibold text-primary">{3 - contacts.length}</span> more contacts.
+            </p>
+          )}
+          {contacts.length < 3 && contacts.length > 0 && (
+            <Button variant="outline" onClick={handleAddNew} icon={FiPlus} className="mb-4">
+              Add Contact
+            </Button>
+          )}
         </div>
       )}
+
+      <Modal
+        open={showModal}
+        onClose={resetFormAndCloseModal}
+        title="Add Emergency Contact"
+        description="Someone doctors can reach in an emergency"
+        size="sm"
+      >
+        <div className="flex flex-col gap-4">
+          <Input
+            label="Name"
+            placeholder="Full name"
+            value={form.full_name}
+            onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+          />
+          <Input
+            label="Phone"
+            type="tel"
+            inputMode="numeric"
+            placeholder="10-digit phone number"
+            value={form.phone_no}
+            onChange={(e) => setForm({ ...form, phone_no: e.target.value })}
+          />
+          <Input
+            label="Relation"
+            placeholder="e.g. Spouse, Parent"
+            value={form.relation}
+            onChange={(e) => setForm({ ...form, relation: e.target.value })}
+          />
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={resetFormAndCloseModal}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} loading={saving}>
+            Save
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

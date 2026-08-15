@@ -1,32 +1,36 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import { useNavigate } from "react-router-dom";
 import NavBar from "../../Components/NavBar";
 import { useAuth } from "../../Context/AuthContext";
 import axios from "axios";
 import { QRCodeCanvas } from "qrcode.react";
 import { toast } from "react-toastify";
-import { FiLogOut, FiActivity, FiClock, FiFileText, FiUser, FiSettings, FiShield, FiEye, FiEyeOff, FiTrendingUp } from "react-icons/fi";
+import { FiFileText, FiUser, FiActivity, FiShield, FiEye, FiEyeOff, FiHelpCircle, FiMessageCircle } from "react-icons/fi";
 import { FaHeartbeat } from "react-icons/fa";
-
 import { API_BASE_URL } from "../../config/api";
+import { Button } from "../../Components/ui/Button";
+import { Badge } from "../../Components/ui/Badge";
+import { Modal } from "../../Components/ui/Modal";
+import { Toggle } from "../../Components/ui/Toggle";
+import { Avatar } from "../../Components/ui/Avatar";
+import { Loading } from "../../Components/Loading";
 
 export default function Home() {
   const [enabled, setEnabled] = useState(false);
   const [showShcInfo, setShowShcInfo] = useState(false);
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
   const [data, setData] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Redirect if no token
   useEffect(() => {
     if (!token) {
-      navigator("/");
+      navigate("/");
     }
-  }, [token, navigator]);
+  }, [token, navigate]);
 
-  // Fetch profile
   useEffect(() => {
     if (!token) return;
 
@@ -45,9 +49,10 @@ export default function Home() {
       } catch (err) {
         console.error("Profile fetch error:", err);
         const errorMsg = err.response?.data?.message || err.response?.data || err.message || "Unknown error";
-        // Avoid showing toast on 401/403 which might happen during logout race conditions
         if (err.response?.status !== 401 && err.response?.status !== 403) {
-          toast.error("Error fetching profile: " + (typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg));
+          toast.error(
+            "Error fetching profile: " + (typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg)
+          );
         }
       } finally {
         setLoading(false);
@@ -57,37 +62,36 @@ export default function Home() {
     fetchProfile();
   }, [token]);
 
-  // Health tip state
   const [healthTip, setHealthTip] = useState({
     category: "General",
-    tip_text: "Stay hydrated and get at least 7-8 hours of sleep each night."
+    tip_text: "Stay hydrated and get at least 7-8 hours of sleep each night.",
   });
   const [fade, setFade] = useState(true);
 
   useEffect(() => {
     const fetchTip = async () => {
       try {
-        setFade(false); // Start fade out
+        setFade(false);
         setTimeout(async () => {
           const res = await axios.get(`${API_BASE_URL}/health-tips/random`);
           if (res.data?.healthTip) {
             setHealthTip(res.data.healthTip);
           }
-          setFade(true); // Fade in
-        }, 500); // Wait for fade out
+          setFade(true);
+        }, 500);
       } catch (err) {
         console.error("Error fetching health tip:", err);
-        setFade(true); // Ensure visible even on error
+        setFade(true);
       }
     };
 
-    fetchTip(); // Initial fetch
-    const interval = setInterval(fetchTip, 5000); // Rotate every 5 seconds
+    fetchTip();
+    const interval = setInterval(fetchTip, 15000);
 
     return () => clearInterval(interval);
   }, []);
 
-  const visibility = async () => {
+  const toggleVisibility = async () => {
     try {
       const res = await axios.patch(
         `${API_BASE_URL}/patient/profile/shc-visibility`,
@@ -111,169 +115,181 @@ export default function Home() {
     {
       label: "Medical History",
       desc: "View records & reports",
-      icon: <FiFileText size={22} />,
-      action: () => navigator("/patient/records"),
-      color: "bg-blue-50 text-blue-600 border-blue-100"
+      icon: FiFileText,
+      action: () => navigate("/patient/records"),
+      tone: "patient",
     },
     {
       label: "My Profile",
       desc: "Manage personal details",
-      icon: <FiUser size={22} />,
-      action: () => navigator("/patient/profile"),
-      color: "bg-indigo-50 text-indigo-600 border-indigo-100"
+      icon: FiUser,
+      action: () => navigate("/patient/profile"),
+      tone: "hospital",
     },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavBar />
+        <Loading />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 font-sans pb-10">
+    <div className="min-h-screen bg-background pb-14">
       <NavBar />
 
-      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-
-        {/* TOP HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-center bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8 gap-4">
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="p-3 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-500/30">
-              <FaHeartbeat size={28} />
+      <main className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+        {/* Header row */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-lift shadow-primary/25">
+              <FaHeartbeat size={24} aria-hidden="true" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Health Dashboard</h1>
-              <p className="text-gray-500 text-sm">Welcome back, {data.full_name?.split(" ")[0] || "Patient"}</p>
+              <h1 className="font-display text-2xl font-extrabold tracking-tight text-foreground">
+                Health Dashboard
+              </h1>
+              <p className="text-sm text-muted">Welcome back, {data.full_name?.split(" ")[0] || "Patient"}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-            <button
-              onClick={() => navigator("/patient/records", { state: { openOrby: true, from: "/patient/home" } })}
-              className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm shadow-lg shadow-blue-500/25 transition-all active:scale-95"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-              </svg>
-              Ask Orby AI
-            </button>
-            <button
-              onClick={() => {
-                logout();
-                navigator("/");
-              }}
-              className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2.5 rounded-xl font-medium text-sm transition-all border border-red-100 active:scale-95"
-            >
-              <FiLogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
+          <Button
+            onClick={() => navigate("/patient/records", { state: { openOrby: true, from: "/patient/home" } })}
+            icon={FiMessageCircle}
+            size="lg"
+          >
+            Ask Orby AI
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10 pt-12">
-          {/* LEFT COLUMN: Welcome & Quick Stats */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Hero / Welcome Card */}
-            <div className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-10 translate-x-10"></div>
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl translate-y-10 -translate-x-10"></div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Left column */}
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            {/* Hero / Welcome */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 p-8 text-white shadow-lift">
+              <div
+                aria-hidden="true"
+                className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/30 blur-3xl"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-sky-500/20 blur-3xl"
+              />
 
-              <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
-                <div className="w-24 h-24 rounded-full border-4 border-white/20 shadow-xl overflow-hidden bg-white/10 shrink-0">
-                  <img
-                    src={data.photo || "/image.png"}
-                    className="w-full h-full object-cover"
-                    alt="profile"
-                  />
-                </div>
+              <div className="relative z-10 flex flex-col items-center gap-6 sm:flex-row">
+                <Avatar
+                  src={data.photo || "/image.png"}
+                  name={data.full_name}
+                  size={96}
+                  className="border-4 border-white/20"
+                />
                 <div className="text-center sm:text-left">
-                  <h2 className="text-3xl font-bold mb-2">Hello, {data.full_name || "Patient"}!</h2>
-                  <p className="text-blue-100 text-lg mb-4">{data.email}</p>
-                  <div className="flex flex-wrap justify-center sm:justify-start gap-4">
-                    <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 text-sm">
-                      <span className="text-blue-200">Blood Group: </span>
+                  <h2 className="font-display text-2xl font-extrabold sm:text-3xl">
+                    Hello, {data.full_name || "Patient"}!
+                  </h2>
+                  <p className="mt-1 text-teal-100/80">{data.email}</p>
+                  <div className="mt-4 flex flex-wrap justify-center gap-3 sm:justify-start">
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-3.5 py-1.5 text-sm backdrop-blur">
+                      <span className="text-teal-200">Blood Group:</span>
                       <span className="font-semibold">{data.blood_group || "O+"}</span>
-                    </div>
-                    <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 text-sm">
-                      <span className="text-blue-200">Age: </span>
+                    </span>
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/10 px-3.5 py-1.5 text-sm backdrop-blur">
+                      <span className="text-teal-200">Age:</span>
                       <span className="font-semibold">{data.age ? `${data.age} yrs` : "24 yrs"}</span>
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions Grid */}
-            <div className="pb-5">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 px-1 pl-4 py-2">Quick Actions</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Quick actions */}
+            <section aria-labelledby="quick-actions-title">
+              <h3 id="quick-actions-title" className="mb-3 px-1 font-display text-lg font-bold text-foreground">
+                Quick Actions
+              </h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {menuItems.map((item, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={item.action}
-                    className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-200 transition-all text-left flex items-start gap-4 group"
+                    className="group flex items-start gap-4 rounded-2xl border border-border bg-surface p-5 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lift"
                   >
-                    <div className={`p-3 rounded-xl ${item.color} group-hover:scale-110 transition-transform`}>
-                      {item.icon}
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-surface-hover text-primary transition-transform duration-200 group-hover:scale-110">
+                      <item.icon size={22} aria-hidden="true" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-gray-900 text-lg">{item.label}</h4>
-                      <p className="text-gray-500 text-sm mt-1">{item.desc}</p>
+                      <h4 className="font-display text-base font-bold text-foreground">{item.label}</h4>
+                      <p className="mt-0.5 text-sm text-muted">{item.desc}</p>
                     </div>
                   </button>
                 ))}
               </div>
-            </div>
+            </section>
 
-            {/* Health Tip */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6 min-h-[120px]">
-              <div className="p-4 bg-emerald-100 rounded-full text-emerald-600 shrink-0 animate-pulse">
-                <FiActivity size={32} />
+            {/* Health tip */}
+            <section
+              aria-live="polite"
+              className="flex min-h-[116px] flex-col items-center gap-5 rounded-2xl border border-border bg-gradient-to-br from-surface to-primary-soft/40 p-6 sm:flex-row"
+            >
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+                <FiActivity size={26} aria-hidden="true" />
               </div>
-              <div className={`text-center md:text-left transition-opacity duration-500 ${fade ? 'opacity-100' : 'opacity-0'}`}>
-                <h3 className="text-lg font-bold text-emerald-900 mb-1">
-                  Daily Health Tip {healthTip?.category ? <span className="text-emerald-600 text-xs bg-emerald-100 px-2 py-0.5 rounded-full ml-2 uppercase">{healthTip.category}</span> : null}
-                </h3>
-                <p className="text-emerald-700">
-                  {healthTip?.tip_text || "Loading health tips for you..."}
-                </p>
+              <div className={`text-center transition-opacity duration-500 sm:text-left ${fade ? "opacity-100" : "opacity-0"}`}>
+                <div className="mb-1 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                  <h3 className="font-display text-lg font-bold text-foreground">Daily Health Tip</h3>
+                  {healthTip?.category && (
+                    <Badge tone="primary" className="uppercase">
+                      {healthTip.category}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-muted">{healthTip?.tip_text || "Loading health tips for you..."}</p>
               </div>
-            </div>
-
+            </section>
           </div>
 
-          {/* RIGHT COLUMN: SHC & QR */}
-          <div className="flex flex-col gap-4">
-            {/* SHC Card Widget */}
-            {/* SHC Card Widget */}
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden relative">
-              <div className="bg-gray-900 p-6 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                <div className="flex justify-between items-start mb-8 relative z-10">
+          {/* Right column: SHC card */}
+          <div className="flex flex-col gap-5">
+            <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-card">
+              {/* Card front */}
+              <div className="relative overflow-hidden bg-slate-900 p-6 text-white">
+                <div
+                  aria-hidden="true"
+                  className="absolute right-0 top-0 h-32 w-32 translate-x-1/2 -translate-y-1/2 rounded-full bg-white/5"
+                />
+                <div className="relative z-10 mb-6 flex items-start justify-between">
                   <div className="flex items-center gap-2">
-                    <FiShield className="text-emerald-400" size={24} />
-                    <span className="font-bold tracking-wider ">MEDORC SHC</span>
+                    <FiShield className="text-primary" size={22} aria-hidden="true" />
+                    <span className="font-bold tracking-wider">MEDORC SHC</span>
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowShcInfo(true);
-                      }}
-                      className="ml-1 text-gray-400 hover:text-white transition-colors"
-                      title="What is SHC?"
+                      type="button"
+                      onClick={() => setShowShcInfo(true)}
+                      className="ml-0.5 text-gray-400 transition-colors hover:text-white"
+                      aria-label="What is SHC?"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+                      <FiHelpCircle size={15} aria-hidden="true" />
                     </button>
                   </div>
-                  <img src="/Logo.png" alt="Medorc" className="h-6 opacity-50 grayscale invert" />
+                  <img
+                    src="/Logo.png"
+                    alt="Medorc"
+                    className="h-6 w-auto opacity-50 grayscale invert"
+                  />
                 </div>
-                <div className="mb-2">
-                  <p className="text-gray-400 text-xs uppercase tracking-widest mb-1 pt-2">SHC Code</p>
-                  <p className="font-mono text-xl tracking-widest text-emerald-400 drop-shadow-md">
-                    {data.shc_code || "LOADING..."}
-                  </p>
-                </div>
+                <p className="mb-1 text-xs uppercase tracking-widest text-gray-400">SHC Code</p>
+                <p className="font-mono text-xl tracking-widest text-primary drop-shadow-md">
+                  {data.shc_code || "LOADING..."}
+                </p>
               </div>
 
-              <div className="p-6 bg-white flex flex-col gap-1">
-                <div className="flex justify-center mb-8">
-                  <div className="p-3 bg-white border-2 border-gray-100 rounded-2xl shadow-sm">
+              {/* Card body */}
+              <div className="flex flex-col gap-4 p-6">
+                <div className="flex justify-center">
+                  <div className="rounded-2xl border-2 border-border bg-surface p-3 shadow-card">
                     <QRCodeCanvas
                       value={data.qr_code || "no-code-available"}
                       size={160}
@@ -281,26 +297,25 @@ export default function Home() {
                     />
                   </div>
                 </div>
+                <p className="text-center text-sm text-muted">Scan to access medical records</p>
 
-                <div className="text-center mb-6">
-                  <p className="text-sm text-gray-500 mb-2">Scan to access medical records</p>
-                </div>
-
-                {/* Visibility Toggle */}
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-gray-700 text-sm flex items-center gap-2">
-                      {enabled ? <FiEye className="text-emerald-500" /> : <FiEyeOff className="text-gray-400" />}
+                <div className="rounded-xl border border-border bg-background p-4">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-sm font-bold text-foreground">
+                      {enabled ? (
+                        <FiEye className="text-success" aria-hidden="true" />
+                      ) : (
+                        <FiEyeOff className="text-subtle" aria-hidden="true" />
+                      )}
                       Doctor Access
                     </span>
-                    <div
-                      onClick={!loading ? visibility : undefined}
-                      className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors duration-300 ${enabled ? "bg-emerald-500" : "bg-gray-300"}`}
-                    >
-                      <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform duration-300 ${enabled ? "translate-x-6" : "translate-x-0"}`}></div>
-                    </div>
+                    <Toggle
+                      checked={enabled}
+                      onChange={toggleVisibility}
+                      label="Doctor access visibility"
+                    />
                   </div>
-                  <p className="text-xs text-gray-400 leading-relaxed">
+                  <p className="text-xs leading-relaxed text-muted">
                     {enabled
                       ? "Your SHC is currently visible to authorized doctors."
                       : "Your SHC is hidden. Doctors cannot access your records."}
@@ -308,60 +323,41 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
-            {/* SHC INFO MODAL */}
-            {showShcInfo && (
-              <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-                onClick={() => setShowShcInfo(false)}
-              >
-                <div
-                  className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 relative transform transition-all scale-100"
-                  onClick={e => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => setShowShcInfo(false)}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
-
-                  <div className="flex items-center gap-3 mb-4 text-blue-600">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <FiTrendingUp size={24} />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">What is SHC?</h3>
-                  </div>
-
-                  <div className="space-y-4">
-                    <p className="text-gray-600 leading-relaxed">
-                      <span className="font-semibold text-gray-900">Secure Health Card (SHC)</span> is your digital health passport. It acts as a unique identifier for your medical history.
-                    </p>
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-                      <p className="text-sm text-gray-600 flex gap-2">
-                        <span className="text-green-500">✔</span> Instant sharing via QR code
-                      </p>
-                      <p className="text-sm text-gray-600 flex gap-2">
-                        <span className="text-green-500">✔</span> Secure doctor access control
-                      </p>
-                      <p className="text-sm text-gray-600 flex gap-2">
-                        <span className="text-green-500">✔</span> Centralized medical history
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShowShcInfo(false)}
-                      className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-blue-500/20"
-                    >
-                      Got it
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
+      </main>
 
-      </div>
+      <Modal
+        open={showShcInfo}
+        onClose={() => setShowShcInfo(false)}
+        title="What is SHC?"
+        description="Your digital health passport"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm leading-relaxed text-muted">
+            <span className="font-semibold text-foreground">Secure Health Card (SHC)</span> is your
+            digital health passport. It acts as a unique identifier for your medical history.
+          </p>
+          <div className="space-y-2 rounded-xl border border-border bg-background p-4 text-sm text-muted">
+            <p className="flex items-center gap-2">
+              <span className="text-success" aria-hidden="true">✔</span> Instant sharing via QR code
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="text-success" aria-hidden="true">✔</span> Secure doctor access control
+            </p>
+            <p className="flex items-center gap-2">
+              <span className="text-success" aria-hidden="true">✔</span> Centralized medical history
+            </p>
+          </div>
+          <Button
+            className="w-full"
+            onClick={() => setShowShcInfo(false)}
+          >
+            Got it
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

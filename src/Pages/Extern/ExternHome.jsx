@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import NavBar from "../../Components/NavBar";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
+import { Loading } from "../../Components/Loading";
 import { useNavigate } from "react-router-dom";
 import UserCard from "../../Components/UserCard";
 
@@ -15,16 +17,14 @@ export default function ExternHome() {
   const [user, setUser] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Validate Login
   useEffect(() => {
     if (!token || role !== "extern") {
       navigate("/");
     }
-  }, [token, role]);
+  }, [token, role, navigate]);
 
-  // Load Profile
   useEffect(() => {
-    const getUser = async () => { 
+    const getUser = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/extern/profile`, {
           headers: {
@@ -45,14 +45,9 @@ export default function ExternHome() {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="flex min-h-screen flex-col bg-background">
       <NavBar />
-
-      {loading ? (
-        <p className="text-center pt-20">Loading...</p>
-      ) : (
-        <UserCard user={user} role={role} token={token} navigate={navigate} />
-      )}
+      {loading ? <Loading /> : <UserCard user={user} role={role} token={token} navigate={navigate} />}
     </div>
   );
 }

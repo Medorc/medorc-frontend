@@ -1,4 +1,6 @@
-import React, { createContext, useState, useContext } from 'react';
+import { useState, useContext, createContext } from "react";
+
+/* eslint-disable react-refresh/only-export-components */
 import { jwtDecode } from 'jwt-decode';
 import axios from 'axios'; // Ensure axios is imported
 import { API_BASE_URL } from "../config/api";
@@ -27,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const decoded = jwtDecode(savedToken);
         return decoded.role || localStorage.getItem('role') || null;
-      } catch (e) {
+      } catch {
         return null;
       }
     }
@@ -79,7 +81,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const savedProfile = localStorage.getItem('profileData');
       return savedProfile ? JSON.parse(savedProfile) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });

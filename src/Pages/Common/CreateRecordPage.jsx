@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import axios from "axios";
 import NavBar from "../../Components/NavBar";
 import AddRecordForm from "./AddRecordForm";
@@ -7,22 +8,57 @@ import { useAuth } from "../../Context/AuthContext";
 import { toast } from "react-toastify";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-
-// --- CLOUDINARY DETAILS ---
-const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-// -------------------------
-
 import { API_BASE_URL } from "../../config/api";
 
+const STEPS = [
+  { label: "Record Details" },
+  { label: "Details for Record" },
+];
+
+function StepIndicator({ currentStep }) {
+  return (
+    <ol className="mx-auto flex w-full max-w-md items-center justify-center gap-3 py-6">
+      {STEPS.map((step, index) => {
+        const stepNumber = index + 1;
+        const active = stepNumber === currentStep;
+        const done = stepNumber < currentStep;
+        return (
+          <li key={step.label} className="flex flex-1 items-center gap-3">
+            <span
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                active || done
+                  ? "bg-primary text-white shadow-sm shadow-primary/25"
+                  : "bg-surface-hover text-subtle"
+              }`}
+              aria-current={active ? "step" : undefined}
+            >
+              {done ? "✓" : stepNumber}
+            </span>
+            <span
+              className={`hidden text-sm font-semibold sm:inline ${
+                active ? "text-foreground" : "text-subtle"
+              }`}
+            >
+              {step.label}
+            </span>
+            {stepNumber < STEPS.length && (
+              <span className="h-px flex-1 bg-border" aria-hidden="true" />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 function CreateRecordPage() {
-  const { token,role } = useAuth();
+  const { token, role } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const qr_code = searchParams.get("qr_code");
   const shc_code = searchParams.get("shc_code");
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     basicDetails: {
@@ -77,7 +113,6 @@ function CreateRecordPage() {
 
   const [uploadedFiles, setUploadedFiles] = useState({});
 
-  // Handle input changes
   const handleChange = (section, field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -88,7 +123,6 @@ function CreateRecordPage() {
     }));
   };
 
-  // Toggle sections visibility
   const handleToggle = (section) => {
     setFormData((prev) => ({
       ...prev,
@@ -99,7 +133,6 @@ function CreateRecordPage() {
     }));
   };
 
-  // File upload handler for Cloudinary
   const handleFileUpload = async (file, documentType) => {
     if (!file) return;
 
@@ -112,10 +145,8 @@ function CreateRecordPage() {
       const response = await axios.post(`${API_BASE_URL}/cloudinary/doc`, formDataUpload);
       const fileUrl = response.data.url;
 
-      // Save URL to form data
       handleChange("documents", documentType, fileUrl);
 
-      // Save file info for display
       setUploadedFiles((prev) => ({
         ...prev,
         [documentType]: {
@@ -133,9 +164,8 @@ function CreateRecordPage() {
   };
 
   const handleNext = () => {
-    // Validate basic details before proceeding
     if (!formData.basicDetails.diagnosis_name.trim()) {
-      alert("Please enter diagnosis name");
+      toast.warning("Please enter diagnosis name");
       return;
     }
     setCurrentStep(2);
@@ -143,17 +173,14 @@ function CreateRecordPage() {
 
   const handleBack = () => setCurrentStep(1);
 
-  // Final submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required documents
     if (!formData.documents.prescriptions && !formData.documents.lab_results) {
       toast.info("Please upload Lab Result ");
       return;
     }
 
-    // Convert date to ISO format
     const dateOnly = formData.basicDetails.appointment_date;
     const isoDateString = dateOnly ? `${dateOnly}T00:00:00.000Z` : "";
 
@@ -186,17 +213,16 @@ function CreateRecordPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       if (response.status === 201) {
         toast.success("Medical record created successfully!");
-        if(role=="hospital"||role=="doctor")
-        navigate(`/${role}/records?qr_code=${qr_code}&shc_code=${shc_code}`);
+        if (role == "hospital" || role == "doctor")
+          navigate(`/${role}/records?qr_code=${qr_code}&shc_code=${shc_code}`);
         else navigate(`/${role}/records`);
       } else toast.error("Failed to create record. Please try again.");
 
-      // Reset form or redirect
       setFormData({
         basicDetails: {
           entry_type: "Self",
@@ -233,15 +259,16 @@ function CreateRecordPage() {
     } catch (error) {
       console.error("Error:", error);
       toast.error(
-        "Failed to create record: " +
-          (error.response?.data?.message || error.message),
+        "Failed to create record: " + (error.response?.data?.message || error.message)
       );
     }
   };
 
   return (
-    <div className="flex flex-col  items-center min-h-screen bg-gray-100">
+    <div className="flex min-h-screen flex-col items-center bg-background">
       <NavBar />
+
+      <StepIndicator currentStep={currentStep} />
 
       {currentStep === 1 && (
         <AddRecordForm

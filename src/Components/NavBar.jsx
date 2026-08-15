@@ -1,149 +1,298 @@
-import React, { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import { useAuth } from "../Context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { User, LogOut, Settings, ShieldCheck, ChevronDown } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Home,
+  FileText,
+  PlusCircle,
+  Settings,
+  ShieldCheck,
+  LogOut,
+  Menu,
+  X,
+  ChevronDown,
+  User,
+  History,
+  PhoneCall,
+} from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
+import { Avatar } from "./ui/Avatar";
+import { Badge } from "./ui/Badge";
+
+const ROLE_META = {
+  patient: { label: "Patient", tone: "patient" },
+  doctor: { label: "Doctor", tone: "doctor" },
+  hospital: { label: "Hospital", tone: "hospital" },
+  extern: { label: "External", tone: "extern" },
+};
 
 export default function NavBar() {
-  const { user, role, profileData, logout } = useAuth();
+  const { role, profileData, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  const meta = ROLE_META[role] || { label: "Account", tone: "neutral" };
+
+  const navLinks = (() => {
+    if (role === "patient") {
+      return [
+        { to: "/patient/home", label: "Home", icon: Home },
+        { to: "/patient/records", label: "Records", icon: FileText },
+        { to: "/patient/addrecord", label: "Add Record", icon: PlusCircle },
+      ];
+    }
+    if (role === "doctor" || role === "hospital" || role === "extern") {
+      return [
+        { to: `/${role}/home`, label: "Home", icon: Home },
+        { to: `/${role}/profile`, label: "Profile", icon: User },
+      ];
+    }
+    return [];
+  })();
+
+  const closeAll = () => {
+    setDropdownOpen(false);
+    setMenuOpen(false);
+  };
 
   const handleLogout = () => {
+    closeAll();
     logout();
     navigate("/");
   };
 
-  const getRoleColor = () => {
-    switch (role) {
-      case "patient":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "doctor":
-        return "bg-teal-100 text-teal-700 border-teal-200";
-      case "hospital":
-        return "bg-indigo-100 text-indigo-700 border-indigo-200";
-      case "extern":
-        return "bg-amber-100 text-amber-700 border-amber-200";
-      default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
-    }
+  const go = (to) => {
+    closeAll();
+    navigate(to);
   };
 
-  const getProfilePath = () => {
-    if (!role) return "/";
-    return `/${role}/profile`;
-  };
+  useEffect(() => {
+    closeAll();
+  }, [location.pathname]);
 
-  const getSecurityPath = () => {
-    if (!role) return "/";
-    return `/${role}/security`;
-  };
+  useEffect(() => {
+    if (!dropdownOpen && !menuOpen) return;
+    const onPointerDown = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) closeAll();
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") closeAll();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [dropdownOpen, menuOpen]);
+
+  const settingsItem = (
+    <div className="space-y-1">
+      <p className="border-b border-border px-4 py-3">
+        <span className="block truncate text-sm font-bold text-foreground">
+          {profileData?.full_name || "Medorc User"}
+        </span>
+        <span className="mt-0.5 block text-xs uppercase tracking-wider text-subtle">
+          {meta.label} Account
+        </span>
+      </p>
+      <button
+        onClick={() => go(`/${role}/profile`)}
+        className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-medium text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+      >
+        <User size={16} className="text-patient" />
+        Personal Profile
+      </button>
+      <button
+        onClick={() => go(`/${role}/security`)}
+        className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left text-sm font-medium text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+      >
+        <Settings size={16} className="text-hospital" />
+        Account &amp; Security
+      </button>
+      <button
+        onClick={handleLogout}
+        className="flex w-full items-center gap-2.5 border-t border-border px-4 py-2.5 text-left text-sm font-semibold text-danger transition-colors hover:bg-danger-soft"
+      >
+        <LogOut size={16} />
+        Sign Out
+      </button>
+    </div>
+  );
+
+  if (!role) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Logo & Platform Name */}
-        <div
-          onClick={() => navigate(role ? `/${role}/home` : "/")}
-          className="flex items-center gap-3 cursor-pointer group"
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-surface/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        {/* Logo */}
+        <button
+          type="button"
+          onClick={() => go(`/${role}/home`)}
+          className="group flex items-center gap-2.5"
+          aria-label="Go to dashboard"
         >
           <img
             src="/Logo.png"
             alt="Medorc Logo"
-            className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
           />
-          <div className="hidden sm:flex flex-col">
-            <span className="font-extrabold text-lg text-slate-800 tracking-tight leading-tight">
+          <span className="hidden flex-col leading-tight sm:flex">
+            <span className="font-display text-base font-extrabold tracking-tight text-foreground">
               MEDORC
             </span>
-            <span className="text-[10px] font-semibold text-blue-600 tracking-widest uppercase">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
               Health Orchestrator
             </span>
+          </span>
+        </button>
+
+        {/* Desktop nav */}
+        <nav aria-label="Primary" className="hidden items-center gap-1 md:flex">
+          {navLinks.map(({ to, label, icon: Icon }) => {
+            const active =
+              location.pathname === to || (to !== `/${role}/home` && location.pathname.startsWith(to));
+            return (
+              <button
+                key={to}
+                type="button"
+                onClick={() => go(to)}
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors ${
+                  active
+                    ? "bg-primary-soft text-primary-soft-fg"
+                    : "text-muted hover:bg-surface-hover hover:text-foreground"
+                }`}
+              >
+                <Icon size={16} aria-hidden="true" />
+                {label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Right controls */}
+        <div className="flex items-center gap-2.5">
+          <ThemeToggle />
+          <Badge tone={meta.tone} className="hidden md:inline-flex">
+            <ShieldCheck size={12} aria-hidden="true" />
+            {meta.label}
+          </Badge>
+
+          {/* Avatar dropdown (desktop) */}
+          <div className="relative hidden md:block">
+            <button
+              type="button"
+              onClick={() => setDropdownOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={dropdownOpen}
+              className="flex items-center gap-1.5 rounded-full border border-border bg-surface p-1 pl-1 pr-2 shadow-card transition-colors hover:border-primary/40"
+            >
+              <Avatar src={profileData?.photo} name={profileData?.full_name} size={32} />
+              <ChevronDown size={14} className="text-subtle" aria-hidden="true" />
+            </button>
+            {dropdownOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-60 origin-top-right animate-slide-down rounded-2xl border border-border bg-surface py-1.5 shadow-pop"
+              >
+                {settingsItem}
+              </div>
+            )}
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={menuOpen}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-surface text-muted shadow-card transition-colors hover:text-primary md:hidden"
+          >
+            {menuOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile drawer */}
+      {menuOpen && (
+        <div ref={menuRef} className="border-t border-border bg-surface px-4 pb-5 pt-2 md:hidden">
+          <nav aria-label="Mobile primary" className="space-y-1">
+            {navLinks.map(({ to, label, icon: Icon }) => {
+              const active =
+                location.pathname === to ||
+                (to !== `/${role}/home` && location.pathname.startsWith(to));
+              return (
+                <button
+                  key={to}
+                  type="button"
+                  onClick={() => go(to)}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold transition-colors ${
+                    active
+                      ? "bg-primary-soft text-primary-soft-fg"
+                      : "text-muted hover:bg-surface-hover hover:text-foreground"
+                  }`}
+                >
+                  <Icon size={17} aria-hidden="true" />
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="mt-2 border-t border-border pt-2">
+            <button
+              type="button"
+              onClick={() => go(`/${role}/profile`)}
+              className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+            >
+              <User size={17} className="text-patient" aria-hidden="true" />
+              Personal Profile
+            </button>
+            <button
+              type="button"
+              onClick={() => go(`/${role}/security`)}
+              className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+            >
+              <Settings size={17} className="text-hospital" aria-hidden="true" />
+              Account &amp; Security
+            </button>
+            {role === "patient" && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => go("/patient/emergency")}
+                  className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+                >
+                  <PhoneCall size={17} className="text-warning" aria-hidden="true" />
+                  Emergency Contacts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => go("/patient/logs")}
+                  className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-muted transition-colors hover:bg-surface-hover hover:text-foreground"
+                >
+                  <History size={17} className="text-info" aria-hidden="true" />
+                  Activity Logs
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-semibold text-danger transition-colors hover:bg-danger-soft"
+            >
+              <LogOut size={17} aria-hidden="true" />
+              Sign Out
+            </button>
           </div>
         </div>
-
-        {/* Right Controls: Role Badge & Profile Menu */}
-        {role && (
-          <div className="flex items-center gap-4">
-            {/* Role Badge */}
-            <span
-              className={`hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${getRoleColor()}`}
-            >
-              <ShieldCheck size={14} />
-              {role}
-            </span>
-
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 p-1.5 rounded-full hover:bg-slate-100 transition duration-200 border border-slate-200/60 shadow-xs"
-              >
-                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-xs bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-                  {profileData?.photo ? (
-                    <img
-                      src={profileData.photo}
-                      alt="Avatar"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span>{(profileData?.full_name || role || "U")[0]?.toUpperCase()}</span>
-                  )}
-                </div>
-                <ChevronDown size={16} className="text-slate-500 mr-1" />
-              </button>
-
-              {/* Dropdown Menu */}
-              {dropdownOpen && (
-                <div
-                  onMouseLeave={() => setDropdownOpen(false)}
-                  className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200"
-                >
-                  <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-sm font-bold text-slate-800 truncate">
-                      {profileData?.full_name || "Medorc User"}
-                    </p>
-                    <p className="text-xs text-slate-400 truncate mt-0.5">
-                      {role?.toUpperCase()} ACCOUNT
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      navigate(getProfilePath());
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition"
-                  >
-                    <User size={16} className="text-blue-600" />
-                    <span>Personal Profile</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setDropdownOpen(false);
-                      navigate(getSecurityPath());
-                    }}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition"
-                  >
-                    <Settings size={16} className="text-indigo-600" />
-                    <span>Account & Security</span>
-                  </button>
-
-                  <div className="border-t border-slate-100 mt-1 pt-1">
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left px-4 py-2.5 text-sm font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition"
-                    >
-                      <LogOut size={16} />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </header>
   );
 }

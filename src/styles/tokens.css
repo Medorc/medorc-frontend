@@ -1,0 +1,231 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Overpass:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   Medorc Design Tokens
+   Clinical teal · Minimal Premium · Light + auto dark mode
+   ============================================================ */
+
+:root {
+  --t-bg: #f5f7fa;
+  --t-surface: #ffffff;
+  --t-surface-hover: #eef2f7;
+  --t-fg: #0f172a;
+  --t-muted: #526077;
+  --t-subtle: #8a97ac;
+  --t-border: #e4e9f0;
+  --t-scroll: #cbd5e1;
+  --t-ring: #14b8a6;
+
+  --t-primary: #0d9488;
+  --t-primary-hover: #0f766e;
+  --t-primary-soft: #ccfbf1;
+  --t-primary-soft-fg: #0f766e;
+
+  --t-success: #059669;
+  --t-success-soft: #d1fae5;
+  --t-warning: #b45309;
+  --t-warning-soft: #fef3c7;
+  --t-danger: #dc2626;
+  --t-danger-soft: #fee2e2;
+  --t-info: #0284c7;
+  --t-info-soft: #e0f2fe;
+
+  --t-patient: #2563eb;
+  --t-patient-soft: #dbeafe;
+  --t-doctor: #0d9488;
+  --t-doctor-soft: #ccfbf1;
+  --t-hospital: #4f46e5;
+  --t-hospital-soft: #e0e7ff;
+  --t-extern: #b45309;
+  --t-extern-soft: #fef3c7;
+}
+
+.dark {
+  --t-bg: #0b1220;
+  --t-surface: #101a2e;
+  --t-surface-hover: #1b2740;
+  --t-fg: #f1f5f9;
+  --t-muted: #9aa7bd;
+  --t-subtle: #64748b;
+  --t-border: #1e2a44;
+  --t-scroll: #334155;
+  --t-ring: #2dd4bf;
+
+  --t-primary: #2dd4bf;
+  --t-primary-hover: #14b8a6;
+  --t-primary-soft: rgba(20, 184, 166, 0.14);
+  --t-primary-soft-fg: #5eead4;
+
+  --t-success: #34d399;
+  --t-success-soft: rgba(16, 185, 129, 0.16);
+  --t-warning: #fbbf24;
+  --t-warning-soft: rgba(245, 158, 11, 0.16);
+  --t-danger: #f87171;
+  --t-danger-soft: rgba(239, 68, 68, 0.16);
+  --t-info: #38bdf8;
+  --t-info-soft: rgba(14, 165, 233, 0.16);
+
+  --t-patient: #60a5fa;
+  --t-patient-soft: rgba(59, 130, 246, 0.16);
+  --t-doctor: #2dd4bf;
+  --t-doctor-soft: rgba(20, 184, 166, 0.16);
+  --t-hospital: #818cf8;
+  --t-hospital-soft: rgba(99, 102, 241, 0.16);
+  --t-extern: #fbbf24;
+  --t-extern-soft: rgba(245, 158, 11, 0.16);
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Overpass", "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--t-bg);
+  --color-surface: var(--t-surface);
+  --color-surface-hover: var(--t-surface-hover);
+  --color-foreground: var(--t-fg);
+  --color-muted: var(--t-muted);
+  --color-subtle: var(--t-subtle);
+  --color-border: var(--t-border);
+  --color-ring: var(--t-ring);
+
+  --color-primary: var(--t-primary);
+  --color-primary-hover: var(--t-primary-hover);
+  --color-primary-soft: var(--t-primary-soft);
+  --color-primary-soft-fg: var(--t-primary-soft-fg);
+
+  --color-success: var(--t-success);
+  --color-success-soft: var(--t-success-soft);
+  --color-warning: var(--t-warning);
+  --color-warning-soft: var(--t-warning-soft);
+  --color-danger: var(--t-danger);
+  --color-danger-soft: var(--t-danger-soft);
+  --color-info: var(--t-info);
+  --color-info-soft: var(--t-info-soft);
+
+  --color-patient: var(--t-patient);
+  --color-patient-soft: var(--t-patient-soft);
+  --color-doctor: var(--t-doctor);
+  --color-doctor-soft: var(--t-doctor-soft);
+  --color-hospital: var(--t-hospital);
+  --color-hospital-soft: var(--t-hospital-soft);
+  --color-extern: var(--t-extern);
+  --color-extern-soft: var(--t-extern-soft);
+
+  --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.05);
+  --shadow-pop: 0 10px 30px -5px rgb(15 23 42 / 0.15), 0 4px 10px -4px rgb(15 23 42 / 0.1);
+  --shadow-lift: 0 12px 32px -8px rgb(15 23 42 / 0.16), 0 4px 12px -4px rgb(15 23 42 / 0.1);
+}
+
+.dark {
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.3), 0 1px 3px 0 rgb(0 0 0 / 0.35);
+  --shadow-pop: 0 10px 30px -5px rgb(0 0 0 / 0.5), 0 4px 10px -4px rgb(0 0 0 / 0.4);
+  --shadow-lift: 0 12px 32px -8px rgb(0 0 0 / 0.55), 0 4px 12px -4px rgb(0 0 0 / 0.45);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background-color: var(--t-bg);
+  color: var(--t-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--t-primary) 22%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--t-ring);
+  outline-offset: 2px;
+}
+
+/* Thin, visible scrollbars */
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--t-scroll);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--t-subtle);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--t-scroll) transparent;
+}
+
+/* ============================================================
+   Animation utilities
+   ============================================================ */
+
+@keyframes medorc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes medorc-slide-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes medorc-slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes medorc-scale-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes medorc-fade-in-down {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in { animation: medorc-fade-in 0.2s ease-out both; }
+.animate-slide-up { animation: medorc-slide-up 0.25s ease-out both; }
+.animate-slide-down { animation: medorc-slide-down 0.18s ease-out both; }
+.animate-scale-in { animation: medorc-scale-in 0.18s ease-out both; }
+.animate-fade-in-down { animation: medorc-fade-in-down 0.3s ease-out both; }
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

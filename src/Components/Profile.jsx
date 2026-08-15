@@ -1,47 +1,11 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 
-const Styles = () => (
-  <style>
-    {`
-      .photo {
-        display: flex;
-        justify-content: center;
-        margin: 10px 0;
-      }
-      .photoCircle {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: #ddd;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        font-size: 12px;
-        font-family: sans-serif;
-        color: #555;
-        cursor: pointer;
-        transition: background 0.3s;
-        overflow: hidden;
-      }
-      .photoCircle:hover {
-        background: #c7d2fe;
-      }
-      .profileImagePreview {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        object-fit: cover;
-      }
-    `}
-  </style>
-);
+import { FiCamera } from "react-icons/fi";
 
-export default function Profile({ onFileSelect, photo }) {
+export default function Profile({ onFileSelect, photo, size = 112 }) {
   const [imagePreview, setImagePreview] = useState(photo);
   const fileInputRef = useRef(null);
 
-  
   const handlePhotoClick = () => {
     fileInputRef.current.click();
   };
@@ -49,38 +13,44 @@ export default function Profile({ onFileSelect, photo }) {
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Show preview immediately
-      onFileSelect(file); // 👈 Send file to Signup for Cloudinary upload
-      
+      setImagePreview(URL.createObjectURL(file));
+      onFileSelect(file);
     }
   };
 
   return (
-    <>
-      <Styles />
-      <div className="photo">
-        <div className="photoCircle" onClick={handlePhotoClick}>
-          {imagePreview ? (
-            <img
-              src={imagePreview}
-              alt="Profile Preview"
-              className="profileImagePreview"
-            />
-          ) : (
-            <>
-              Profile Photo <br /> (Optional)
-            </>
-          )}
-        </div>
+    <div className="flex justify-center">
+      <button
+        type="button"
+        onClick={handlePhotoClick}
+        aria-label="Upload profile photo"
+        className="group relative overflow-hidden rounded-full border-2 border-dashed border-border bg-surface shadow-card transition-colors hover:border-primary/50"
+        style={{ width: size, height: size }}
+      >
+        {imagePreview ? (
+          <img
+            src={imagePreview}
+            alt="Profile preview"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <span className="flex h-full w-full flex-col items-center justify-center gap-1.5 px-3 text-center text-xs font-medium text-subtle">
+            <FiCamera size={22} aria-hidden="true" />
+            Profile Photo
+          </span>
+        )}
+        <span className="absolute inset-0 flex items-center justify-center bg-slate-950/40 opacity-0 transition-opacity group-hover:opacity-100">
+          <FiCamera size={24} className="text-white" aria-hidden="true" />
+        </span>
+      </button>
 
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-          accept="image/png, image/jpeg, image/jpg"
-        />
-      </div>
-    </>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept="image/png, image/jpeg, image/jpg"
+      />
+    </div>
   );
 }

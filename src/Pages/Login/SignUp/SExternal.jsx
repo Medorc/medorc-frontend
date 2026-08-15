@@ -1,60 +1,27 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { API_BASE_URL } from "../../../config/api";
-import { FaCloudUploadAlt, FaCheckCircle } from "react-icons/fa";
+import SignUpShell from "../../../Components/SignUpShell";
+import { FieldInput, FieldTextarea, FieldSelect, DocUpload } from "../../../Components/SignUpField";
+import { Button } from "../../../Components/ui/Button";
 
-// Cloudinary Config
-const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-// Reusable Input Component
-const FormInput = ({ id, name, label, type = "text", value, onChange, placeholder }) => (
-  <div>
-    <label htmlFor={id} className="block mb-1 font-medium text-gray-700">
-      {label}
-    </label>
-    <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <input
-        type={type}
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full bg-transparent outline-none"
-      />
-    </div>
-  </div>
-);
-
-// Reusable Textarea Component
-const FormTextarea = ({ id, name, label, value, onChange, placeholder }) => (
-  <div>
-    <label htmlFor={id} className="block mb-1 font-medium text-gray-700">
-      {label}
-    </label>
-    <div className="w-full border border-gray-300 rounded-2xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <textarea
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full bg-transparent outline-none resize-none"
-        rows="2"
-      ></textarea>
-    </div>
-  </div>
-);
-
-
+const GENDER_OPTIONS = ["Male", "Female", "Other"];
+const ORG_TYPES = [
+  { value: "Insurance", label: "Insurance Provider" },
+  { value: "Research", label: "Research Institute" },
+  { value: "Government", label: "Government Body" },
+  { value: "NGO", label: "NGO / Non-Profit" },
+  { value: "Other", label: "Other" },
+];
 
 export default function SExternal() {
   const navigate = useNavigate();
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: "",
@@ -64,7 +31,7 @@ export default function SExternal() {
     confirmPassword: "",
     gender: "",
     date_of_birth: "",
-    photo: "", 
+    photo: "",
     org_name: "",
     org_type: "",
     org_address: "",
@@ -73,10 +40,9 @@ export default function SExternal() {
     org_website: "",
     org_license_no: "",
     org_license_valid_till: "",
-    verification_documents: ""
+    verification_documents: "",
   });
 
-  // Handle Photo Upload
   const handlePhotoUpload = async (file) => {
     if (!file) return;
     const uploadData = new FormData();
@@ -92,7 +58,6 @@ export default function SExternal() {
     }
   };
 
-  // Handle Document Upload
   const handleDocUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -148,7 +113,7 @@ export default function SExternal() {
       date_of_birth: formData.date_of_birth ? new Date(formData.date_of_birth).toISOString() : null,
       photo: formData.photo,
       verification_documents: formData.verification_documents,
-      
+
       organization_details: {
         org_name: formData.org_name,
         org_type: formData.org_type,
@@ -157,10 +122,13 @@ export default function SExternal() {
         org_founded_on: formData.org_founded_on ? new Date(formData.org_founded_on).toISOString() : null,
         org_website: formData.org_website,
         org_license_no: formData.org_license_no,
-        org_license_valid_till: formData.org_license_valid_till ? new Date(formData.org_license_valid_till).toISOString() : null,
-      }
+        org_license_valid_till: formData.org_license_valid_till
+          ? new Date(formData.org_license_valid_till).toISOString()
+          : null,
+      },
     };
 
+    setSubmitting(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/signup`, payload);
       if (response.status === 201) {
@@ -169,251 +137,80 @@ export default function SExternal() {
       }
     } catch (error) {
       console.error("External Signup Error Details:", error);
-      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed");
+      toast.error(
+        error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed"
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <header className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl mb-8">
-        <img src="Logo.png" alt="logo" className="w-40" />
-        <h2 className="text-3xl font-bold text-gray-800 mt-4 md:mt-0">
-          Sign Up - External
-        </h2>
-      </header>
-
+    <SignUpShell title="External Sign Up">
       <form
         onSubmit={Signup}
-        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-6xl"
+        className="mx-auto w-full max-w-6xl rounded-3xl border border-border bg-surface p-6 shadow-card sm:p-10"
       >
-        {/* 🔥 Upload Photo */}
-        <Profile
-          onFileSelect={(file) => handlePhotoUpload(file)}
-          photo={formData.photo}
-        />
-        <p className="text-center text-gray-500 text-sm mt-2">Representative Photo</p>
+        <div className="mb-6">
+          <div className="flex justify-center">
+            <Profile onFileSelect={(file) => handlePhotoUpload(file)} photo={formData.photo} />
+          </div>
+          <p className="mt-3 text-center text-sm text-muted">Representative Photo</p>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
-          
-          {/* --- Col 1: Representative Details --- */}
+        <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
+          {/* Representative */}
           <div className="flex flex-col gap-4">
-            <h4 className="font-semibold text-lg text-blue-800 border-b pb-2">Representative Info</h4>
-            
-            <FormInput
-              id="fullName"
-              name="full_name"
-              label="Full Name"
-              onChange={changehandle}
-              value={formData.full_name}
-              placeholder="Your Name"
-            />
-            <FormInput
-              id="email"
-              name="email"
-              label="Email Address"
-              type="email"
-              onChange={changehandle}
-              value={formData.email}
-            />
-            <FormInput
-              id="phone"
-              name="phone_no"
-              label="Phone Number"
-              onChange={changehandle}
-              value={formData.phone_no}
-            />
-            
-            <div className="grid grid-cols-2 gap-2">
-              <FormInput
-                id="dob"
-                name="date_of_birth"
-                label="Date of Birth"
-                type="date"
-                onChange={changehandle}
-                value={formData.date_of_birth}
+            <h4 className="border-b border-border pb-2 font-display text-base font-bold text-foreground">
+              Representative Info
+            </h4>
+            <FieldInput id="fullName" name="full_name" label="Full Name" required value={formData.full_name} onChange={changehandle} placeholder="Your Name" />
+            <FieldInput id="email" name="email" label="Email Address" type="email" required value={formData.email} onChange={changehandle} />
+            <FieldInput id="phone" name="phone_no" label="Phone Number" value={formData.phone_no} onChange={changehandle} />
+            <div className="grid grid-cols-2 gap-3">
+              <FieldInput id="dob" name="date_of_birth" label="DOB" type="date" value={formData.date_of_birth} onChange={changehandle} />
+              <FieldSelect id="gender" name="gender" label="Gender" value={formData.gender} onChange={changehandle} options={GENDER_OPTIONS} placeholder="Select" />
+            </div>
+            <FieldInput id="password" name="password" label="Password" type="password" required value={formData.password} onChange={changehandle} />
+            <FieldInput id="confirmPassword" name="confirmPassword" label="Confirm Password" type="password" required value={formData.confirmPassword} onChange={changehandle} />
+          </div>
+
+          {/* Organization */}
+          <div className="flex flex-col gap-4">
+            <h4 className="border-b border-border pb-2 font-display text-base font-bold text-foreground">
+              Organization Info
+            </h4>
+            <FieldInput id="orgName" name="org_name" label="Organization Name" required value={formData.org_name} onChange={changehandle} placeholder="e.g. Health Insure Co." />
+            <FieldSelect id="orgType" name="org_type" label="Org Type" value={formData.org_type} onChange={changehandle} options={ORG_TYPES} placeholder="Select Type" />
+            <FieldInput id="website" name="org_website" label="Website URL" value={formData.org_website} onChange={changehandle} placeholder="https://" />
+            <FieldInput id="founded" name="org_founded_on" label="Founded On" type="date" value={formData.org_founded_on} onChange={changehandle} />
+            <FieldTextarea id="address" name="org_address" label="Headquarters Address" value={formData.org_address} onChange={changehandle} />
+          </div>
+
+          {/* Legal & verification */}
+          <div className="flex flex-col justify-between gap-4">
+            <div className="flex h-full flex-col gap-4 rounded-2xl border border-border bg-background p-5">
+              <h4 className="font-display text-base font-bold text-foreground">Legal &amp; Verification</h4>
+              <FieldInput id="licenseNo" name="org_license_no" label="Org License / Reg No" required value={formData.org_license_no} onChange={changehandle} placeholder="Reg. Number" />
+              <FieldInput id="licenseValid" name="org_license_valid_till" label="License Valid Until" type="date" value={formData.org_license_valid_till} onChange={changehandle} />
+              <FieldTextarea id="desc" name="org_description" label="Short Description" value={formData.org_description} onChange={changehandle} placeholder="Describe your organization's purpose..." />
+              <DocUpload
+                state={uploadingDoc ? "uploading" : "idle"}
+                uploadedUrl={formData.verification_documents}
+                onUpload={handleDocUpload}
+                label="Verification Document"
+                hint="Auth Letter / License (PDF/IMG)"
               />
-              
-              <div>
-                <label className="block mb-1 font-medium text-gray-700">Gender</label>
-                <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-                  <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={changehandle}
-                    className="w-full bg-transparent outline-none"
-                  >
-                    <option value="">Select</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <FormInput
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              onChange={changehandle}
-              value={formData.password}
-            />
-            <FormInput
-              id="confirmPassword"
-              name="confirmPassword"
-              label="Confirm Password"
-              type="password"
-              onChange={changehandle}
-              value={formData.confirmPassword}
-            />
-          </div>
-
-          {/* --- Col 2: Organization Details --- */}
-          <div className="flex flex-col gap-4">
-            <h4 className="font-semibold text-lg text-blue-800 border-b pb-2">Organization Info</h4>
-            
-            <FormInput
-              id="orgName"
-              name="org_name"
-              label="Organization Name"
-              onChange={changehandle}
-              value={formData.org_name}
-              placeholder="e.g. Health Insure Co."
-            />
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">Org Type</label>
-              <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-                <select
-                  name="org_type"
-                  value={formData.org_type}
-                  onChange={changehandle}
-                  className="w-full bg-transparent outline-none"
-                >
-                  <option value="">Select Type</option>
-                  <option value="Insurance">Insurance Provider</option>
-                  <option value="Research">Research Institute</option>
-                  <option value="Government">Government Body</option>
-                  <option value="NGO">NGO / Non-Profit</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <FormInput
-              id="website"
-              name="org_website"
-              label="Website URL"
-              onChange={changehandle}
-              value={formData.org_website}
-              placeholder="https://"
-            />
-
-            <FormInput
-              id="founded"
-              name="org_founded_on"
-              label="Founded On"
-              type="date"
-              onChange={changehandle}
-              value={formData.org_founded_on}
-            />
-
-            <FormTextarea
-              id="address"
-              name="org_address"
-              label="Headquarters Address"
-              onChange={changehandle}
-              value={formData.org_address}
-            />
-          </div>
-
-          {/* --- Col 3: Legal & Verification --- */}
-          <div className="flex flex-col justify-between">
-            <div className="bg-gray-50 p-4 rounded-lg border mb-4 h-full">
-              <h4 className="font-semibold text-lg mb-4 text-blue-800">Legal & Verification</h4>
-              
-              <div className="flex flex-col gap-4">
-                <FormInput
-                    id="licenseNo"
-                    name="org_license_no"
-                    label="Org License / Reg No"
-                    onChange={changehandle}
-                    value={formData.org_license_no}
-                    placeholder="Reg. Number"
-                />
-
-                <FormInput
-                    id="licenseValid"
-                    name="org_license_valid_till"
-                    label="License Valid Until"
-                    type="date"
-                    onChange={changehandle}
-                    value={formData.org_license_valid_till}
-                />
-
-                <FormTextarea
-                  id="desc"
-                  name="org_description"
-                  label="Short Description"
-                  onChange={changehandle}
-                  value={formData.org_description}
-                  placeholder="Describe your organization's purpose..."
-                />
-
-                {/* --- Document Upload Section --- */}
-                <div className="mt-2">
-                  <label className="block mb-2 font-medium text-gray-700">
-                    Verification Document
-                  </label>
-                  
-                  <div className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center transition-colors ${formData.verification_documents ? 'border-green-400 bg-green-50' : 'border-gray-300 bg-white hover:bg-gray-50'}`}>
-                    
-                    {formData.verification_documents ? (
-                      <div className="flex flex-col items-center text-green-600">
-                         <FaCheckCircle className="text-3xl mb-1" />
-                         <span className="text-sm font-semibold">Document Uploaded</span>
-                         <a href={formData.verification_documents} target="_blank" rel="noreferrer" className="text-xs text-blue-500 underline mt-1">View</a>
-                      </div>
-                    ) : (
-                      <>
-                        {uploadingDoc ? (
-                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        ) : (
-                          <>
-                            <FaCloudUploadAlt className="text-3xl text-gray-400 mb-2" />
-                            <p className="text-xs text-gray-500 mb-2">Auth Letter / License (PDF/IMG)</p>
-                            <label className="cursor-pointer bg-blue-100 text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200 transition">
-                              Choose File
-                              <input 
-                                type="file" 
-                                accept=".pdf,.jpg,.jpeg,.png"
-                                className="hidden" 
-                                onChange={handleDocUpload}
-                              />
-                            </label>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-              <p className="text-xs text-gray-500 mt-4">
+              <p className="text-xs text-subtle">
                 * Upload official documentation proving your organization's legitimacy.
               </p>
             </div>
-
-            <button
-              className="w-full bg-blue-500 text-white py-3 rounded-full font-semibold text-lg hover:bg-blue-600 transition mt-4"
-              type="submit"
-            >
+            <Button type="submit" size="lg" className="w-full" loading={submitting}>
               Register External
-            </button>
+            </Button>
           </div>
         </div>
       </form>
-    </div>
+    </SignUpShell>
   );
 }

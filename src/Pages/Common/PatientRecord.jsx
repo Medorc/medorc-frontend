@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import axios from "axios";
 import NavBar from "../../Components/NavBar";
-import { FiSearch, FiFilter, FiCalendar } from "react-icons/fi";
-import { motion } from "framer-motion";
-import { FaArrowLeft } from "react-icons/fa";
+import { FiSearch, FiCalendar, FiArrowLeft, FiUser, FiMessageCircle, FiPlus } from "react-icons/fi";
 import { useAuth } from "../../Context/AuthContext";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import RecordCard from "../../Components/RecordCard";
-import { useSearchParams } from "react-router-dom";
 import OrbyChat from "../../Components/OrbyChat";
+import { Button } from "../../Components/ui/Button";
+import { EmptyState } from "../../Components/ui/EmptyState";
 import { API_BASE_URL } from "../../config/api";
 
-/* ================= MAIN PAGE ================= */
+const ENTRY_TYPES = ["All", "Hospital", "Doctor", "Self"];
+
 export default function PatientRecord() {
   const [searchTerm, setSearchTerm] = useState("");
   const [entryType, setEntryType] = useState("All");
@@ -22,7 +23,6 @@ export default function PatientRecord() {
   const location = useLocation();
   const { token, role } = useAuth();
 
-  // Check if navigated with openOrby flag
   const [showOrbyChat, setShowOrbyChat] = useState(location.state?.openOrby || false);
 
   const [searchParams] = useSearchParams();
@@ -31,7 +31,6 @@ export default function PatientRecord() {
 
   const navigate = useNavigate();
 
-  // Fetch records (depends on search filters)
   useEffect(() => {
     if (!role) return;
 
@@ -60,7 +59,6 @@ export default function PatientRecord() {
 
     fetchRecords();
   }, [searchTerm, entryType, sortBy, role, token, qr_code, shc_code]);
-  // Fetch user profile (depends only on codes)
 
   useEffect(() => {
     if (!role || (!qr_code && !shc_code)) return;
@@ -80,6 +78,7 @@ export default function PatientRecord() {
 
     fetchUser();
   }, [role, qr_code, shc_code, token]);
+
   const handleOrbyBack = () => {
     if (location.state?.openOrby) {
       const fromPath = location.state?.from || `/${role || "patient"}/home`;
@@ -100,90 +99,89 @@ export default function PatientRecord() {
     );
   }
 
+  const profileName = userProfile?.full_name || "Patient";
+  const displayShc = userProfile?.shc_code || shc_code || "N/A";
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <NavBar />
 
-      <main className="w-full mx-auto px-4 py-8 space-y-6 flex flex-col gap-6">
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8">
         {/* Header */}
-        <div className="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#50E3C2]">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-primary/40 bg-surface-hover">
               {userProfile?.photo ? (
                 <img
                   src={userProfile.photo}
                   alt="Profile"
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center font-bold text-gray-600 bg-gray-200">
-                  {userProfile?.full_name?.[0] || "U"}
+                <div className="flex h-full w-full items-center justify-center font-bold text-primary">
+                  {profileName[0] || "U"}
                 </div>
               )}
             </div>
 
             <div>
-              <h1 className="text-2xl font-bold text-[#0751A7]">
-                Medical Records
-              </h1>
-              <p className="text-sm text-gray-500">
-                <span className="font-medium text-gray-900">
-                  {userProfile?.full_name || "Patient"}
-                </span>{" "}
-                • SHC: {userProfile?.shc_code || shc_code || "N/A"}
+              <h1 className="font-display text-2xl font-bold text-foreground">Medical Records</h1>
+              <p className="text-sm text-muted">
+                <span className="font-semibold text-foreground">{profileName}</span> • SHC:{" "}
+                {displayShc}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => navigate(`/${role}/home`)}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#4A82B3] text-white text-sm font-semibold hover:bg-[#4A82B3]/80"
-            >
-              <FaArrowLeft /> Back
-            </button>
-            {role !== "extern" && <button
-              onClick={() => navigate(`/${role}/addrecord?qr_code=${qr_code}&shc_code=${shc_code}`)}
-              className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
-            >
-              Add Record
-            </button>}
-           
-              <button
-                onClick={() => navigate(`/${role}/patientprofile?qr_code=${qr_code}&shc_code=${shc_code}`) }
-                className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+          <div className="flex flex-wrap gap-2.5">
+            <Button variant="outline" onClick={() => navigate(`/${role}/home`)}>
+              <FiArrowLeft size={15} aria-hidden="true" />
+              Back
+            </Button>
+            {role !== "extern" && (
+              <Button
+                onClick={() =>
+                  navigate(`/${role}/addrecord?qr_code=${qr_code}&shc_code=${shc_code}`)
+                }
               >
-                User Profile
-              </button>
-        
-            <button
-              onClick={() => setShowOrbyChat(true)}
-              className="px-6 py-2.5 rounded-lg bg-[#4A90E2] text-white text-sm font-semibold hover:bg-[#4A90E2]/80"
+                <FiPlus size={15} aria-hidden="true" />
+                Add Record
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              onClick={() =>
+                navigate(`/${role}/patientprofile?qr_code=${qr_code}&shc_code=${shc_code}`)
+              }
             >
+              <FiUser size={15} aria-hidden="true" />
+              User Profile
+            </Button>
+            <Button variant="primarySoft" onClick={() => setShowOrbyChat(true)}>
+              <FiMessageCircle size={15} aria-hidden="true" />
               Ask Orby
-            </button>
+            </Button>
           </div>
         </div>
 
-        {/* Filters and Search - Redesigned */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        {/* Filters */}
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-card">
           <div className="flex flex-col gap-6">
-            {/* Top Row: Search & Sort */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between">
+            <div className="flex flex-col justify-between gap-4 md:flex-row">
               <div className="relative flex-1">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <FiSearch className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-subtle" aria-hidden="true" />
                 <input
-                  className="w-full h-12 pl-12 pr-4 bg-gray-50 border-none rounded-xl text-gray-700 placeholder-gray-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                  className="h-12 w-full rounded-xl border border-border bg-background pl-12 pr-4 text-foreground placeholder-muted transition-all focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/25"
                   placeholder="Search records by diagnosis, doctor, or hospital..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
 
-              <div className="flex items-center gap-3 bg-gray-50 px-4 rounded-xl">
-                <FiCalendar className="text-gray-500" />
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-background px-4">
+                <FiCalendar className="text-muted" aria-hidden="true" />
                 <select
-                  className="h-12 bg-transparent border-none text-gray-700 font-medium focus:ring-0 cursor-pointer outline-none min-w-[140px]"
+                  className="h-12 cursor-pointer bg-transparent font-medium text-foreground focus:outline-none"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
@@ -194,37 +192,43 @@ export default function PatientRecord() {
               </div>
             </div>
 
-            {/* Bottom Row: Entry Type Pills */}
             <div className="flex flex-wrap gap-2">
-              {["All", "Hospital", "Doctor", "Self"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setEntryType(type)}
-                  className={`relative px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${entryType === type ? "text-white" : "text-gray-600 hover:bg-gray-100"
+              {ENTRY_TYPES.map((type) => {
+                const active = entryType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setEntryType(type)}
+                    className={`rounded-full px-5 py-2 text-sm font-semibold transition-all ${
+                      active
+                        ? "bg-primary text-white shadow-sm shadow-primary/25"
+                        : "bg-surface-hover text-muted hover:bg-surface-hover/70 hover:text-foreground"
                     }`}
-                >
-                  {entryType === type && (
-                    <motion.div
-                      layoutId="activeFilter"
-                      className="absolute inset-0 bg-blue-600 rounded-full shadow-md shadow-blue-500/30"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <span className="relative z-10">{type === "All" ? "All Records" : type}</span>
-                </button>
-              ))}
+                  >
+                    {type === "All" ? "All Records" : type}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Records Display */}
-        <div className="flex flex-col gap-2">
+        {/* Records */}
+        <div className="flex flex-col gap-3">
           {records.length ? (
             records.map((r) => (
-              <RecordCard key={r.record_id} record={r} shc_code={userProfile.shc_code} qr_code={userProfile.qr_code} />
+              <RecordCard
+                key={r.record_id}
+                record={r}
+                shc_code={userProfile?.shc_code || shc_code}
+                qr_code={userProfile?.qr_code || qr_code}
+              />
             ))
           ) : (
-            <p className="text-center text-gray-500 py-10">No records found</p>
+            <div className="rounded-2xl border border-border bg-surface shadow-card">
+              <EmptyState title="No records found" description="Try adjusting your search or filters." />
+            </div>
           )}
         </div>
       </main>

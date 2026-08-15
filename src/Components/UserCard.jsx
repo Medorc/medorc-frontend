@@ -1,26 +1,54 @@
-import React, { useState } from "react";
-import Loading from "./Loading";
+import { useState } from "react";
+
+import { Loading } from "./Loading";
 import axios from "axios";
-import {
-  FaSearch,
-  FaTimes,
-  FaQrcode,
-  FaChevronRight,
-  FaSignOutAlt,
-} from "react-icons/fa";
-
-// ✅ NEW MODULE IMPORT
 import { Scanner } from "@yudiel/react-qr-scanner";
-
-// import { useAuth } from "../Context/AuthContext"; // Uncomment if available
-
+import {
+  FiSearch,
+  FiX,
+  FiGrid,
+  FiChevronRight,
+  FiLogOut,
+  FiCheck,
+  FiCamera,
+  FiArrowRight,
+} from "react-icons/fi";
 import { API_BASE_URL } from "../config/api";
+import { Button } from "./ui/Button";
+import { Badge } from "./ui/Badge";
+
+const ROLE_TONES = {
+  doctor: {
+    label: "Doctor",
+    tone: "doctor",
+    gradient: "from-teal-700 via-teal-600 to-cyan-600",
+    iconBg: "bg-doctor-soft text-doctor",
+    ring: "ring-doctor/40",
+  },
+  hospital: {
+    label: "Hospital",
+    tone: "hospital",
+    gradient: "from-indigo-700 via-indigo-600 to-violet-600",
+    iconBg: "bg-hospital-soft text-hospital",
+    ring: "ring-hospital/40",
+  },
+  extern: {
+    label: "External",
+    tone: "extern",
+    gradient: "from-amber-700 via-amber-600 to-orange-600",
+    iconBg: "bg-extern-soft text-extern",
+    ring: "ring-extern/40",
+  },
+};
 
 export default function UserCard({ user, role, navigate, token }) {
   const [loading, setLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [qrResult, setQrResult] = useState("");
   const [shcCode, setShcCode] = useState("");
+  const [scanError, setScanError] = useState("");
+
+  const meta = ROLE_TONES[role] || ROLE_TONES.doctor;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -28,15 +56,23 @@ export default function UserCard({ user, role, navigate, token }) {
     navigate("/");
   };
 
+  const routeByVisibility = (code, codeKey) => {
+    navigate(`/${role}/records?${codeKey}=${code}`);
+  };
+
+  const routeByProfile = (code, codeKey) => {
+    navigate(`/${role}/PatientBasicDetails?${codeKey}=${code}`);
+  };
+
   const handleScan = async (detectedCodes) => {
     if (detectedCodes && detectedCodes.length > 0) {
       const code = detectedCodes[0].rawValue;
-
       if (!code) return;
 
       setIsScanning(false);
       setQrResult(code);
       setLoading(true);
+      setScanError("");
 
       try {
         const response = await axios.get(`${API_BASE_URL}/patient/profile`, {
@@ -47,12 +83,13 @@ export default function UserCard({ user, role, navigate, token }) {
         const visibility = response?.data?.visibility;
 
         if (visibility) {
-          navigate(`/${role}/records?qr_code=${code}`);
+          routeByVisibility(code, "qr_code");
         } else {
-          navigate(`/${role}/PatientBasicDetails?qr_code=${code}`);
+          routeByProfile(code, "qr_code");
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
+        setScanError("Could not find a patient for this QR code.");
       } finally {
         setLoading(false);
       }
@@ -61,8 +98,9 @@ export default function UserCard({ user, role, navigate, token }) {
 
   const handleSearch = async () => {
     if (!shcCode) return;
-
     setLoading(true);
+    setScanError("");
+
     try {
       const response = await axios.get(`${API_BASE_URL}/patient/profile`, {
         params: { shc_code: shcCode },
@@ -72,19 +110,258 @@ export default function UserCard({ user, role, navigate, token }) {
       const visibility = response?.data?.visibility;
 
       if (visibility) {
-        navigate(`/${role}/records?shc_code=${shcCode}`);
+        routeByVisibility(shcCode, "shc_code");
       } else {
-        navigate(`/${role}/PatientBasicDetails?shc_code=${shcCode}`);
+        routeByProfile(shcCode, "shc_code");
       }
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      setScanError("Could not find a patient with that SHC code.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <main className="mx-auto w-full max-w-6xl animate-fade-in px-4 pb-16 pt-8 sm:px-6">
+      {loading ? (
+        <Loading />
+      ) : (
+        <div className="flex w-full flex-col gap-8">
+          {/* Header */}
+          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <h1 className="font-display text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+                <span className={`bg-gradient-to-r bg-clip-text text-transparent ${meta.gradient}`}>
+                  {meta.label} Dashboard
+                </span>
+              </h1>
+              <p className="mt-1 text-lg text-muted">
+                Welcome back,{" "}
+                <span className="font-semibold text-foreground">
+                  {role === "doctor" || role === "extern"
+                    ? user?.full_name || meta.label
+                    : user?.name || meta.label}
+                </span>
+                .
+              </p>
+            </div>
+
+            <Button variant="danger-soft" onClick={handleLogout} icon={FiLogOut}>
+              Logout
+            </Button>
+          </div>
+
+          {/* Profile card */}
+          <section
+            aria-label="Your profile"
+            className="relative overflow-hidden rounded-3xl border border-border bg-surface p-8 shadow-card"
+          >
+            <div
+              aria-hidden="true"
+              className={`absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-to-br ${meta.gradient} opacity-[0.08] blur-3xl`}
+            />
+
+            <div className="relative z-10 flex flex-col items-center justify-between gap-8 md:flex-row md:items-center">
+              <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
+                <div className="relative shrink-0">
+                  <div className={`rounded-full p-1 ring-2 ${meta.ring}`}>
+                    <div className="h-24 w-24 overflow-hidden rounded-full border-4 border-surface bg-surface-hover">
+                      <img src={user?.photo || "/image.png"} alt="Profile" className="h-full w-full object-cover" />
+                    </div>
+                  </div>
+                  <span
+                    className="absolute bottom-2 right-1 h-5 w-5 rounded-full border-4 border-surface bg-success"
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <div className="flex flex-col items-center gap-1.5 md:items-start">
+                  <h2 className="font-display text-2xl font-bold text-foreground">
+                    {user?.full_name || user?.name || meta.label}
+                  </h2>
+
+                  {role === "doctor" && (
+                    <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
+                      {user?.specializations && (
+                        <Badge tone="doctor">{user.specializations}</Badge>
+                      )}
+                      {user?.years_of_experience != null && (
+                        <Badge tone="success">{user.years_of_experience} Years Exp.</Badge>
+                      )}
+                    </div>
+                  )}
+
+                  {user?.blood_group && (
+                    <Badge tone="danger">Blood Group: {user.blood_group}</Badge>
+                  )}
+
+                  <p className="text-sm text-muted">{user?.email}</p>
+
+                  <span className="inline-flex items-center gap-1.5 self-center rounded-full bg-surface-hover px-3 py-1 text-xs font-medium text-muted md:self-start">
+                    <FiGrid size={12} aria-hidden="true" />
+                    {role === "hospital" || role === "extern"
+                      ? `${user?.name || meta.label} • LIC Pvt. Ltd`
+                      : user?.hospital_affiliation || "No affiliation"}
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/${role}/profile`)}
+                icon={FiChevronRight}
+              >
+                View Profile
+              </Button>
+            </div>
+          </section>
+
+          {/* Quick access label */}
+          <div className="flex items-center gap-3">
+            <div className={`h-8 w-1 rounded-full bg-gradient-to-b ${meta.gradient}`} aria-hidden="true" />
+            <h3 className="font-display text-xl font-bold text-foreground">Quick Access</h3>
+          </div>
+
+          {/* Scanned result alert */}
+          {qrResult && (
+            <div className="animate-fade-in-down flex items-center justify-between gap-4 rounded-xl border border-success-soft bg-success-soft px-5 py-4 text-success">
+              <div className="flex items-center gap-3">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-success text-white">
+                  <FiCheck size={13} aria-hidden="true" />
+                </div>
+                <span className="font-medium">Scanned: {qrResult}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setQrResult("")}
+                className="text-sm font-bold hover:underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {scanError && (
+            <div className="flex items-center justify-between gap-4 rounded-xl border border-danger-soft bg-danger-soft px-5 py-4 text-danger">
+              <span className="font-medium">{scanError}</span>
+              <button
+                type="button"
+                onClick={() => setScanError("")}
+                className="text-sm font-bold hover:underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* Action cards */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Patient search */}
+            <section
+              aria-label="Find patient records"
+              className="flex flex-col items-center gap-3 rounded-3xl border border-border bg-surface p-8 text-center shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+            >
+              <div className={`mb-2 flex h-16 w-16 items-center justify-center rounded-2xl ${meta.iconBg}`}>
+                <FiSearch size={26} aria-hidden="true" />
+              </div>
+              <h3 className="font-display text-xl font-bold text-foreground">Find Patient Records</h3>
+              <p className="mb-4 text-sm text-muted">
+                Enter the unique SHC code to access history instantly.
+              </p>
+              <form
+                className="relative w-full"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSearch();
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Enter SHC Code"
+                  aria-label="SHC code"
+                  value={shcCode}
+                  onChange={(e) => setShcCode(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-border bg-background pl-4 pr-24 text-sm text-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!shcCode.trim()}
+                  className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2"
+                >
+                  Search
+                </Button>
+              </form>
+            </section>
+
+            {/* QR verification */}
+            <section
+              aria-label="QR verification"
+              className="flex flex-col items-center gap-3 rounded-3xl border border-border bg-surface p-8 text-center shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+            >
+              <div className={`mb-2 flex h-16 w-16 items-center justify-center rounded-2xl ${meta.iconBg}`}>
+                <FiCamera size={26} aria-hidden="true" />
+              </div>
+              <h3 className="font-display text-xl font-bold text-foreground">QR Verification</h3>
+              <p className="mb-6 text-sm text-muted">
+                Tap below to scan a patient's digital ID or prescription.
+              </p>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsScanning(true)}
+                icon={FiCamera}
+              >
+                Launch Scanner
+              </Button>
+            </section>
+          </div>
+        </div>
+      )}
+
+      {/* Scanner overlay */}
+      {isScanning && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md animate-fade-in">
+          <button
+            type="button"
+            onClick={() => setIsScanning(false)}
+            aria-label="Close scanner"
+            className="absolute right-6 top-6 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+          >
+            <FiX size={24} aria-hidden="true" />
+          </button>
+
+          <div className="mb-8 text-center text-white">
+            <h2 className="font-display text-2xl font-bold">Scan QR Code</h2>
+            <p className="mt-1 text-sm text-white/60">Align the QR code within the frame</p>
+          </div>
+
+          <div className="relative h-80 w-80 overflow-hidden rounded-3xl border-4 border-slate-700 bg-black shadow-2xl shadow-primary/20">
+            <Scanner
+              onScan={handleScan}
+              components={{ finder: false }}
+              styles={{ container: { width: "100%", height: "100%" } }}
+            />
+
+            {/* Corner accents */}
+            <div className="pointer-events-none absolute left-4 top-4 h-10 w-10 rounded-tl-xl border-l-4 border-t-4 border-primary" />
+            <div className="pointer-events-none absolute right-4 top-4 h-10 w-10 rounded-tr-xl border-r-4 border-t-4 border-primary" />
+            <div className="pointer-events-none absolute bottom-4 left-4 h-10 w-10 rounded-bl-xl border-b-4 border-l-4 border-primary" />
+            <div className="pointer-events-none absolute bottom-4 right-4 h-10 w-10 rounded-br-xl border-b-4 border-r-4 border-primary" />
+            <div
+              className="pointer-events-none absolute left-0 h-0.5 w-full bg-primary shadow-[0_0_15px_rgba(20,184,166,1)] animate-[scan_2s_infinite_ease-in-out]"
+              style={{ animation: "scan 2s infinite ease-in-out" }}
+            />
+          </div>
+
+          <div className="mt-8 flex items-center gap-2 rounded-full bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300">
+            <FiArrowRight size={14} aria-hidden="true" />
+            Searching for code...
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes scan {
           0% { top: 0%; opacity: 0; }
@@ -93,228 +370,6 @@ export default function UserCard({ user, role, navigate, token }) {
           100% { top: 100%; opacity: 0; }
         }
       `}</style>
-
-      {loading ? (
-        <Loading />
-      ) : (
-        <div className="flex justify-center w-full min-h-screen p-4 md:p-8">
-          <div className="w-full max-w-6xl flex flex-col gap-8">
-            {/* 1. HEADER */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-              <div className="flex flex-col gap-2">
-                <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 via-blue-600 to-cyan-500">
-                    {role === "doctor" ? "Doctor" : ""} Dashboard
-                  </span>
-                </h1>
-                <p className="text-slate-500 text-lg">
-                  Welcome back,{" "}
-                  {role === "doctor" || role === "extern" ? (
-                    <span className="font-semibold text-slate-700">
-                      {user?.full_name || "Doctor"}
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-slate-700">
-                      {user?.name || "Hospital"}
-                    </span>
-                  )}
-                  .
-                </p>
-              </div>
-
-              <button
-                onClick={handleLogout}
-                className="group flex items-center gap-2 px-5 py-2.5 rounded-xl text-red-600 bg-red-50 hover:bg-red-600 hover:text-white transition-all duration-300 font-medium border border-red-100"
-              >
-                <FaSignOutAlt className="group-hover:-translate-x-1 transition-transform" />
-                Logout
-              </button>
-            </div>
-
-            {/* 2. PROFILE CARD */}
-            <div className="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200 border border-slate-100 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 -translate-y-1/2 translate-x-1/2"></div>
-
-              <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
-                  <div className="relative">
-                    <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-blue-500 to-cyan-400">
-                      <div className="w-full h-full rounded-full overflow-hidden border-4 border-white bg-white">
-                        <img
-                          src={user?.photo || "/image.png"}
-                          className="w-full h-full object-cover"
-                          alt="profile"
-                        />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 right-1 w-5 h-5 bg-green-500 border-4 border-white rounded-full shadow-sm"></div>
-                  </div>
-
-                  <div className="flex flex-col justify-center gap-2">
-                    <h2 className="text-2xl font-bold text-slate-800">
-                      {user?.full_name}
-                    </h2>
-                    {role === "doctor" && (
-                      <div className="flex flex-wrap items-center gap-2 mt-1 mb-2">
-                        <span className="bg-blue-50 text-blue-600 border border-blue-100 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                          {user?.specializations}
-                        </span>
-                        <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
-                          {user?.years_of_experience} Years Exp.
-                        </span>
-                      </div>
-                    )}
-                    {user?.blood_group && (
-                      <div className="flex items-center gap-2 mt-1 mb-1">
-                        <span className="bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider">
-                          🩸 Blood Group: {user.blood_group}
-                        </span>
-                      </div>
-                    )}
-                    <p className="text-slate-400 text-sm mb-3">{user?.email}</p>
-
-                    
-                      {role === "hospital" || role === "extern" ? (
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
-                          🏢 {user?.name} • LIC Pvt. Ltd
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-600 self-center md:self-start">
-                          🏢 {user?.hospital_affiliation}
-                        </span>
-                      )}
-                  
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => navigate(`/${role}/profile`)}
-                  className="bg-slate-900 hover:bg-blue-600 text-white px-8 py-3 rounded-xl font-medium transition-all duration-300 shadow-lg shadow-slate-900/20 hover:shadow-blue-600/30 flex items-center gap-2"
-                >
-                  View Profile <FaChevronRight className="text-xs" />
-                </button>
-              </div>
-            </div>
-
-            {/* QUICK ACCESS LABEL */}
-            <div className="flex items-center gap-3">
-              <div className="h-8 w-1 bg-blue-600 rounded-full"></div>
-              <h3 className="text-xl font-bold text-slate-800">Quick Access</h3>
-            </div>
-
-            {/* 3. SCANNED RESULT ALERT */}
-            {qrResult && (
-              <div className="animate-fade-in-down bg-emerald-50 border border-emerald-200 text-emerald-800 px-6 py-4 rounded-xl flex justify-between items-center shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs">
-                    ✓
-                  </div>
-                  <span className="font-medium">Scanned: {qrResult}</span>
-                </div>
-                <button
-                  onClick={() => setQrResult("")}
-                  className="text-sm font-bold hover:underline"
-                >
-                  Dismiss
-                </button>
-              </div>
-            )}
-
-            {/* 4. CARDS GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Card A: Patient Search */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center gap-2 group">
-                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
-                  <FaSearch />
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">
-                  Find Patient Records
-                </h3>
-                <p className="text-slate-500 text-sm mb-8">
-                  Enter the unique SHC code to access history instantly.
-                </p>
-                <div className="w-full relative">
-                  <input
-                    type="text"
-                    placeholder="Enter SHC Code"
-                    value={shcCode}
-                    onChange={(e) => setShcCode(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-4 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-inner"
-                  />
-                  <button
-                    onClick={handleSearch}
-                    className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-lg font-medium transition-colors shadow-md"
-                  >
-                    Search
-                  </button>
-                </div>
-              </div>
-
-              {/* Card B: QR Verification */}
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group gap-2">
-                <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
-                  <FaQrcode />
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">
-                  QR Verification
-                </h3>
-                <p className="text-slate-500 text-sm mb-6">
-                  Tap below to scan a patient's digital ID or prescription.
-                </p>
-
-                
-
-                <button
-                  onClick={() => setIsScanning(true)}
-                  className="w-full bg-slate-900 hover:bg-black text-white py-4 rounded-xl font-bold transition-all shadow-lg shadow-slate-900/20 flex items-center justify-center gap-3"
-                >
-                  <FaQrcode /> Launch Scanner
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 5. SCANNER OVERLAY */}
-      {isScanning && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-md animate-in fade-in duration-200">
-          <button
-            onClick={() => setIsScanning(false)}
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors backdrop-blur-sm z-50"
-          >
-            <FaTimes size={24} />
-          </button>
-
-          <div className="text-white text-center mb-8">
-            <h2 className="text-2xl font-bold">Scan QR Code</h2>
-            <p className="text-white/60 text-sm mt-1">
-              Align the QR code within the frame
-            </p>
-          </div>
-
-          <div className="relative w-80 h-80 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/20 border-4 border-slate-700 bg-black">
-            {/* ✅ NEW SCANNER COMPONENT */}
-            <Scanner
-              onScan={handleScan}
-              // We disable the default 'finder' border so we can use our custom one below
-              components={{ finder: false }}
-              styles={{ container: { width: "100%", height: "100%" } }}
-            />
-
-            {/* CUSTOM OVERLAY (Preserved from your design) */}
-            <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-blue-500 rounded-tl-xl pointer-events-none"></div>
-            <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-blue-500 rounded-tr-xl pointer-events-none"></div>
-            <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-blue-500 rounded-bl-xl pointer-events-none"></div>
-            <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-blue-500 rounded-br-xl pointer-events-none"></div>
-            <div className="absolute left-0 w-full h-0.5 bg-blue-400 shadow-[0_0_15px_rgba(59,130,246,1)] animate-[scan_2s_infinite_ease-in-out] z-10 pointer-events-none"></div>
-          </div>
-
-          <p className="mt-8 text-sm text-slate-400 font-medium bg-slate-800/50 px-4 py-2 rounded-full">
-            Searching for code...
-          </p>
-        </div>
-      )}
-    </div>
+    </main>
   );
 }

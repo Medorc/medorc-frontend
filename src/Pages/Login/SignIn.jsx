@@ -1,36 +1,34 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Check } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { FiChevronDown, FiLock, FiMail, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
 import { API_BASE_URL } from "../../config/api";
+import AuthLayout from "../../Components/AuthLayout";
+import { Button } from "../../Components/ui/Button";
+
+const roles = [
+  { value: "patient", label: "Patient" },
+  { value: "doctor", label: "Doctor" },
+  { value: "hospital", label: "Hospital" },
+  { value: "extern", label: "External" },
+];
 
 export default function SignIn() {
-  const { login,shcstore } = useAuth();
+  const { login, shcstore } = useAuth();
   const navigate = useNavigate();
 
-  const [data, setData] = useState({
-    role: "",
-    email: "",
-    password: "",
-  });
+  const [data, setData] = useState({ role: "", email: "", password: "" });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const roles = [
-    { value: "patient", label: "Patient" },
-    { value: "doctor", label: "Doctor" },
-    { value: "hospital", label: "Hospital" },
-    { value: "extern", label: "External" },
-  ];
+  const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const changehandle = (e) => {
     const { name, value } = e.target;
-    setData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlesubmit = async (e) => {
@@ -41,121 +39,158 @@ export default function SignIn() {
       return;
     }
 
+    setSubmitting(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/signin`, data);
       if (response.status === 200) {
         toast.success("Login Successful");
         login(response.data.token, response.data.role);
-        if(response.data.role==="patient"){
+        if (response.data.role === "patient") {
           shcstore(response.data.shc_code);
         }
         navigate(`/${role}/home`);
       }
     } catch (error) {
       console.error("SignIn Error Details:", error);
-      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Login Failed");
+      toast.error(
+        error.response?.data?.error || error.response?.data?.message || error.message || "Login Failed"
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-white p-4">
-      <div className="flex w-full max-w-7xl">
-        <div className="hidden md:flex md:w-1/2 items-center justify-center pr-10">
-          <img src="Loginbg.png" alt="Medical illustration" className="max-w-xl" />
-        </div>
-        <div className="w-full md:w-1/2 flex flex-col items-center justify-center">
-          <img src="Logo.png" alt="Medorc Logo" className="w-72 pb-4" />
-          <div className="bg-gray-100 p-8 rounded-2xl shadow-lg w-full max-w-md">
-            <h2 className="text-4xl font-bold text-center mb-8">Sign In</h2>
-            <form onSubmit={handlesubmit} className="flex flex-col gap-4">
-              <div>
-                <label htmlFor="role" className="block mb-1 font-medium text-gray-700">
-                  Sign In as
-                </label>
-                <div className="relative">
-                  <div
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full border border-gray-300 rounded-full px-4 py-3 cursor-pointer bg-white flex items-center justify-between hover:border-blue-400 transition-colors"
-                  >
-                    <span className={data.role ? "text-gray-900" : "text-gray-500"}>
-                      {roles.find((r) => r.value === data.role)?.label || "--Select Role--"}
-                    </span>
-                    <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`} />
-                  </div>
+    <AuthLayout title="Sign In" subtitle="Welcome back — access your health dashboard.">
+      <form onSubmit={handlesubmit} className="flex flex-col gap-5">
+        {/* Role select */}
+        <div className="relative">
+          <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-foreground">
+            Sign In as
+          </label>
+          <button
+            type="button"
+            onClick={() => setIsDropdownOpen((v) => !v)}
+            aria-haspopup="listbox"
+            aria-expanded={isDropdownOpen}
+            className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-surface px-3.5 text-sm transition-all hover:border-primary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring/35"
+          >
+            <span className={data.role ? "font-medium text-foreground" : "text-subtle"}>
+              {roles.find((r) => r.value === data.role)?.label || "Select your role"}
+            </span>
+            <FiChevronDown
+              size={16}
+              className={`text-subtle transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+              aria-hidden="true"
+            />
+          </button>
 
-                  <AnimatePresence>
-                    {isDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
-                      >
-                        {roles.map((role) => (
-                          <div
-                            key={role.value}
-                            onClick={() => {
-                              setData((prev) => ({ ...prev, role: role.value }));
-                              setIsDropdownOpen(false);
-                            }}
-                            className="px-4 py-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between text-gray-700 hover:text-blue-600 transition-colors"
-                          >
-                            <span>{role.label}</span>
-                            {data.role === role.value && <Check className="w-4 h-4 text-blue-500" />}
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </div>
-              <div>
-                <label htmlFor="email" className="block mb-1 font-medium text-gray-700">
-                  Email
-                </label>
-                <div className="w-full border border-gray-300 rounded-full px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={data.email}
-                    onChange={changehandle}
-                    placeholder="Enter your email"
-                    className="w-full bg-transparent outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="password" className="block mb-1 font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="w-full border border-gray-300 rounded-full px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 bg-white">
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={data.password}
-                    onChange={changehandle}
-                    placeholder="Enter your password"
-                    className="w-full bg-transparent outline-none"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-blue-500 text-white py-3 rounded-full font-semibold text-lg hover:bg-blue-600 transition duration-300 mt-4"
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.ul
+                role="listbox"
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+                className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-pop"
               >
-                Sign In
-              </button>
-            </form>
-            <div className="text-center mt-6 flex justify-between text-sm pt-2">
-              <p className="text-blue-500 hover:underline cursor-pointer">Forgot password?</p>
-              <p className="text-blue-500 hover:underline cursor-pointer" onClick={() => navigate('/SignUp')}>Not a user? Sign up</p>
-            </div>
+                <div>
+                  {roles.map((role) => (
+                    <li key={role.value}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setData((prev) => ({ ...prev, role: role.value }));
+                          setIsDropdownOpen(false);
+                        }}
+                        className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
+                      >
+                        <span>{role.label}</span>
+                        {data.role === role.value && (
+                          <FiCheck size={15} className="text-primary" aria-hidden="true" />
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </div>
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Email */}
+        <div>
+          <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+            Email
+          </label>
+          <div className="relative">
+            <FiMail
+              size={15}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle"
+              aria-hidden="true"
+            />
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={data.email}
+              onChange={changehandle}
+              placeholder="Enter your email"
+              className="h-11 w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+            />
           </div>
         </div>
+
+        {/* Password */}
+        <div>
+          <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">
+            Password
+          </label>
+          <div className="relative">
+            <FiLock
+              size={15}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle"
+              aria-hidden="true"
+            />
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              name="password"
+              value={data.password}
+              onChange={changehandle}
+              placeholder="Enter your password"
+              className="h-11 w-full rounded-xl border border-border bg-surface pl-10 pr-10 text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle transition-colors hover:text-foreground"
+            >
+              {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+            </button>
+          </div>
+        </div>
+
+        <Button type="submit" size="lg" className="mt-1 w-full" loading={submitting}>
+          Sign In
+        </Button>
+      </form>
+
+      <div className="mt-7 flex flex-col items-center gap-3 text-sm sm:flex-row sm:justify-between">
+        <p className="cursor-pointer font-medium text-primary hover:underline">Forgot password?</p>
+        <p className="text-muted">
+          Not a user?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/SignUp")}
+            className="font-semibold text-primary hover:underline"
+          >
+            Sign up
+          </button>
+        </p>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

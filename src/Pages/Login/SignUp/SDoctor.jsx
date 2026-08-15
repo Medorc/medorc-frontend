@@ -1,54 +1,15 @@
-import React, { useState } from "react";
+import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { API_BASE_URL } from "../../../config/api";
+import SignUpShell from "../../../Components/SignUpShell";
+import { FieldInput, FieldTextarea, FieldSelect } from "../../../Components/SignUpField";
+import { Button } from "../../../Components/ui/Button";
 
-// Cloudinary Config (Same as Patient)
-const CLOUDINARY_URL = import.meta.env.VITE_CLOUDINARY_URL;
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-
-// Reusable Input Component (Matches Patient Design)
-const FormInput = ({ id, name, label, type = "text", value, onChange, placeholder }) => (
-  <div>
-    <label htmlFor={id} className="block mb-1 font-medium text-gray-700">
-      {label}
-    </label>
-    <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <input
-        type={type}
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full bg-transparent outline-none"
-      />
-    </div>
-  </div>
-);
-
-// Reusable Textarea Component (Matches Patient Design)
-const FormTextarea = ({ id, name, label, value, onChange }) => (
-  <div>
-    <label htmlFor={id} className="block mb-1 font-medium text-gray-700">
-      {label}
-    </label>
-    <div className="w-full border border-gray-300 rounded-2xl px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-      <textarea
-        id={id}
-        name={name}
-        value={value}
-        onChange={onChange}
-        className="w-full bg-transparent outline-none resize-none"
-        rows="2"
-      ></textarea>
-    </div>
-  </div>
-);
-
-
+const GENDER_OPTIONS = ["Male", "Female", "Other"];
 
 export default function SDoctor() {
   const navigate = useNavigate();
@@ -67,8 +28,9 @@ export default function SDoctor() {
     specializations: "",
     license_no: "",
     years_of_experience: "",
-    hospital_affiliation: ""
+    hospital_affiliation: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const handlePhotoUpload = async (file) => {
     if (!file) return;
@@ -78,10 +40,7 @@ export default function SDoctor() {
 
     try {
       const res = await axios.post(`${API_BASE_URL}/cloudinary/photo`, formData);
-      setData((prev) => ({
-        ...prev,
-        photo: res.data.url,
-      }));
+      setData((prev) => ({ ...prev, photo: res.data.url }));
       toast.success("Photo uploaded successfully!");
     } catch (error) {
       console.error("Cloudinary error response:", error.response?.data || error.message);
@@ -91,10 +50,7 @@ export default function SDoctor() {
 
   const changehandle = (e) => {
     const { name, value } = e.target;
-    setData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setData((prev) => ({ ...prev, [name]: value }));
   };
 
   const Signup = async (e) => {
@@ -118,15 +74,12 @@ export default function SDoctor() {
     }
 
     const submissionData = { ...data };
-
-    if (submissionData.years_of_experience) {
-      submissionData.years_of_experience = parseInt(submissionData.years_of_experience, 10);
-    } else {
-      submissionData.years_of_experience = 0;
-    }
-
+    submissionData.years_of_experience = data.years_of_experience
+      ? parseInt(data.years_of_experience, 10)
+      : 0;
     delete submissionData.confirmPassword;
 
+    setSubmitting(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/signup`, submissionData);
       if (response.status === 201) {
@@ -135,164 +88,56 @@ export default function SDoctor() {
       }
     } catch (error) {
       console.error("Doctor Signup Error Details:", error);
-      toast.error(error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed");
+      toast.error(
+        error.response?.data?.error || error.response?.data?.message || error.message || "Signup failed"
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4">
-      <header className="flex flex-col md:flex-row justify-between items-center w-full max-w-6xl mb-8">
-        <img src="Logo.png" alt="logo" className="w-40" />
-        <h2 className="text-3xl font-bold text-gray-800 mt-4 md:mt-0">
-          Sign Up - Doctor
-        </h2>
-      </header>
-
+    <SignUpShell title="Doctor Sign Up">
       <form
         onSubmit={Signup}
-        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-6xl"
+        className="mx-auto w-full max-w-6xl rounded-3xl border border-border bg-surface p-6 shadow-card sm:p-10"
       >
-        {/* 🔥 Upload Photo */}
-        <Profile
-          onFileSelect={(file) => handlePhotoUpload(file)}
-          photo={data.photo}
-        />
+        <div className="mb-8 flex justify-center">
+          <Profile onFileSelect={(file) => handlePhotoUpload(file)} photo={data.photo} />
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
-          {/* Left Column: Personal Info */}
+        <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
+          {/* Personal */}
           <div className="flex flex-col gap-4">
-            <FormInput
-              id="fullName"
-              name="full_name"
-              label="Full Name"
-              onChange={changehandle}
-              value={data.full_name}
-              placeholder="Dr. John Doe"
-            />
-            <FormInput
-              id="phoneNumber"
-              name="phone_no"
-              label="Phone Number"
-              onChange={changehandle}
-              value={data.phone_no}
-            />
-            <FormInput
-              id="email"
-              name="email"
-              label="Email Address"
-              type="email"
-              onChange={changehandle}
-              value={data.email}
-            />
-            <FormInput
-              id="password"
-              name="password"
-              label="Password"
-              type="password"
-              onChange={changehandle}
-              value={data.password}
-            />
-            <FormInput
-              id="confirmPassword"
-              name="confirmPassword"
-              label="Confirm Password"
-              type="password"
-              onChange={changehandle}
-              value={data.confirmPassword}
-            />
+            <FieldInput id="fullName" name="full_name" label="Full Name" required value={data.full_name} onChange={changehandle} placeholder="Dr. John Doe" />
+            <FieldInput id="phoneNumber" name="phone_no" label="Phone Number" required value={data.phone_no} onChange={changehandle} />
+            <FieldInput id="email" name="email" label="Email Address" type="email" required value={data.email} onChange={changehandle} />
+            <FieldInput id="password" name="password" label="Password" type="password" required value={data.password} onChange={changehandle} />
+            <FieldInput id="confirmPassword" name="confirmPassword" label="Confirm Password" type="password" required value={data.confirmPassword} onChange={changehandle} />
           </div>
 
-          {/* Middle Column: Demographics & Address */}
+          {/* Demographics & license */}
           <div className="flex flex-col gap-4">
-            <FormInput
-              id="dob"
-              name="date_of_birth"
-              label="Date of Birth"
-              type="date"
-              onChange={changehandle}
-              value={data.date_of_birth}
-            />
-
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">
-                Gender
-              </label>
-              <div className="w-full border border-gray-300 rounded-full px-4 py-3 bg-white focus-within:ring-2 focus-within:ring-blue-500">
-                <select
-                  name="gender"
-                  value={data.gender}
-                  onChange={changehandle}
-                  className="w-full bg-transparent outline-none"
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <FormTextarea
-              id="address"
-              name="address"
-              label="Clinic/Residential Address"
-              onChange={changehandle}
-              value={data.address}
-            />
-
-            <FormInput
-              id="licenseNo"
-              name="license_no"
-              label="Medical License Number"
-              onChange={changehandle}
-              value={data.license_no}
-            />
+            <FieldInput id="dob" name="date_of_birth" label="Date of Birth" type="date" value={data.date_of_birth} onChange={changehandle} />
+            <FieldSelect id="gender" name="gender" label="Gender" value={data.gender} onChange={changehandle} options={GENDER_OPTIONS} placeholder="Select Gender" />
+            <FieldTextarea id="address" name="address" label="Clinic / Residential Address" value={data.address} onChange={changehandle} />
+            <FieldInput id="licenseNo" name="license_no" label="Medical License Number" required value={data.license_no} onChange={changehandle} />
           </div>
 
-          {/* Right Column: Professional Details */}
-          <div className="flex flex-col justify-between">
-            <div className="bg-gray-50 p-4 rounded-lg border mb-4 h-full">
-              <h4 className="font-semibold text-lg mb-4 text-blue-800">Professional Details</h4>
-
-              <div className="flex flex-col gap-4">
-                <FormInput
-                  id="specializations"
-                  name="specializations"
-                  label="Specialization"
-                  onChange={changehandle}
-                  value={data.specializations}
-                  placeholder="e.g. Cardiologist"
-                />
-
-                <FormInput
-                  id="experience"
-                  name="years_of_experience"
-                  label="Years of Experience"
-                  type="number"
-                  onChange={changehandle}
-                  value={data.years_of_experience}
-                />
-
-                <FormInput
-                  id="hospital"
-                  name="hospital_affiliation"
-                  label="Hospital Affiliation"
-                  onChange={changehandle}
-                  value={data.hospital_affiliation}
-                  placeholder="Current Hospital"
-                />
-              </div>
+          {/* Professional */}
+          <div className="flex flex-col justify-between gap-4">
+            <div className="flex h-full flex-col gap-4 rounded-2xl border border-border bg-background p-5">
+              <h4 className="font-display text-base font-bold text-foreground">Professional Details</h4>
+              <FieldInput id="specializations" name="specializations" label="Specialization" required value={data.specializations} onChange={changehandle} placeholder="e.g. Cardiologist" />
+              <FieldInput id="experience" name="years_of_experience" label="Years of Experience" type="number" value={data.years_of_experience} onChange={changehandle} />
+              <FieldInput id="hospital" name="hospital_affiliation" label="Hospital Affiliation" value={data.hospital_affiliation} onChange={changehandle} placeholder="Current Hospital" />
             </div>
-
-            <button
-              className="w-full bg-blue-500 text-white py-3 rounded-full font-semibold text-lg hover:bg-blue-600 transition mt-4"
-              type="submit"
-            >
+            <Button type="submit" size="lg" className="w-full" loading={submitting}>
               Sign Up as Doctor
-            </button>
+            </Button>
           </div>
         </div>
       </form>
-    </div>
+    </SignUpShell>
   );
 }

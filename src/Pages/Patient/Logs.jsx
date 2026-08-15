@@ -1,47 +1,38 @@
-import React, { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+
 import NavBar from "../../Components/NavBar";
 import NavButton from "../../Components/NavButton";
 import BackButton from "../../Components/BackButton";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useAuth } from "../../Context/AuthContext";
-
 import {
-  FaSearch,
-  FaEye,
-  FaUserMd,
-  FaIdBadge,
-  FaEnvelope,
-  FaPhoneAlt,
-  FaClipboardList,
-} from "react-icons/fa";
-
-import { FiCalendar, FiX } from "react-icons/fi";
-
-const headerColors = {
-  blue: "bg-gradient-to-r from-blue-500 to-blue-600",
-  red: "bg-gradient-to-r from-red-500 to-red-600",
-  gray: "bg-gradient-to-r from-slate-500 to-slate-600",
-};
-
-const badgeColors = {
-  blue: "bg-blue-100 text-blue-700 border-blue-200",
-  red: "bg-red-100 text-red-700 border-red-200",
-  gray: "bg-slate-100 text-slate-700 border-slate-200",
-};
-
+  FiSearch,
+  FiEye,
+  FiCalendar,
+  FiActivity,
+  FiUser,
+  FiTag,
+  FiMail,
+  FiPhone,
+} from "react-icons/fi";
 import { API_BASE_URL } from "../../config/api";
+import { Card } from "../../Components/ui/Card";
+import { Badge } from "../../Components/ui/Badge";
+import { Modal } from "../../Components/ui/Modal";
+import { EmptyState } from "../../Components/ui/EmptyState";
+import { Skeleton } from "../../Components/ui/Skeleton";
 
 export default function Logs() {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedLog, setSelectedLog] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { token, shc_code } = useAuth();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
 
-  // 🔹 Parse log string
   const parseLog = (log) => {
     const timestamp = log.timestamp || log.created_at || Date.now();
     const role = log.viewer_type || log.role || "Unknown";
@@ -65,10 +56,8 @@ export default function Logs() {
       try {
         const res = await axios.get(
           `${API_BASE_URL}/patient/profile/data-logs?shc_code=${shc_code}`,
-          { headers: { Authorization: `Bearer ${token}` } },
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        
 
         const rawLogs = res.data?.data?.data_logs || "";
 
@@ -81,9 +70,9 @@ export default function Logs() {
         setData(logs);
       } catch (err) {
         console.log(err);
-        toast.error(
-          "API Error: " + (err.response?.data?.message || err.message),
-        );
+        toast.error("API Error: " + (err.response?.data?.message || err.message));
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -92,13 +81,10 @@ export default function Logs() {
 
   const filteredLogs = data
     .filter((log) => {
-      const matchesSearch = log.raw
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      const matchesSearch = log.raw.toLowerCase().includes(search.toLowerCase());
       if (!matchesSearch) return false;
 
       const logDate = new Date(log.timestamp);
-      // Append time to ensure local time parsing instead of UTC
       const start = startDate ? new Date(`${startDate}T00:00:00`) : null;
       const end = endDate ? new Date(`${endDate}T23:59:59.999`) : null;
 
@@ -113,12 +99,9 @@ export default function Logs() {
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     });
 
-  // 🔹 Fetch profile when eye clicked
   const handleViewDetails = async (log) => {
     try {
-      let endpoint = `/api/v1/${log.role.toLowerCase()}/profile`;
-
-      const res = await axios.get(`${baseUrl}${endpoint}`, {
+      const res = await axios.get(`${API_BASE_URL}/${log.role.toLowerCase()}/profile`, {
         params: { viewer_id: log.userId },
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -131,20 +114,21 @@ export default function Logs() {
 
   const getCreatorDetails = (log) => {
     const profile = log.profile || {};
+    const isDoctor = log.role === "DOCTOR";
     return {
       role: log.role,
-      themeColor: log.role === "DOCTOR" ? "blue" : "red",
+      tone: isDoctor ? "doctor" : "danger",
       name:
         log.role === "DOCTOR" || log.role === "EXTERN"
           ? profile.full_name
           : profile.name || "Unknown User",
       photo: profile.photo || null,
       details: [
-        { icon: <FaIdBadge />, label: "User ID", value: log.userId },
-        { icon: <FaClipboardList />, label: "Action", value: log.action },
-        { icon: <FiCalendar />, label: "Date", value: log.formattedDate },
-        { icon: <FaEnvelope />, label: "Email", value: profile.email },
-        { icon: <FaPhoneAlt />, label: "Phone", value: profile.phone },
+        { icon: FiUser, label: "User ID", value: log.userId },
+        { icon: FiTag, label: "Action", value: log.action },
+        { icon: FiCalendar, label: "Date", value: log.formattedDate },
+        { icon: FiMail, label: "Email", value: profile.email },
+        { icon: FiPhone, label: "Phone", value: profile.phone },
       ],
     };
   };
@@ -152,186 +136,167 @@ export default function Logs() {
   const creator = selectedLog ? getCreatorDetails(selectedLog) : null;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center">
+    <div className="flex min-h-screen flex-col items-center bg-background">
       <NavBar />
 
-      {/* Main Content Container */}
-      <div className="w-full flex flex-col items-center justify-between mb-8">
+      <div className="mb-6 flex w-full flex-col items-center">
         <BackButton />
         <NavButton />
       </div>
-      <div className="w-full max-w-7xl mx-auto px-8 py-2 flex flex-col gap-3">
-        {/* Navigation Header */}
 
-        {/* Title Section */}
+      <main className="mx-auto w-full max-w-5xl px-4 pb-14 sm:px-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-800">Activity Logs</h1>
-          <p className="text-slate-500 text-sm mt-1">
-            View and search through patient activity history
-          </p>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-foreground">
+            Activity Logs
+          </h1>
+          <p className="mt-1 text-sm text-muted">View and search through patient activity history</p>
         </div>
 
-        {/* Search & Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          {/* Search Bar */}
-          <div className="relative flex-1">
-            <FaSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search logs..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            />
-          </div>
+        {/* Search & filters */}
+        <Card className="mb-5 p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="relative flex-1">
+              <FiSearch
+                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle"
+                aria-hidden="true"
+              />
+              <input
+                type="search"
+                aria-label="Search logs"
+                placeholder="Search logs..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-10 w-full rounded-xl border border-border bg-background pl-11 pr-4 text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+              />
+            </div>
 
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2 items-center justify-between sm:justify-end">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 text-sm"
-            />
-            <span className="text-slate-400 font-medium">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 text-sm"
-            />
-            <select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
-              className="px-4 py-3 rounded-lg border border-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-600 text-sm font-medium"
-            >
-              <option value="desc">Newest First</option>
-              <option value="asc">Oldest First</option>
-            </select>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="date"
+                aria-label="Start date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+              />
+              <span className="text-sm font-medium text-subtle">to</span>
+              <input
+                type="date"
+                aria-label="End date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+              />
+              <select
+                aria-label="Sort logs"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                className="h-10 cursor-pointer rounded-xl border border-border bg-background px-3 text-sm font-medium text-foreground transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+              >
+                <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
+              </select>
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Results Count */}
-        <p className="text-sm text-slate-500 mb-4 px-1">
-          Showing{" "}
-          <span className="font-semibold text-slate-700">
-            {filteredLogs.length}
-          </span>{" "}
-          logs
+        <p className="mb-4 px-1 text-sm text-muted">
+          Showing <span className="font-semibold text-foreground">{filteredLogs.length}</span> logs
         </p>
 
-        {/* Logs List */}
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-          {filteredLogs.length > 0 ? (
+        <div className="space-y-3">
+          {loading ? (
+            <>
+              <Skeleton className="h-20 w-full rounded-2xl" />
+              <Skeleton className="h-20 w-full rounded-2xl" />
+              <Skeleton className="h-20 w-full rounded-2xl" />
+            </>
+          ) : filteredLogs.length > 0 ? (
             filteredLogs.map((log, idx) => (
-              <div
-                key={idx}
-                className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">
-                      {log.action}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      <span
-                        className={`font-medium ${log.role === "DOCTOR" ? "text-blue-600" : "text-red-600"}`}
-                      >
-                        {log.role}
-                      </span>
-                      {" • "}
-                      {log.formattedDate}
-                    </p>
+              <Card key={idx} className="p-4 transition-shadow hover:shadow-lift">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                        log.role === "DOCTOR"
+                          ? "bg-doctor-soft text-doctor"
+                          : "bg-danger-soft text-danger"
+                      }`}
+                    >
+                      <FiActivity size={18} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-foreground">{log.action}</p>
+                      <p className="mt-0.5 truncate text-xs text-muted">
+                        <Badge tone={log.role === "DOCTOR" ? "doctor" : "danger"} className="mr-1.5 align-middle">
+                          {log.role}
+                        </Badge>
+                        {log.formattedDate}
+                      </p>
+                    </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => handleViewDetails(log)}
-                    className="p-2 hover:bg-blue-50 text-blue-500 rounded-full transition-colors"
-                    title="View Details"
+                    aria-label={`View details for ${log.role} activity`}
+                    className="shrink-0 rounded-full p-2 text-primary transition-colors hover:bg-primary-soft"
                   >
-                    <FaEye className="text-lg" />
+                    <FiEye size={18} aria-hidden="true" />
                   </button>
                 </div>
-              </div>
+              </Card>
             ))
           ) : (
-            <div className="text-center py-12 text-slate-400">
-              <p>No logs found matching your search.</p>
-            </div>
+            <Card>
+              <EmptyState
+                icon={FiActivity}
+                title="No logs found"
+                description="No logs match your current search and filters."
+              />
+            </Card>
           )}
         </div>
-      </div>
+      </main>
 
-      {/* Modal Overlay */}
-      {selectedLog && creator && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-center items-center p-4 "
-          onClick={() => setSelectedLog(null)}
-        >
-          {/* Modal Content */}
-          <div
-            className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div
-              className={`h-28 ${headerColors[creator.themeColor]} relative`}
-            >
-              <button
-                onClick={() => setSelectedLog(null)}
-                className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
-              >
-                <FiX size={22} />
-              </button>
-            </div>
-
-            {/* Profile Image & Name */}
-            <div className="px-6 flex flex-col items-center mt-14 relative z-10 gap-2">
-              <div className="h-28 w-28 rounded-full border-4 border-white bg-gray-50 flex items-center justify-center shadow-md overflow-hidden">
-                {creator.photo ? (
-                  <img
-                    src={creator.photo}
-                    alt={creator.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <FaUserMd className="text-4xl text-slate-400" />
-                )}
-              </div>
-
-              <h3 className="mt-3 text-xl font-bold text-slate-800 text-center">
-                {creator.name}
-              </h3>
-              <span
-                className={`mt-1 px-3 py-1 text-xs font-medium border rounded-full ${badgeColors[creator.themeColor]}`}
-              >
-                {creator.role}
-              </span>
-            </div>
-
-            {/* Modal Details */}
-            <div className="p-6 space-y-4 flex flex-col gap-3">
-              {creator.details.map(
-                (d, i) =>
-                  d.value && (
-                    <div key={i} className="flex gap-3 items-start">
-                      <div className="p-2 bg-slate-50 rounded-lg text-slate-500 shrink-0">
-                        {d.icon}
-                      </div>
-                      <div className="overflow-hidden mt-1">
-                        <p className="text-xs text-slate-400 uppercase tracking-wider">
-                          {d.label}
-                        </p>
-                        <p className="text-sm font-medium text-slate-700 break-words">
-                          {d.value}
-                        </p>
-                      </div>
-                    </div>
-                  ),
+      <Modal
+        open={!!selectedLog}
+        onClose={() => setSelectedLog(null)}
+        title={creator?.name || "Details"}
+        description={creator?.role}
+        size="sm"
+      >
+        {creator && (
+          <div className="space-y-3">
+            <div className="flex flex-col items-center gap-3 pb-2">
+              {creator.photo ? (
+                <img
+                  src={creator.photo}
+                  alt={creator.name}
+                  className="h-20 w-20 rounded-full border-4 border-surface object-cover shadow-card"
+                />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface-hover text-subtle">
+                  <FiUser size={32} aria-hidden="true" />
+                </div>
               )}
+              <Badge tone={creator.tone}>{creator.role}</Badge>
             </div>
+            {creator.details.map(
+              (d, i) =>
+                d.value && (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-muted">
+                      <d.icon size={15} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs uppercase tracking-wider text-subtle">{d.label}</p>
+                      <p className="break-words text-sm font-medium text-foreground">{d.value}</p>
+                    </div>
+                  </div>
+                )
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

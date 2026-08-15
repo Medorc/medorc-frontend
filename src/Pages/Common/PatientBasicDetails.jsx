@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+
 import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import { FiAlertTriangle } from "react-icons/fi";
+import { useAuth } from "../../Context/AuthContext";
 import NavBar from "../../Components/NavBar";
 import BackButton from "../../Components/BackButton";
-import { useAuth } from "../../Context/AuthContext";
 import Loading from "../../Components/Loading";
 import EmergencyContacts from "../../Components/EmergencyContacts";
 import PersonalDetails from "../../Components/PersonalDetails";
+import { ErrorState } from "../../Components/ui/ErrorState";
 
 import { API_BASE_URL } from "../../config/api";
 
@@ -28,7 +31,7 @@ export default function PatientBasicDetails() {
       try {
         const [profileRes, emergencyRes] = await Promise.all([
           axios.get(`${API_BASE_URL}/patient/profile/personal`, {
-            params: { qr_code: qr_code, shc_code: shc_code},
+            params: { qr_code: qr_code, shc_code: shc_code },
             headers: { Authorization: `Bearer ${token}` },
           }),
           axios.get(`${API_BASE_URL}/patient/profile/emergency-contacts`, {
@@ -37,12 +40,10 @@ export default function PatientBasicDetails() {
           }),
         ]);
 
-        
         setData({
           profile: profileRes.data.data,
           emergency: emergencyRes.data.data.patient_emergency_contacts || [],
         });
-        
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to load patient information.");
@@ -52,45 +53,35 @@ export default function PatientBasicDetails() {
     };
 
     fetchData();
-  }, [token, qr_code]); 
+  }, [token, qr_code, shc_code]);
 
   if (loading) return <Loading />;
-  if (error || !data.profile) return <ErrorState error={error} />;
+  if (error || !data.profile)
+    return (
+      <div className="min-h-screen bg-background">
+        <NavBar />
+        <ErrorState title="Could not load patient information" description={error || "No details found."} />
+      </div>
+    );
 
-  const visibilityOff = data.profile?.visibility === false; 
+  const visibilityOff = data.profile?.visibility === false;
 
   return (
-    <div className="w-full min-h-screen bg-[#F5F7FA] pb-12">
+    <div className="min-h-screen bg-background pb-12">
       <NavBar />
       <BackButton />
 
-      <div className="w-full mx-auto px-4 sm:px-8 mt-6 flex flex-col gap-8 items-center">
-
+      <div className="mx-auto mt-6 flex w-full flex-col items-center gap-8 px-4 sm:px-8">
         {visibilityOff && (
-          <p className="text-black font-medium text-sm md:text-base text-center">
+          <p className="flex items-center gap-2 rounded-xl border border-warning/30 bg-warning-soft px-4 py-2.5 text-center text-sm font-medium text-warning">
+            <FiAlertTriangle className="shrink-0" aria-hidden="true" />
             Visibility is turned off — you must contact the user to enable it.
           </p>
         )}
 
         <PersonalDetails data={data.profile} />
-
-        {/* Emergency Contacts */}
-
-       <EmergencyContacts emergency={data.emergency} />
+        <EmergencyContacts emergency={data.emergency} />
       </div>
     </div>
   );
 }
-
-
-const ErrorState = ({ error }) => (
-  <div className="min-h-screen bg-[#F5F7FA]">
-    <NavBar />
-    <div className="px-8 mt-6">
-      <BackButton showTitle={false} />
-    </div>
-    <div className="flex justify-center items-center h-[60vh]">
-      <p className="text-red-500 text-lg">{error || "No details found."}</p>
-    </div>
-  </div>
-);

@@ -1,9 +1,10 @@
-import React from "react";
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import { motion } from "framer-motion";
+import { User, Lock, PhoneCall, History } from "lucide-react";
 
-export default function Tabs() {
+export default function NavButton() {
   const { role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -14,21 +15,25 @@ export default function Tabs() {
     {
       id: "/profile",
       label: "Personal Profile",
+      icon: User,
       access: { patient: true, doctor: true, extern: true, hospital: true },
     },
     {
       id: "/security",
       label: "Account & Security",
+      icon: Lock,
       access: { patient: true, doctor: true, extern: true, hospital: true },
     },
     {
       id: "/emergency",
       label: "Emergency Contacts",
+      icon: PhoneCall,
       access: { patient: true, doctor: false, extern: false, hospital: false },
     },
     {
       id: "/logs",
       label: "Activity Logs",
+      icon: History,
       access: { patient: true, doctor: false, extern: false, hospital: false },
     },
   ];
@@ -41,33 +46,37 @@ export default function Tabs() {
     return location.pathname.startsWith(`/${userRole}${tabId}`);
   };
 
-  // Filter valid tabs for current role to ensure proper layout
   const visibleTabs = tabs.filter((tab) => tab.access[userRole]);
 
   return (
-    <div className="w-full flex justify-center py-6">
-      <div className="bg-white/50 backdrop-blur-md border border-slate-200 p-1.5 rounded-2xl flex flex-wrap justify-center gap-2 shadow-sm">
+    <div className="w-full px-4">
+      <div
+        role="tablist"
+        aria-label="Settings sections"
+        className="mx-auto flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-2xl border border-border bg-surface/70 p-1.5 shadow-card backdrop-blur"
+      >
         {visibleTabs.map((tab) => {
           const active = isTabActive(tab.id);
-
           return (
             <button
               key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
+              type="button"
               role="tab"
               aria-selected={active}
-              className={`relative px-6 py-2.5 text-sm md:text-base font-semibold rounded-xl transition-colors duration-200 z-10 ${
-                active ? "text-blue-600" : "text-slate-500 hover:text-slate-700"
+              onClick={() => handleTabClick(tab.id)}
+              className={`relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ${
+                active ? "text-primary" : "text-muted hover:text-foreground"
               }`}
             >
               {active && (
-                <motion.div
+                <motion.span
                   layoutId="active-tab"
-                  className="absolute inset-0 bg-white shadow-md border border-slate-100 rounded-xl -z-10"
+                  className="absolute inset-0 rounded-xl bg-primary-soft -z-10"
                   initial={false}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 32 }}
                 />
               )}
+              <tab.icon size={15} aria-hidden="true" />
               {tab.label}
             </button>
           );

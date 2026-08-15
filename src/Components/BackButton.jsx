@@ -1,53 +1,25 @@
-import React from "react";
-import { FaArrowLeft } from "react-icons/fa6";
+
+import { FiArrowLeft } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 
-export default function BackButton({
-  title = "Profile & Settings",
-  showTitle = true,
-}) {
-  const Navigate = useNavigate();
+export default function BackButton({ title = "Profile & Settings", showTitle = true }) {
+  const navigate = useNavigate();
   const { role } = useAuth();
 
   return (
-    <div className="w-full h-16 sm:h-20 flex items-center justify-center relative px-2 sm:px-8 bg-transparent">
-      {/* Back Button */}
+    <div className="relative flex h-14 w-full items-center justify-center px-2 sm:h-16 sm:px-8">
       <button
-        className="
-          absolute left-2 sm:left-8 
-          group flex items-center justify-center gap-2 
-          p-2 sm:px-5 sm:py-2.5 
-          bg-white text-[#4A82B3] 
-          hover:bg-[#4A82B3] hover:text-white 
-          shadow-[0_4px_14px_0_rgba(74,130,179,0.15)] 
-          hover:shadow-[0_6px_20px_0_rgba(74,130,179,0.3)] 
-          border border-[#4A82B3]/10 hover:border-[#4A82B3] 
-          rounded-full 
-          transition-all duration-300 ease-out 
-          text-sm sm:text-base font-semibold tracking-wide
-          z-10
-        "
-        onClick={() => Navigate(`/${role}/home`)}
+        type="button"
+        className="group absolute left-2 flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-card transition-all duration-200 hover:border-primary/40 hover:bg-primary-soft sm:left-8 sm:px-5"
+        onClick={() => navigate(`/${role || "patient"}/home`)}
         aria-label="Go Back"
       >
-        <FaArrowLeft className="text-base sm:text-lg transition-transform duration-300 group-hover:-translate-x-1" />
-        
-        {/* Hide text on mobile, show on tablet/desktop */}
+        <FiArrowLeft size={16} className="transition-transform duration-200 group-hover:-translate-x-0.5" aria-hidden="true" />
         <span className="hidden sm:inline">Back</span>
       </button>
-
-      {/* Title */}
       {showTitle && (
-        <h1 className="
-          font-bold 
-          text-lg sm:text-2xl md:text-3xl 
-          text-[#0751A7] 
-          tracking-tight drop-shadow-sm 
-          text-center
-          px-12 sm:px-0 
-          truncate max-w-full
-        ">
+        <h1 className="max-w-full truncate px-12 font-display text-lg font-extrabold tracking-tight text-foreground sm:text-2xl">
           {title}
         </h1>
       )}
