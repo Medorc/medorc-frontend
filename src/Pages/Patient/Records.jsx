@@ -48,7 +48,7 @@ export default function Records() {
 
     const fetchUserProfile = async () => {
       try {
-        const res = await axios.get(`${url}/api/v1/patient/profile`, {
+        const res = await axios.get(`${API_BASE_URL}/patient/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserProfile(res.data || null);

@@ -1,22 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import DOMPurify from "dompurify";
-import { RASA_URL } from "../config/api";
-import { useAuth } from "../Context/AuthContext";
+import { API_BASE_URL } from "../config/api";
 
-const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistant" }) => {
-    const { user, role, profileData } = useAuth();
-
-    const displayName = userName || profileData?.full_name || user?.full_name || "User";
-    const activeShc = shcCode || profileData?.shc_code || localStorage.getItem("shc_code");
-    const activeQr = qrCode || profileData?.qr_code;
-
-    const [senderId] = useState(() => `orby_${activeShc || "user"}_${Date.now()}`);
-
+const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
     const [messages, setMessages] = useState([
         {
             role: "bot",
-            content: `Hello ${displayName}! I'm Orby, your Medorc AI Assistant. How can I help you today?`,
+            content: `Hi ${userName || "User"}! I'm Orby, your medical records assistant. Ask me anything about your health records, medications, or appointments.`,
         },
     ]);
     const [input, setInput] = useState("");
@@ -31,6 +22,12 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
         scrollToBottom();
     }, [messages, isLoading]);
 
+    const formatContent = (content) => {
+        if (!content) return "";
+        const formatted = content.replace(/\n/g, "<br />");
+        return DOMPurify.sanitize(formatted);
+    };
+
     const handleSend = async () => {
         const trimmedInput = input.trim();
         if (!trimmedInput || isLoading) return;
@@ -41,18 +38,18 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
         setIsLoading(true);
 
         try {
-            const response = await axios.post(`${RASA_URL}/webhooks/rest/webhook`, {
-                sender: senderId,
+            const response = await axios.post(`${API_BASE_URL}/orby/chat`, {
+                sender: shcCode || "default_user",
                 message: trimmedInput,
                 metadata: {
-                    shc_code: activeShc,
-                    qr_code: activeQr
+                    shc_code: shcCode,
+                    qr_code: qrCode
                 }
             });
 
-            console.log("Rasa response:", response.data);
+            console.log("Orby chat response:", response.data);
 
-            const botResponses = response.data;
+            const botResponses = response.data?.responses || response.data;
             if (Array.isArray(botResponses) && botResponses.length > 0) {
                 botResponses.forEach((res) => {
                     if (res.text) {
@@ -62,7 +59,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
             } else {
                 setMessages((prev) => [...prev, {
                     role: "bot",
-                    content: "I didn't quite catch that. Could you rephrase your question about your health records or medical details?"
+                    content: "I received your message but couldn't process a response."
                 }]);
             }
         } catch (error) {
@@ -86,6 +83,11 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
         }
     };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        handleSend();
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-teal-50">
             {/* Top Navigation Bar */}
@@ -94,12 +96,12 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-teal-500 border-3 border-white/30 flex items-center justify-center shadow-lg">
                             <span className="text-white font-bold text-lg">
-                                {displayName?.charAt(0)?.toUpperCase() || "O"}
+                                {userName?.charAt(0)?.toUpperCase() || "U"}
                             </span>
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold text-white">{title}</h1>
-                            <p className="text-teal-200 text-sm font-medium">{displayName}</p>
+                            <h1 className="text-xl font-bold text-white">Medical Records</h1>
+                            <p className="text-teal-200 text-sm">{userName}</p>
                         </div>
                     </div>
                     <button
@@ -109,7 +111,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back
+                        Back to home
                     </button>
                 </div>
             </div>
@@ -154,9 +156,8 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
                                             ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl rounded-br-md shadow-lg shadow-blue-500/20"
                                             : "bg-white text-gray-700 rounded-2xl rounded-bl-md shadow-md border border-gray-100"
                                         }`}
-                                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} >
-                                    {/*<p className="text-sm leading-relaxed">{msg.content}</p>*/}
-                                </div>
+                                    dangerouslySetInnerHTML={{ __html: formatContent(msg.content) }}
+                                />
                                 {msg.role === "user" && (
                                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-teal-500 flex items-center justify-center ml-3 flex-shrink-0 shadow-sm">
                                         <span className="text-white text-xs font-bold">
@@ -190,7 +191,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
 
                     {/* Input Area */}
                     <div className="p-4 sm:p-6 bg-white border-t border-gray-100">
-                        <div className="flex items-center gap-3">
+                        <form onSubmit={handleSubmit} className="flex items-center gap-3">
                             <div className="flex-1 relative">
                                 <input
                                     type="text"
@@ -203,7 +204,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
                                 />
                             </div>
                             <button
-                                onClick={handleSend}
+                                type="submit"
                                 disabled={isLoading || !input.trim()}
                                 className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/30 disabled:shadow-none"
                             >
@@ -221,7 +222,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode, title = "Orby AI Assistan
                                     />
                                 </svg>
                             </button>
-                        </div>
+                        </form>
                         <p className="text-xs text-gray-400 mt-3 text-center">
                             Try: "What are my allergies?" • "Show my last hospital visit" • "List my medications"
                         </p>

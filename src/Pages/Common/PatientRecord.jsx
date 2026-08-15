@@ -67,7 +67,7 @@ export default function PatientRecord() {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get(`${url}/api/v1/patient/profile`, {
+        const res = await axios.get(`${API_BASE_URL}/patient/profile`, {
           params: { qr_code, shc_code },
           headers: { Authorization: `Bearer ${token}` },
         });
