@@ -20,7 +20,8 @@ export default function Records() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { token, shc_code } = useAuth();
+  const { token, shc_code, profileData } = useAuth();
+  const activeProfile = userProfile || profileData;
 
   // Check if navigated with openOrby flag
   const [showOrbyChat, setShowOrbyChat] = useState(location.state?.openOrby || false);
@@ -32,7 +33,7 @@ export default function Records() {
       try {
         const payload = {
           searchOptions: { sort_by: sortBy, entry_type: entryType },
-          shc_code: shc_code,
+          shc_code: shc_code || profileData?.shc_code,
           searchQuery: searchTerm,
         };
 
@@ -63,7 +64,8 @@ export default function Records() {
 
   const handleOrbyBack = () => {
     if (location.state?.openOrby) {
-      navigate(-1);
+      const fromPath = location.state?.from || "/patient/home";
+      navigate(fromPath, { replace: true });
     } else {
       setShowOrbyChat(false);
     }
@@ -72,10 +74,10 @@ export default function Records() {
   if (showOrbyChat) {
     return (
       <OrbyChat
-        userName={userProfile?.full_name || "User"}
+        userName={activeProfile?.full_name || "User"}
         onBack={handleOrbyBack}
-        shcCode={userProfile?.shc_code}
-        qrCode={userProfile?.qr_code}
+        shcCode={activeProfile?.shc_code || shc_code}
+        qrCode={activeProfile?.qr_code}
       />
     );
   }
@@ -89,15 +91,15 @@ export default function Records() {
         <div className="p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-[#50E3C2]">
-              {userProfile?.photo ? (
+              {activeProfile?.photo ? (
                 <img
-                  src={userProfile.photo}
+                  src={activeProfile.photo}
                   alt="Profile"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center font-bold text-gray-600 bg-gray-200">
-                  {userProfile?.full_name?.[0]}
+                  {activeProfile?.full_name?.[0] || "U"}
                 </div>
               )}
             </div>
@@ -108,9 +110,9 @@ export default function Records() {
               </h1>
               <p className="text-sm text-gray-500">
                 <span className="font-medium text-gray-900">
-                  {userProfile?.full_name || "Loading..."}
+                  {activeProfile?.full_name || "Patient"}
                 </span>{" "}
-                • SHC: {userProfile?.shc_code || "N/A"}
+                • SHC: {activeProfile?.shc_code || shc_code || "N/A"}
               </p>
             </div>
           </div>

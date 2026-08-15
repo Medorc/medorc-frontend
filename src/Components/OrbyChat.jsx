@@ -12,7 +12,34 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [connectionStatus, setConnectionStatus] = useState("connecting"); // 'connecting' | 'connected' | 'error'
     const messagesEndRef = useRef(null);
+
+    const checkBackendConnection = async () => {
+        setConnectionStatus("connecting");
+        try {
+            // Check connectivity with backend
+            const res = await axios.get(`${API_BASE_URL}/health-tips/random`, { timeout: 5000 });
+            if (res.status === 200 || res.data) {
+                setConnectionStatus("connected");
+            } else {
+                setConnectionStatus("error");
+            }
+        } catch (err) {
+            console.warn("Backend connection check error:", err);
+            // Fallback check on backend API base
+            try {
+                await axios.post(`${API_BASE_URL}/orby/chat`, { message: "ping" }, { timeout: 4000 });
+                setConnectionStatus("connected");
+            } catch {
+                setConnectionStatus("error");
+            }
+        }
+    };
+
+    useEffect(() => {
+        checkBackendConnection();
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -30,7 +57,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
 
     const handleSend = async () => {
         const trimmedInput = input.trim();
-        if (!trimmedInput || isLoading) return;
+        if (!trimmedInput || isLoading || connectionStatus !== "connected") return;
 
         const userMessage = { role: "user", content: trimmedInput };
         setMessages((prev) => [...prev, userMessage]);
@@ -68,6 +95,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
 
             if (error.code === "ERR_NETWORK" || error.code === "ERR_CONNECTION_REFUSED") {
                 errorContent = "I'm currently offline. The chat service is not available at the moment.";
+                setConnectionStatus("error");
             }
 
             setMessages((prev) => [...prev, { role: "bot", content: errorContent }]);
@@ -111,7 +139,7 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back to home
+                        Back
                     </button>
                 </div>
             </div>
@@ -119,8 +147,8 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
             {/* Main Chat Area */}
             <div className="max-w-full mx-auto p-4 sm:p-6">
                 <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
-                    {/* Orby Header */}
-                    <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100">
+                    {/* Orby Header with Connection Status */}
+                    <div className="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="relative">
                                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
@@ -128,12 +156,39 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
                                     </svg>
                                 </div>
-                                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                                    connectionStatus === "connected" ? "bg-green-500" : connectionStatus === "connecting" ? "bg-yellow-400 animate-ping" : "bg-red-500"
+                                }`}></div>
                             </div>
                             <div>
                                 <h2 className="text-xl font-bold text-gray-800">Orby</h2>
                                 <p className="text-sm text-gray-500">Your AI Health Assistant</p>
                             </div>
+                        </div>
+
+                        {/* Connection Badge */}
+                        <div>
+                            {connectionStatus === "connecting" && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                    <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
+                                    Connecting to Backend...
+                                </span>
+                            )}
+                            {connectionStatus === "connected" && (
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                    Connected
+                                </span>
+                            )}
+                            {connectionStatus === "error" && (
+                                <button
+                                    onClick={checkBackendConnection}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors"
+                                >
+                                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                                    Backend Offline (Click to Retry)
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -198,14 +253,20 @@ const OrbyChat = ({ userName, onBack, shcCode, qrCode }) => {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    disabled={isLoading}
-                                    placeholder="Ask about your medications, appointments, records..."
+                                    disabled={isLoading || connectionStatus !== "connected"}
+                                    placeholder={
+                                        connectionStatus === "connected"
+                                            ? "Ask about your medications, appointments, records..."
+                                            : connectionStatus === "connecting"
+                                            ? "Verifying backend connection..."
+                                            : "Backend offline. Click retry connection to enable chat."
+                                    }
                                     className="w-full border-2 border-gray-200 rounded-xl px-5 py-3.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-50 disabled:bg-gray-50 disabled:cursor-not-allowed transition-all duration-200"
                                 />
                             </div>
                             <button
                                 type="submit"
-                                disabled={isLoading || !input.trim()}
+                                disabled={isLoading || !input.trim() || connectionStatus !== "connected"}
                                 className="w-12 h-12 flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg shadow-blue-500/30 disabled:shadow-none"
                             >
                                 <svg

@@ -82,7 +82,8 @@ export default function PatientRecord() {
   }, [role, qr_code, shc_code, token]);
   const handleOrbyBack = () => {
     if (location.state?.openOrby) {
-      navigate(-1);
+      const fromPath = location.state?.from || `/${role || "patient"}/home`;
+      navigate(fromPath, { replace: true });
     } else {
       setShowOrbyChat(false);
     }
@@ -93,8 +94,8 @@ export default function PatientRecord() {
       <OrbyChat
         userName={userProfile?.full_name || "User"}
         onBack={handleOrbyBack}
-        shcCode={userProfile?.shc_code}
-        qrCode={userProfile?.qr_code}
+        shcCode={userProfile?.shc_code || shc_code}
+        qrCode={userProfile?.qr_code || qr_code}
       />
     );
   }
@@ -116,7 +117,7 @@ export default function PatientRecord() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center font-bold text-gray-600 bg-gray-200">
-                  {userProfile?.full_name?.[0]}
+                  {userProfile?.full_name?.[0] || "U"}
                 </div>
               )}
             </div>
@@ -127,9 +128,9 @@ export default function PatientRecord() {
               </h1>
               <p className="text-sm text-gray-500">
                 <span className="font-medium text-gray-900">
-                  {userProfile?.full_name || "Loading..."}
+                  {userProfile?.full_name || "Patient"}
                 </span>{" "}
-                • SHC: {userProfile?.shc_code || "N/A"}
+                • SHC: {userProfile?.shc_code || shc_code || "N/A"}
               </p>
             </div>
           </div>

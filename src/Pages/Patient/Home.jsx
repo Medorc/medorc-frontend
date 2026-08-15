@@ -144,7 +144,7 @@ export default function Home() {
 
           <div className="flex items-center gap-3 w-full md:w-auto justify-end">
             <button
-              onClick={() => navigator("/patient/records", { state: { openOrby: true } })}
+              onClick={() => navigator("/patient/records", { state: { openOrby: true, from: "/patient/home" } })}
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium text-sm shadow-lg shadow-blue-500/25 transition-all active:scale-95"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
