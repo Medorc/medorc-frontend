@@ -1,8 +1,8 @@
-import { useState, useContext, createContext } from "react";
+import { useState, useContext, createContext, useEffect } from "react";
 
 /* eslint-disable react-refresh/only-export-components */
 import { jwtDecode } from 'jwt-decode';
-import axios from 'axios'; // Ensure axios is imported
+import axios from 'axios';
 import { API_BASE_URL } from "../config/api";
 
 const AuthContext = createContext(null);
@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
     }
     return null;
   });
+
   const [role, setRole] = useState(() => {
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
@@ -36,7 +37,50 @@ export const AuthProvider = ({ children }) => {
     return null;
   });
 
+  const [profileData, setProfileData] = useState(() => {
+    try {
+      const savedProfile = localStorage.getItem('profileData');
+      return savedProfile ? JSON.parse(savedProfile) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const API_URL = API_BASE_URL;
+
+  const fetchProfile = async (currentToken = token, currentRole = role) => {
+    if (!currentToken || !currentRole) return;
+    try {
+      let endpoint = "";
+      if (currentRole === "patient") endpoint = `${API_URL}/patient/profile`;
+      else if (currentRole === "doctor") endpoint = `${API_URL}/doctor/profile`;
+      else if (currentRole === "hospital") endpoint = `${API_URL}/hospital/profile`;
+      else if (currentRole === "extern") endpoint = `${API_URL}/extern/profile`;
+
+      if (!endpoint) return;
+
+      const res = await axios.get(endpoint, {
+        headers: { Authorization: `Bearer ${currentToken}` }
+      });
+
+      if (res.data) {
+        setProfileData(res.data);
+        localStorage.setItem('profileData', JSON.stringify(res.data));
+        if (res.data.shc_code) {
+          setShc_code(res.data.shc_code);
+          localStorage.setItem('shc_code', res.data.shc_code);
+        }
+      }
+    } catch (err) {
+      console.warn("AuthContext fetchProfile error:", err.message);
+    }
+  };
+
+  useEffect(() => {
+    if (token && role) {
+      fetchProfile(token, role);
+    }
+  }, [token, role]);
 
   const login = (newToken, newRole) => {
     localStorage.setItem('token', newToken);
@@ -44,28 +88,28 @@ export const AuthProvider = ({ children }) => {
     setRole(newRole);
     setToken(newToken);
     try {
-        const decodedUser = jwtDecode(newToken);
-        setUser(decodedUser);
+      const decodedUser = jwtDecode(newToken);
+      setUser(decodedUser);
     } catch(error) {
-        console.error("Failed to decode token:", error);
-        logout();
+      console.error("Failed to decode token:", error);
+      logout();
+      return;
     }
+    fetchProfile(newToken, newRole);
   };
 
   const shcstore = (newShc_code) => {
     localStorage.setItem('shc_code', newShc_code);
     setShc_code(newShc_code);
-  }
+  };
 
   const register = async (userData, userRole) => {
     try {
-      // Calls POST http://localhost:3000/api/v1/auth/signup
       const response = await axios.post(`${API_URL}/auth/signup`, {
         ...userData,
         role: userRole
       });
       
-      // If the backend returns a token immediately upon signup, login the user
       if (response.data.token) {
         login(response.data.token, userRole);
       }
@@ -76,15 +120,6 @@ export const AuthProvider = ({ children }) => {
       throw error; 
     }
   };
-
-  const [profileData, setProfileData] = useState(() => {
-    try {
-      const savedProfile = localStorage.getItem('profileData');
-      return savedProfile ? JSON.parse(savedProfile) : null;
-    } catch {
-      return null;
-    }
-  });
 
   const updateUserProfile = (newProfile) => {
     setProfileData((prev) => {

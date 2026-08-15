@@ -24,16 +24,17 @@ const ROLE_META = {
   patient: { label: "Patient", tone: "patient" },
   doctor: { label: "Doctor", tone: "doctor" },
   hospital: { label: "Hospital", tone: "hospital" },
-  extern: { label: "External", tone: "extern" },
 };
 
 export default function NavBar() {
-  const { role, profileData, logout } = useAuth();
+  const { role, user, profileData, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+  const displayName = profileData?.full_name || profileData?.name || user?.full_name || user?.name || user?.email?.split('@')[0] || "Medorc User";
 
   const meta = ROLE_META[role] || { label: "Account", tone: "neutral" };
 
@@ -94,7 +95,7 @@ export default function NavBar() {
     <div className="space-y-1">
       <p className="border-b border-border px-4 py-3">
         <span className="block truncate text-sm font-bold text-foreground">
-          {profileData?.full_name || "Medorc User"}
+          {displayName}
         </span>
         <span className="mt-0.5 block text-xs uppercase tracking-wider text-subtle">
           {meta.label} Account
@@ -192,7 +193,7 @@ export default function NavBar() {
               aria-expanded={dropdownOpen}
               className="flex items-center gap-1.5 rounded-full border border-border bg-surface p-1 pl-1 pr-2 shadow-card transition-colors hover:border-primary/40"
             >
-              <Avatar src={profileData?.photo} name={profileData?.full_name} size={32} />
+              <Avatar src={profileData?.photo} name={displayName} size={32} />
               <ChevronDown size={14} className="text-subtle" aria-hidden="true" />
             </button>
             {dropdownOpen && (

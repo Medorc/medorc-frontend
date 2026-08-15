@@ -12,22 +12,27 @@ export default function AuthLayout({ title, subtitle, children }) {
   return (
     <div className="flex min-h-screen bg-background">
       {/* Left brand panel */}
-      <aside className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-teal-600 via-teal-700 to-slate-900 lg:flex lg:flex-col lg:justify-between">
+      <aside className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-slate-950 via-teal-900 to-slate-900 lg:flex lg:flex-col lg:justify-between">
         <div
           aria-hidden="true"
           className="absolute inset-0 opacity-15 [background-image:radial-gradient(circle_at_1px_1px,rgb(255_255_255/0.5)_1px,transparent_0)] [background-size:28px_28px]"
         />
         <div
           aria-hidden="true"
-          className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-teal-400/20 blur-3xl"
+          className="absolute -right-24 -top-24 h-96 w-96 rounded-full bg-teal-500/20 blur-3xl"
         />
         <div
           aria-hidden="true"
-          className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-sky-400/20 blur-3xl"
+          className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl"
         />
 
         <div className="relative z-10 p-12">
-          <img src="/Logo.png" alt="Medorc Logo" className="h-16 w-auto drop-shadow-lg" />
+          <div className="inline-flex items-center gap-3 rounded-2xl bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-xl border border-white/40">
+            <img src="/Logo.png" alt="Medorc Logo" className="h-10 w-auto object-contain" />
+            <span className="font-display text-xl font-extrabold tracking-tight text-slate-900">
+              MEDORC
+            </span>
+          </div>
         </div>
 
         <div className="relative z-10 px-12 pb-16">
@@ -55,7 +60,12 @@ export default function AuthLayout({ title, subtitle, children }) {
       {/* Right content */}
       <main className="flex w-full flex-col items-center justify-center px-4 py-10 sm:px-8 lg:w-1/2">
         <div className="mb-8 lg:hidden">
-          <img src="/Logo.png" alt="Medorc Logo" className="h-14 w-auto" />
+          <div className="inline-flex items-center gap-3 rounded-2xl bg-surface px-4 py-2.5 shadow-md border border-border">
+            <img src="/Logo.png" alt="Medorc Logo" className="h-9 w-auto object-contain" />
+            <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
+              MEDORC
+            </span>
+          </div>
         </div>
 
         <div className="w-full max-w-md">
