@@ -38,7 +38,11 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
         { email, role },
         { headers: { "Content-Type": "application/json" } }
       );
-      toast.success(res.data.message || "A 6-digit verification code has been sent to your email!");
+      toast.success(res.data.message || "A 6-digit verification code has been sent!");
+      if (res.data.otp) {
+        setOtp(res.data.otp);
+        toast.info(`[Reset Verification Code]: ${res.data.otp}`);
+      }
       setStep(2);
     } catch (err) {
       console.error("[FORGOT PASSWORD ERROR]", err);
