@@ -169,7 +169,7 @@ export default function Home() {
           {/* Left column */}
           <div className="flex flex-col gap-6 lg:col-span-2">
             {/* Hero / Welcome */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 p-8 text-white shadow-lift">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-900/80 via-slate-900 to-teal-950/80 border border-teal-500/20 p-8 text-white shadow-lift">
               <div
                 aria-hidden="true"
                 className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/30 blur-3xl"

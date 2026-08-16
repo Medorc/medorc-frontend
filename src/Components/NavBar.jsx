@@ -134,15 +134,17 @@ export default function NavBar() {
         <button
           type="button"
           onClick={() => go(`/${role}/home`)}
-          className="group flex items-center gap-2.5"
+          className="group flex items-center gap-3"
           aria-label="Go to dashboard"
         >
-          <img
-            src="/Logo.png"
-            alt="Medorc Logo"
-            className="h-9 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
-          />
-          <span className="hidden flex-col leading-tight sm:flex">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface border border-border shadow-sm transition-transform duration-200 group-hover:scale-105">
+            <img
+              src="/favicon.png"
+              alt="Medorc Logo"
+              className="h-7 w-7 object-contain"
+            />
+          </div>
+          <span className="flex flex-col text-left leading-tight sm:flex">
             <span className="font-display text-base font-extrabold tracking-tight text-foreground">
               MEDORC
             </span>

@@ -44,38 +44,38 @@
 }
 
 .dark {
-  --t-bg: #0b1220;
-  --t-surface: #101a2e;
-  --t-surface-hover: #1b2740;
-  --t-fg: #f1f5f9;
-  --t-muted: #9aa7bd;
-  --t-subtle: #64748b;
-  --t-border: #1e2a44;
+  --t-bg: #090e17;
+  --t-surface: #111a2e;
+  --t-surface-hover: #1c2842;
+  --t-fg: #f8fafc;
+  --t-muted: #cbd5e1;
+  --t-subtle: #94a3b8;
+  --t-border: #1e293b;
   --t-scroll: #334155;
   --t-ring: #2dd4bf;
 
-  --t-primary: #2dd4bf;
-  --t-primary-hover: #14b8a6;
-  --t-primary-soft: rgba(20, 184, 166, 0.14);
-  --t-primary-soft-fg: #5eead4;
+  --t-primary: #14b8a6;
+  --t-primary-hover: #2dd4bf;
+  --t-primary-soft: rgba(20, 184, 166, 0.18);
+  --t-primary-soft-fg: #2dd4bf;
 
   --t-success: #34d399;
-  --t-success-soft: rgba(16, 185, 129, 0.16);
+  --t-success-soft: rgba(52, 211, 153, 0.18);
   --t-warning: #fbbf24;
-  --t-warning-soft: rgba(245, 158, 11, 0.16);
+  --t-warning-soft: rgba(251, 191, 36, 0.18);
   --t-danger: #f87171;
-  --t-danger-soft: rgba(239, 68, 68, 0.16);
+  --t-danger-soft: rgba(248, 113, 113, 0.18);
   --t-info: #38bdf8;
-  --t-info-soft: rgba(14, 165, 233, 0.16);
+  --t-info-soft: rgba(56, 189, 248, 0.18);
 
   --t-patient: #60a5fa;
-  --t-patient-soft: rgba(59, 130, 246, 0.16);
+  --t-patient-soft: rgba(96, 165, 250, 0.18);
   --t-doctor: #2dd4bf;
-  --t-doctor-soft: rgba(20, 184, 166, 0.16);
+  --t-doctor-soft: rgba(45, 212, 191, 0.18);
   --t-hospital: #818cf8;
-  --t-hospital-soft: rgba(99, 102, 241, 0.16);
+  --t-hospital-soft: rgba(129, 140, 248, 0.18);
   --t-extern: #fbbf24;
-  --t-extern-soft: rgba(245, 158, 11, 0.16);
+  --t-extern-soft: rgba(251, 191, 36, 0.18);
 }
 
 @theme {
