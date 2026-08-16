@@ -33,14 +33,10 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email, role });
-      toast.success(res.data.message || "OTP code sent!");
-      if (res.data.otp) {
-        setOtp(res.data.otp); // Autofill for quick demo testing
-        toast.info(`[Demo OTP]: ${res.data.otp}`);
-      }
+      toast.success(res.data.message || "A 6-digit verification code has been sent to your email!");
       setStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to request OTP code.");
+      toast.error(err.response?.data?.error || "Failed to request verification code.");
     } finally {
       setLoading(false);
     }
