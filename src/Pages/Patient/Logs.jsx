@@ -48,12 +48,25 @@ export default function Logs() {
       const parsedDate = new Date(timestampStr);
       const timestamp = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
 
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userIdStr);
+      const displayName = isUuid ? "" : userIdStr;
+
+      let displayTitle = actionStr || "Activity Logged";
+      if (displayName) {
+        // e.g. "Dr. Ananya Roy visited your profile"
+        displayTitle = `${displayName} ${actionStr || "visited your profile"}`;
+      } else {
+        // Fallback if UUID was saved previously
+        displayTitle = `${roleStr.toUpperCase()} ${actionStr || "visited your profile"}`;
+      }
+
       return {
         raw: logStr,
         timestamp,
         role: roleStr.toUpperCase(),
         userId: userIdStr,
-        action: actionStr || "Activity Logged",
+        displayName: displayName,
+        action: displayTitle,
         formattedDate: timestamp.toLocaleString(),
       };
     }
@@ -284,8 +297,7 @@ export default function Logs() {
                         >
                           {log.role}
                         </Badge>
-                        <span className="font-semibold text-foreground mr-1.5">{log.userId}</span>
-                        &bull; <span className="ml-1.5">{log.formattedDate}</span>
+                        <span>{log.formattedDate}</span>
                       </p>
                     </div>
                   </div>
