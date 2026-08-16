@@ -1,6 +1,5 @@
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -20,6 +19,7 @@ const ORG_TYPES = [
 
 export default function SExternal() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -42,6 +42,20 @@ export default function SExternal() {
     org_license_valid_till: "",
     verification_documents: "",
   });
+
+  useEffect(() => {
+    const gEmail = searchParams.get("google_email") || sessionStorage.getItem("google_email");
+    const gName = searchParams.get("google_name") || sessionStorage.getItem("google_name");
+    const gPhoto = searchParams.get("google_photo") || sessionStorage.getItem("google_photo");
+    if (gEmail || gName || gPhoto) {
+      setFormData((prev) => ({
+        ...prev,
+        email: gEmail || prev.email,
+        full_name: gName || prev.full_name,
+        photo: gPhoto || prev.photo,
+      }));
+    }
+  }, [searchParams]);
 
   const handlePhotoUpload = async (file) => {
     if (!file) return;

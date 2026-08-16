@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaUserInjured, FaUserMd, FaHospital, FaUserTie } from "react-icons/fa";
 import { FiArrowRight } from "react-icons/fi";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
@@ -47,6 +48,16 @@ const toneStyles = {
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const gEmail = searchParams.get("google_email");
+    const gName = searchParams.get("google_name");
+    const gPhoto = searchParams.get("google_photo");
+    if (gEmail) sessionStorage.setItem("google_email", gEmail);
+    if (gName) sessionStorage.setItem("google_name", gName);
+    if (gPhoto) sessionStorage.setItem("google_photo", gPhoto);
+  }, [searchParams]);
 
   const handleGoogleSignUpSuccess = (credentialResponse) => {
     try {
@@ -56,15 +67,30 @@ export default function SignUp() {
       const name = decoded.name || "";
       const photo = decoded.picture || "";
 
-      toast.success("Google profile linked! Select account type to complete sign up.");
-      const params = new URLSearchParams({
-        google_email: email,
-        google_name: name,
-        google_photo: photo,
-      }).toString();
-      navigate(`/signup/patient?${params}`);
+      sessionStorage.setItem("google_email", email);
+      sessionStorage.setItem("google_name", name);
+      sessionStorage.setItem("google_photo", photo);
+
+      toast.success("Google account verified! Select your account type below.");
     } catch {
       toast.error("Failed to decode Google credentials.");
+    }
+  };
+
+  const handleRoleSelect = (basePath) => {
+    const gEmail = searchParams.get("google_email") || sessionStorage.getItem("google_email") || "";
+    const gName = searchParams.get("google_name") || sessionStorage.getItem("google_name") || "";
+    const gPhoto = searchParams.get("google_photo") || sessionStorage.getItem("google_photo") || "";
+
+    if (gEmail || gName || gPhoto) {
+      const params = new URLSearchParams({
+        google_email: gEmail,
+        google_name: gName,
+        google_photo: gPhoto,
+      }).toString();
+      navigate(`${basePath}?${params}`);
+    } else {
+      navigate(basePath);
     }
   };
 
@@ -102,7 +128,7 @@ export default function SignUp() {
             <button
               key={role.label}
               type="button"
-              onClick={() => navigate(role.path)}
+              onClick={() => handleRoleSelect(role.path)}
               className="group flex w-full items-center gap-4 rounded-2xl border border-border bg-surface p-4 text-left shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lift"
             >
               <div

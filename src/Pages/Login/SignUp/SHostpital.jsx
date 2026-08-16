@@ -1,6 +1,5 @@
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -18,6 +17,7 @@ const HOSPITAL_TYPES = [
 
 export default function SHospital() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [uploadingDoc, setUploadingDoc] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -37,6 +37,20 @@ export default function SHospital() {
     founded_on: "",
     verification_documents: "",
   });
+
+  useEffect(() => {
+    const gEmail = searchParams.get("google_email") || sessionStorage.getItem("google_email");
+    const gName = searchParams.get("google_name") || sessionStorage.getItem("google_name");
+    const gPhoto = searchParams.get("google_photo") || sessionStorage.getItem("google_photo");
+    if (gEmail || gName || gPhoto) {
+      setData((prev) => ({
+        ...prev,
+        email: gEmail || prev.email,
+        name: gName || prev.name,
+        photo: gPhoto || prev.photo,
+      }));
+    }
+  }, [searchParams]);
 
   const handlePhotoUpload = async (file) => {
     if (!file) return;

@@ -47,6 +47,8 @@ const RecordView = lazy(() => import("./Pages/Common/RecordView"));
 // Protected Route Guard
 import ProtectedRoute from "./routes/ProtectedRoute";
 
+const NotFound = lazy(() => import("./Pages/NotFound"));
+
 const withSuspense = (element) => <Suspense fallback={<Loading />}>{element}</Suspense>;
 
 function App() {
@@ -124,7 +126,7 @@ function App() {
           </Route>
 
           {/* Fallback Catch-all Route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={withSuspense(<NotFound />)} />
         </Routes>
       </BrowserRouter>
     </>

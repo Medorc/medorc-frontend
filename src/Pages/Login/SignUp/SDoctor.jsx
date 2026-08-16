@@ -1,6 +1,5 @@
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -13,6 +12,7 @@ const GENDER_OPTIONS = ["Male", "Female", "Other"];
 
 export default function SDoctor() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [data, setData] = useState({
     role: "doctor",
@@ -31,6 +31,20 @@ export default function SDoctor() {
     hospital_affiliation: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const gEmail = searchParams.get("google_email") || sessionStorage.getItem("google_email");
+    const gName = searchParams.get("google_name") || sessionStorage.getItem("google_name");
+    const gPhoto = searchParams.get("google_photo") || sessionStorage.getItem("google_photo");
+    if (gEmail || gName || gPhoto) {
+      setData((prev) => ({
+        ...prev,
+        email: gEmail || prev.email,
+        full_name: gName || prev.full_name,
+        photo: gPhoto || prev.photo,
+      }));
+    }
+  }, [searchParams]);
 
   const handlePhotoUpload = async (file) => {
     if (!file) return;
