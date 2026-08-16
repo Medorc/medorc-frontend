@@ -8,6 +8,7 @@ import { API_BASE_URL } from "../../../config/api";
 import SignUpShell from "../../../Components/SignUpShell";
 import { FieldInput, FieldTextarea, FieldSelect, FieldCheckbox } from "../../../Components/SignUpField";
 import { Button } from "../../../Components/ui/Button";
+import { PasswordHealthCheck } from "../../../Components/PasswordHealthCheck";
 
 const GENDER_OPTIONS = ["Male", "Female", "Other"];
 const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -116,6 +117,7 @@ export default function SPatient() {
             <FieldInput id="email" name="email" label="Email Address" type="email" required value={data.email} onChange={changehandle} />
             <FieldInput id="password" name="password" label="Password" type="password" required value={data.password} onChange={changehandle} />
             <FieldInput id="confirmPassword" name="confirmPassword" label="Confirm Password" type="password" required value={data.confirmPassword} onChange={changehandle} />
+            <PasswordHealthCheck password={data.password} />
           </div>
 
           {/* Demographics & address */}
