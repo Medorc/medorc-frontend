@@ -59,7 +59,9 @@ function App() {
         <Routes>
           {/* Public Auth Routes */}
           <Route path="/" element={withSuspense(<SignIn />)} />
+          <Route path="/signin" element={withSuspense(<SignIn />)} />
           <Route path="/SignUp" element={withSuspense(<SignUp />)} />
+          <Route path="/signup" element={withSuspense(<SignUp />)} />
 
           {/* Standardized Sign-Up Routes */}
           <Route path="/signup/patient" element={withSuspense(<SPatient />)} />
