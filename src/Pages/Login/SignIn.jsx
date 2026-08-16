@@ -10,6 +10,8 @@ import { API_BASE_URL } from "../../config/api";
 import AuthLayout from "../../Components/AuthLayout";
 import { Button } from "../../Components/ui/Button";
 
+import { ForgotPasswordModal } from "../../Components/ForgotPasswordModal";
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "182757837191-4s59cohflfr6sil012r0g4ma5t1vimeb.apps.googleusercontent.com";
 
 const roles = [
@@ -27,6 +29,7 @@ export default function SignIn() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
 
   const changehandle = (e) => {
     const { name, value } = e.target;
@@ -226,7 +229,13 @@ export default function SignIn() {
         </div>
 
       <div className="mt-7 flex flex-col items-center gap-3 text-sm sm:flex-row sm:justify-between">
-        <p className="cursor-pointer font-medium text-primary hover:underline">Forgot password?</p>
+        <button
+          type="button"
+          onClick={() => setIsForgotOpen(true)}
+          className="font-medium text-primary hover:underline"
+        >
+          Forgot password?
+        </button>
         <p className="text-muted">
           Not a user?{" "}
           <button
@@ -238,6 +247,11 @@ export default function SignIn() {
           </button>
         </p>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={isForgotOpen}
+        onClose={() => setIsForgotOpen(false)}
+      />
     </AuthLayout>
     </GoogleOAuthProvider>
   );
