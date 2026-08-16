@@ -134,24 +134,14 @@ export default function NavBar() {
         <button
           type="button"
           onClick={() => go(`/${role}/home`)}
-          className="group flex items-center gap-3"
+          className="group flex items-center"
           aria-label="Go to dashboard"
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-surface border border-border shadow-sm transition-transform duration-200 group-hover:scale-105">
-            <img
-              src="/favicon.png"
-              alt="Medorc Logo"
-              className="h-7 w-7 object-contain"
-            />
-          </div>
-          <span className="flex flex-col text-left leading-tight sm:flex">
-            <span className="font-display text-base font-extrabold tracking-tight text-foreground">
-              MEDORC
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
-              Health Orchestrator
-            </span>
-          </span>
+          <img
+            src="/Logo.png"
+            alt="Medorc Official Logo"
+            className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+          />
         </button>
 
         {/* Desktop nav */}
