@@ -32,11 +32,18 @@ export function ForgotPasswordModal({ isOpen, onClose }) {
 
     setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/forgot-password`, { email, role });
+      console.log("[FORGOT PASSWORD] Submitting request:", { email, role, url: `${API_BASE_URL}/auth/forgot-password` });
+      const res = await axios.post(
+        `${API_BASE_URL}/auth/forgot-password`,
+        { email, role },
+        { headers: { "Content-Type": "application/json" } }
+      );
       toast.success(res.data.message || "A 6-digit verification code has been sent to your email!");
       setStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to request verification code.");
+      console.error("[FORGOT PASSWORD ERROR]", err);
+      const errMsg = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to request verification code.";
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
