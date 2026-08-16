@@ -163,7 +163,7 @@ export default function Logs() {
       name,
       photo: profile.photo || null,
       details: [
-        { icon: FiUser, label: "User Identifier", value: log.userId },
+        { icon: FiUser, label: "Accessed By", value: log.userId },
         { icon: FiTag, label: "Action", value: log.action },
         { icon: FiCalendar, label: "Timestamp", value: log.formattedDate },
         { icon: FiMail, label: "Email", value: profile.email },
@@ -284,7 +284,8 @@ export default function Logs() {
                         >
                           {log.role}
                         </Badge>
-                        {log.formattedDate}
+                        <span className="font-semibold text-foreground mr-1.5">{log.userId}</span>
+                        &bull; <span className="ml-1.5">{log.formattedDate}</span>
                       </p>
                     </div>
                   </div>
