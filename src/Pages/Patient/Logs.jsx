@@ -33,19 +33,43 @@ export default function Logs() {
   const [endDate, setEndDate] = useState("");
   const [sortOrder, setSortOrder] = useState("desc");
 
-  const parseLog = (log) => {
-    const timestamp = log.timestamp || log.created_at || Date.now();
-    const role = log.viewer_type || log.role || "Unknown";
-    const userId = log.viewer_id || log.userId || "N/A";
-    const action = log.action || "ACCESSED_RECORD";
+  const parseLog = (logItem) => {
+    if (!logItem) return null;
+
+    const logStr = (typeof logItem === "string" ? logItem : logItem.raw || "").trim();
+    if (!logStr) return null;
+
+    // Pattern: "ISO_TIMESTAMP - ROLE [USER_ID] ACTION_DESCRIPTION"
+    const regex = /^([^\s]+)\s*-\s*([A-Za-z0-9_]+)\s*\[([^\]]+)\]\s*(.*)$/;
+    const match = logStr.match(regex);
+
+    if (match) {
+      const [, timestampStr, roleStr, userIdStr, actionStr] = match;
+      const parsedDate = new Date(timestampStr);
+      const timestamp = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
+
+      return {
+        raw: logStr,
+        timestamp,
+        role: roleStr.toUpperCase(),
+        userId: userIdStr,
+        action: actionStr || "Activity Logged",
+        formattedDate: timestamp.toLocaleString(),
+      };
+    }
+
+    // Fallback if logItem was a legacy object or unformatted string
+    const role = (logItem.viewer_type || logItem.role || "PATIENT").toUpperCase();
+    const userId = logItem.viewer_id || logItem.userId || "N/A";
+    const action = logItem.action || logStr || "ACCESSED_RECORD";
 
     return {
-      raw: log,
-      timestamp,
-      role,
+      raw: logStr,
+      timestamp: logItem.created_at ? new Date(logItem.created_at) : new Date(),
+      role: role === "UNKNOWN" ? "PATIENT" : role,
       userId,
       action,
-      formattedDate: new Date(timestamp).toLocaleString(),
+      formattedDate: new Date().toLocaleString(),
     };
   };
 
