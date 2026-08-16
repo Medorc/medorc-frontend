@@ -83,6 +83,17 @@ export default function SignIn() {
       }
     } catch (err) {
       console.error("Google auth error:", err);
+      if (err.response?.status === 404 && err.response?.data?.isNewUser) {
+        toast.info("No registered account found for this Google email. Redirecting to complete Sign Up!");
+        const { email, name, picture } = err.response.data;
+        const queryParams = new URLSearchParams({
+          google_email: email || "",
+          google_name: name || "",
+          google_photo: picture || "",
+        }).toString();
+        navigate(`/SignUp?${queryParams}`);
+        return;
+      }
       toast.error(err.response?.data?.error || "Google Authentication failed.");
     } finally {
       setSubmitting(false);

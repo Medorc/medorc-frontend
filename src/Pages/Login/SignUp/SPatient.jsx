@@ -1,6 +1,5 @@
-import { useState } from "react";
-
-import { useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import Profile from "../../../Components/Profile";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -14,6 +13,9 @@ const GENDER_OPTIONS = ["Male", "Female", "Other"];
 const BLOOD_GROUP_OPTIONS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function SPatient() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [data, setData] = useState({
     role: "patient",
     full_name: "",
@@ -34,8 +36,37 @@ export default function SPatient() {
     exercise: false,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    const gEmail = searchParams.get("google_email");
+    const gName = searchParams.get("google_name");
+    const gPhoto = searchParams.get("google_photo");
+    if (gEmail || gName || gPhoto) {
+      setData((prev) => ({
+        ...prev,
+        email: gEmail || prev.email,
+        full_name: gName || prev.full_name,
+        photo: gPhoto || prev.photo,
+      }));
+      if (gEmail) checkEmail(gEmail);
+    }
+  }, [searchParams]);
+
+  const checkEmail = async (emailToTest) => {
+    if (!emailToTest || !emailToTest.includes("@")) return;
+    try {
+      const res = await axios.get(`${API_BASE_URL}/auth/check-email`, {
+        params: { email: emailToTest, role: "patient" },
+      });
+      setEmailExists(res.data.exists);
+      if (res.data.exists) {
+        toast.warning("An account with this email address already exists. Please Sign In!");
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   const handlePhotoUpload = async (file) => {
     if (!file) return;
@@ -56,6 +87,9 @@ export default function SPatient() {
   const changehandle = (e) => {
     const { name, value, type, checked } = e.target;
     setData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    if (name === "email") {
+      setEmailExists(false);
+    }
   };
 
   const Signup = async (e) => {
@@ -114,7 +148,23 @@ export default function SPatient() {
           <div className="flex flex-col gap-4">
             <FieldInput id="fullName" name="full_name" label="Full Name" required value={data.full_name} onChange={changehandle} />
             <FieldInput id="phoneNumber" name="phone_no" label="Phone Number" required value={data.phone_no} onChange={changehandle} />
-            <FieldInput id="email" name="email" label="Email Address" type="email" required value={data.email} onChange={changehandle} />
+            <div>
+              <FieldInput
+                id="email"
+                name="email"
+                label="Email Address"
+                type="email"
+                required
+                value={data.email}
+                onChange={changehandle}
+                onBlur={() => checkEmail(data.email)}
+              />
+              {emailExists && (
+                <p className="mt-1 text-xs font-semibold text-red-500 animate-fade-in">
+                  ⚠️ An account with this email address already exists. Please Sign In!
+                </p>
+              )}
+            </div>
             <FieldInput id="password" name="password" label="Password" type="password" required value={data.password} onChange={changehandle} />
             <FieldInput id="confirmPassword" name="confirmPassword" label="Confirm Password" type="password" required value={data.confirmPassword} onChange={changehandle} />
             <PasswordHealthCheck password={data.password} />
