@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { Loading } from "./Loading";
 import axios from "axios";
@@ -48,6 +49,17 @@ export default function UserCard({ user, role, navigate, token }) {
   const [qrResult, setQrResult] = useState("");
   const [shcCode, setShcCode] = useState("");
   const [scanError, setScanError] = useState("");
+
+  useEffect(() => {
+    if (isScanning) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isScanning]);
 
   const meta = ROLE_TONES[role] || ROLE_TONES.doctor;
 
@@ -322,67 +334,69 @@ export default function UserCard({ user, role, navigate, token }) {
       )}
 
       {/* Scanner overlay */}
-      {isScanning && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md animate-fade-in">
-          {/* Back button */}
-          <button
-            type="button"
-            onClick={() => setIsScanning(false)}
-            aria-label="Back to dashboard"
-            className="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20 active:scale-95"
-          >
-            <FiArrowLeft size={18} aria-hidden="true" />
-            <span>Back</span>
-          </button>
+      {isScanning &&
+        createPortal(
+          <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md animate-fade-in">
+            {/* Back button */}
+            <button
+              type="button"
+              onClick={() => setIsScanning(false)}
+              aria-label="Back to dashboard"
+              className="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20 active:scale-95"
+            >
+              <FiArrowLeft size={18} aria-hidden="true" />
+              <span>Back</span>
+            </button>
 
-          {/* Close button */}
-          <button
-            type="button"
-            onClick={() => setIsScanning(false)}
-            aria-label="Close scanner"
-            className="absolute right-6 top-6 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 active:scale-95"
-          >
-            <FiX size={24} aria-hidden="true" />
-          </button>
+            {/* Close button */}
+            <button
+              type="button"
+              onClick={() => setIsScanning(false)}
+              aria-label="Close scanner"
+              className="absolute right-6 top-6 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 active:scale-95"
+            >
+              <FiX size={24} aria-hidden="true" />
+            </button>
 
-          <div className="mb-8 text-center text-white">
-            <h2 className="font-display text-2xl font-bold">Scan QR Code</h2>
-            <p className="mt-1 text-sm text-white/60">Align the QR code within the frame</p>
-          </div>
+            <div className="mb-8 text-center text-white">
+              <h2 className="font-display text-2xl font-bold">Scan QR Code</h2>
+              <p className="mt-1 text-sm text-white/60">Align the QR code within the frame</p>
+            </div>
 
-          <div className="relative h-80 w-80 overflow-hidden rounded-3xl border-4 border-slate-700 bg-black shadow-2xl shadow-primary/20">
-            <Scanner
-              onScan={handleScan}
-              components={{ finder: false }}
-              styles={{ container: { width: "100%", height: "100%" } }}
-            />
+            <div className="relative h-80 w-80 overflow-hidden rounded-3xl border-4 border-slate-700 bg-black shadow-2xl shadow-primary/20">
+              <Scanner
+                onScan={handleScan}
+                components={{ finder: false }}
+                styles={{ container: { width: "100%", height: "100%" } }}
+              />
 
-            {/* Corner accents */}
-            <div className="pointer-events-none absolute left-4 top-4 h-10 w-10 rounded-tl-xl border-l-4 border-t-4 border-primary" />
-            <div className="pointer-events-none absolute right-4 top-4 h-10 w-10 rounded-tr-xl border-r-4 border-t-4 border-primary" />
-            <div className="pointer-events-none absolute bottom-4 left-4 h-10 w-10 rounded-bl-xl border-b-4 border-l-4 border-primary" />
-            <div className="pointer-events-none absolute bottom-4 right-4 h-10 w-10 rounded-br-xl border-b-4 border-r-4 border-primary" />
-            <div
-              className="pointer-events-none absolute left-0 h-0.5 w-full bg-primary shadow-[0_0_15px_rgba(20,184,166,1)] animate-[scan_2s_infinite_ease-in-out]"
-              style={{ animation: "scan 2s infinite ease-in-out" }}
-            />
-          </div>
+              {/* Corner accents */}
+              <div className="pointer-events-none absolute left-4 top-4 h-10 w-10 rounded-tl-xl border-l-4 border-t-4 border-primary" />
+              <div className="pointer-events-none absolute right-4 top-4 h-10 w-10 rounded-tr-xl border-r-4 border-t-4 border-primary" />
+              <div className="pointer-events-none absolute bottom-4 left-4 h-10 w-10 rounded-bl-xl border-b-4 border-l-4 border-primary" />
+              <div className="pointer-events-none absolute bottom-4 right-4 h-10 w-10 rounded-br-xl border-b-4 border-r-4 border-primary" />
+              <div
+                className="pointer-events-none absolute left-0 h-0.5 w-full bg-primary shadow-[0_0_15px_rgba(20,184,166,1)] animate-[scan_2s_infinite_ease-in-out]"
+                style={{ animation: "scan 2s infinite ease-in-out" }}
+              />
+            </div>
 
-          <div className="mt-8 flex items-center gap-2 rounded-full bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300">
-            <FiArrowRight size={14} aria-hidden="true" />
-            Searching for code...
-          </div>
+            <div className="mt-8 flex items-center gap-2 rounded-full bg-slate-800/50 px-4 py-2 text-sm font-medium text-slate-300">
+              <FiArrowRight size={14} aria-hidden="true" />
+              Searching for code...
+            </div>
 
-          {/* Cancel button */}
-          <button
-            type="button"
-            onClick={() => setIsScanning(false)}
-            className="mt-6 rounded-xl border border-white/15 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-white/20 active:scale-95"
-          >
-            Cancel
-          </button>
-        </div>
-      )}
+            {/* Cancel button */}
+            <button
+              type="button"
+              onClick={() => setIsScanning(false)}
+              className="mt-6 rounded-xl border border-white/15 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-white/20 active:scale-95"
+            >
+              Cancel
+            </button>
+          </div>,
+          document.body
+        )}
 
       <style>{`
         @keyframes scan {
