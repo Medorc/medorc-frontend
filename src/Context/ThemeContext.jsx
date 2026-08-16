@@ -12,16 +12,15 @@ function getStoredPreference() {
   } catch {
     /* ignore */
   }
-  return "system";
+  return "light";
 }
 
 function getSystemTheme() {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "light";
 }
 
 function resolveTheme(preference) {
-  return preference === "system" ? getSystemTheme() : preference;
+  return preference === "system" || !preference ? "light" : preference;
 }
 
 export function ThemeProvider({ children }) {
