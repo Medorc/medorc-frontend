@@ -103,7 +103,35 @@ export default function Logs() {
           .map((log) => parseLog(log.trim()))
           .filter(Boolean);
 
-        setData(logs);
+        const resolvedLogs = await Promise.all(
+          logs.map(async (log) => {
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(log.userId);
+            if (isUuid) {
+              try {
+                let rolePath = log.role.toLowerCase();
+                if (rolePath === "extern") rolePath = "patient";
+                const res = await axios.get(`${API_BASE_URL}/${rolePath}/profile`, {
+                  params: { viewer_id: log.userId },
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                const prof = res.data.data || res.data;
+                const name = prof.full_name || prof.name || log.role;
+                const rawActionMatch = log.raw.match(/\]\s*(.*)$/);
+                const actionText = rawActionMatch ? rawActionMatch[1] : "visited your profile";
+                return {
+                  ...log,
+                  profile: prof,
+                  action: `${name} ${actionText}`,
+                };
+              } catch {
+                return log;
+              }
+            }
+            return log;
+          })
+        );
+
+        setData(resolvedLogs);
       } catch (err) {
         console.log(err);
         toast.error("API Error: " + (err.response?.data?.message || err.message));
@@ -163,7 +191,21 @@ export default function Logs() {
     const name =
       profile.full_name ||
       profile.name ||
-      (log.userId && log.userId !== "N/A" ? log.userId : `${log.role} Viewer`);
+      (log.userId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(log.userId)
+        ? log.userId
+        : `${log.role} User`);
+
+    let actionClean = log.action || "Visited your profile";
+    actionClean = actionClean
+      .replace(/^(DOCTOR|HOSPITAL|PATIENT|EXTERN)\s+/i, "")
+      .replace(new RegExp(`^${name}\\s+`, "i"), "")
+      .trim();
+
+    if (actionClean) {
+      actionClean = actionClean.charAt(0).toUpperCase() + actionClean.slice(1);
+    } else {
+      actionClean = "Visited your profile";
+    }
 
     let tone = "primary";
     if (log.role === "DOCTOR") tone = "doctor";
@@ -176,8 +218,8 @@ export default function Logs() {
       name,
       photo: profile.photo || null,
       details: [
-        { icon: FiUser, label: "Accessed By", value: log.userId },
-        { icon: FiTag, label: "Action", value: log.action },
+        { icon: FiUser, label: "Accessed By", value: name },
+        { icon: FiTag, label: "Action", value: actionClean },
         { icon: FiCalendar, label: "Timestamp", value: log.formattedDate },
         { icon: FiMail, label: "Email", value: profile.email },
         { icon: FiPhone, label: "Phone", value: profile.phone || profile.phone_no },
