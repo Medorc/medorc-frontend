@@ -12,6 +12,7 @@ import {
   FiCheck,
   FiCamera,
   FiArrowRight,
+  FiArrowLeft,
 } from "react-icons/fi";
 import { API_BASE_URL } from "../config/api";
 import { Button } from "./ui/Button";
@@ -323,11 +324,23 @@ export default function UserCard({ user, role, navigate, token }) {
       {/* Scanner overlay */}
       {isScanning && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-md animate-fade-in">
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => setIsScanning(false)}
+            aria-label="Back to dashboard"
+            className="absolute left-6 top-6 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/20 active:scale-95"
+          >
+            <FiArrowLeft size={18} aria-hidden="true" />
+            <span>Back</span>
+          </button>
+
+          {/* Close button */}
           <button
             type="button"
             onClick={() => setIsScanning(false)}
             aria-label="Close scanner"
-            className="absolute right-6 top-6 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            className="absolute right-6 top-6 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 active:scale-95"
           >
             <FiX size={24} aria-hidden="true" />
           </button>
@@ -359,6 +372,15 @@ export default function UserCard({ user, role, navigate, token }) {
             <FiArrowRight size={14} aria-hidden="true" />
             Searching for code...
           </div>
+
+          {/* Cancel button */}
+          <button
+            type="button"
+            onClick={() => setIsScanning(false)}
+            className="mt-6 rounded-xl border border-white/15 bg-white/10 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-white/20 active:scale-95"
+          >
+            Cancel
+          </button>
         </div>
       )}
 
