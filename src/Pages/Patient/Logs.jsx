@@ -86,10 +86,9 @@ export default function Logs() {
         const rawLogs = res.data?.data?.data_logs || "";
 
         const logs = rawLogs
-          .split(",")
+          .split(/[\n,]+/)
           .map((log) => parseLog(log.trim()))
-          .filter(Boolean)
-          .reverse();
+          .filter(Boolean);
 
         setData(logs);
       } catch (err) {
@@ -124,35 +123,51 @@ export default function Logs() {
     });
 
   const handleViewDetails = async (log) => {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(log.userId);
+
+    if (!isUuid) {
+      setSelectedLog({ ...log, profile: { name: log.userId, full_name: log.userId } });
+      return;
+    }
+
     try {
-      const res = await axios.get(`${API_BASE_URL}/${log.role.toLowerCase()}/profile`, {
+      let rolePath = log.role.toLowerCase();
+      if (rolePath === "extern") rolePath = "patient";
+
+      const res = await axios.get(`${API_BASE_URL}/${rolePath}/profile`, {
         params: { viewer_id: log.userId },
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setSelectedLog({ ...log, profile: res.data.data });
+      setSelectedLog({ ...log, profile: res.data.data || res.data });
     } catch {
-      toast.error("Failed to fetch profile");
+      setSelectedLog({ ...log, profile: { name: log.userId, full_name: log.userId } });
     }
   };
 
   const getCreatorDetails = (log) => {
     const profile = log.profile || {};
-    const isDoctor = log.role === "DOCTOR";
+    const name =
+      profile.full_name ||
+      profile.name ||
+      (log.userId && log.userId !== "N/A" ? log.userId : `${log.role} Viewer`);
+
+    let tone = "primary";
+    if (log.role === "DOCTOR") tone = "doctor";
+    if (log.role === "HOSPITAL") tone = "warning";
+    if (log.role === "EXTERN") tone = "danger";
+
     return {
       role: log.role,
-      tone: isDoctor ? "doctor" : "danger",
-      name:
-        log.role === "DOCTOR" || log.role === "EXTERN"
-          ? profile.full_name
-          : profile.name || "Unknown User",
+      tone,
+      name,
       photo: profile.photo || null,
       details: [
-        { icon: FiUser, label: "User ID", value: log.userId },
+        { icon: FiUser, label: "User Identifier", value: log.userId },
         { icon: FiTag, label: "Action", value: log.action },
-        { icon: FiCalendar, label: "Date", value: log.formattedDate },
+        { icon: FiCalendar, label: "Timestamp", value: log.formattedDate },
         { icon: FiMail, label: "Email", value: profile.email },
-        { icon: FiPhone, label: "Phone", value: profile.phone },
+        { icon: FiPhone, label: "Phone", value: profile.phone || profile.phone_no },
       ],
     };
   };
@@ -243,7 +258,11 @@ export default function Logs() {
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                         log.role === "DOCTOR"
                           ? "bg-doctor-soft text-doctor"
-                          : "bg-danger-soft text-danger"
+                          : log.role === "HOSPITAL"
+                          ? "bg-warning-soft text-warning"
+                          : log.role === "EXTERN"
+                          ? "bg-danger-soft text-danger"
+                          : "bg-primary-soft text-primary"
                       }`}
                     >
                       <FiActivity size={18} aria-hidden="true" />
@@ -251,7 +270,18 @@ export default function Logs() {
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{log.action}</p>
                       <p className="mt-0.5 truncate text-xs text-muted">
-                        <Badge tone={log.role === "DOCTOR" ? "doctor" : "danger"} className="mr-1.5 align-middle">
+                        <Badge
+                          tone={
+                            log.role === "DOCTOR"
+                              ? "doctor"
+                              : log.role === "HOSPITAL"
+                              ? "warning"
+                              : log.role === "EXTERN"
+                              ? "danger"
+                              : "primary"
+                          }
+                          className="mr-1.5 align-middle"
+                        >
                           {log.role}
                         </Badge>
                         {log.formattedDate}
