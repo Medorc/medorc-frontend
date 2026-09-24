@@ -90,7 +90,7 @@ export default function SignIn() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const executeAuth = async (credentials) => {
+  const executeAuth = async (credentials, isDemo = false) => {
     const { role, email, password } = credentials;
     if (!email || !password || !role) {
       toast.error("Please fill all fields");
@@ -110,9 +110,16 @@ export default function SignIn() {
       }
     } catch (error) {
       console.error("SignIn Error Details:", error);
-      toast.error(
-        error.response?.data?.error || error.response?.data?.message || error.message || "Login Failed"
-      );
+      const isAuthFail = error.response?.status === 401 || error.response?.status === 404;
+      if (isDemo && isAuthFail) {
+        toast.error("Demo account not found in database. Please run 'npm run seed:demo' in medorc-backend.", {
+          autoClose: 6000,
+        });
+      } else {
+        toast.error(
+          error.response?.data?.error || error.response?.data?.message || error.message || "Login Failed"
+        );
+      }
     } finally {
       setSubmitting(false);
       setDemoLoadingRole(null);
@@ -121,13 +128,13 @@ export default function SignIn() {
 
   const handlesubmit = async (e) => {
     e.preventDefault();
-    await executeAuth(data);
+    await executeAuth(data, false);
   };
 
   const handleDemoLogin = async (acc) => {
     setData({ role: acc.role, email: acc.email, password: acc.password });
     setDemoLoadingRole(acc.role);
-    await executeAuth({ role: acc.role, email: acc.email, password: acc.password });
+    await executeAuth({ role: acc.role, email: acc.email, password: acc.password }, true);
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -169,11 +176,14 @@ export default function SignIn() {
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthLayout title="Sign In" subtitle="Welcome back — access your health dashboard.">
         {/* Quick Demo Access Box */}
-        <div className="mb-6 rounded-2xl border border-primary/25 bg-surface/90 backdrop-blur-sm p-4 shadow-xs">
+        <section
+          aria-label="Quick Demo Login"
+          className="mb-6 rounded-2xl border border-primary/25 bg-surface/90 backdrop-blur-sm p-4 shadow-xs"
+        >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Zap size={13} className="fill-primary text-primary" />
+                <Zap size={13} className="fill-primary text-primary" aria-hidden="true" />
               </span>
               <span className="text-xs font-bold uppercase tracking-wider text-primary">
                 Instant Demo Login
@@ -190,17 +200,19 @@ export default function SignIn() {
                 <button
                   key={acc.role}
                   type="button"
+                  aria-label={`Sign in as demo ${acc.label} (${acc.persona})`}
+                  aria-busy={isLoggingIn}
                   disabled={submitting}
                   onClick={() => handleDemoLogin(acc)}
-                  className={`group relative flex flex-col text-left p-3 rounded-xl border bg-surface hover:bg-surface-hover transition-all duration-150 shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] ${acc.border} disabled:opacity-60 disabled:cursor-not-allowed`}
+                  className={`group relative flex flex-col text-left p-3 rounded-xl border bg-surface hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all duration-150 shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] ${acc.border} disabled:opacity-60 disabled:cursor-not-allowed`}
                 >
                   <div className="flex items-center justify-between w-full mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-hover/70 border border-border group-hover:border-primary/40 text-foreground transition-colors">
                         {isLoggingIn ? (
-                          <Spinner size="sm" className="text-primary" />
+                          <Spinner size="sm" className="text-primary" label={`Logging in as ${acc.label}`} />
                         ) : (
-                          <Icon size={14} className={acc.accent} />
+                          <Icon size={14} className={acc.accent} aria-hidden="true" />
                         )}
                       </span>
                       <span className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
@@ -209,6 +221,7 @@ export default function SignIn() {
                     </div>
                     <ArrowRight
                       size={12}
+                      aria-hidden="true"
                       className="text-subtle group-hover:text-primary group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100"
                     />
                   </div>
@@ -224,7 +237,7 @@ export default function SignIn() {
               );
             })}
           </div>
-        </div>
+        </section>
 
         <div className="relative mb-5 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">

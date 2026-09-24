@@ -15,6 +15,18 @@ Modern, healthcare-focused Single Page Application (SPA) for the **Medorc Platfo
 
 ---
 
+## ⚡ Instant Demo Access
+The sign-in page features a 1-click **Instant Demo Login** with pre-configured personas for all 4 roles:
+
+| Role | Name | Email | Password | Pre-loaded Context |
+| :--- | :--- | :--- | :--- | :--- |
+| **Patient** | Ilakkiyan J | `ilakkiyanj.pt@medorc.in` | `password123` | Active SHC code (`SHC-8F92A140`), 3 medical records, emergency contacts |
+| **Doctor** | Dr. Ananya Roy | `dr.ananya@medorc.in` | `password123` | General Medicine, 8 yrs experience, clinical logs |
+| **Hospital** | Apollo Multi-Specialty | `apollo@medorc.in` | `password123` | Multi-specialty license, surgery & hospitalization entries |
+| **External** | Central Diagnostic Lab | `diagnostic@medorc.in` | `password123` | Diagnostic lab verification & viewer access |
+
+---
+
 ## 🛠 Local Setup
 
 ```bash
