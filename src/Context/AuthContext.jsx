@@ -1,4 +1,4 @@
-import { useState, useContext, createContext, useEffect } from "react";
+import { useState, useContext, createContext, useEffect, useCallback } from "react";
 
 /* eslint-disable react-refresh/only-export-components */
 import { jwtDecode } from 'jwt-decode';
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const API_URL = API_BASE_URL;
 
-  const fetchProfile = async (currentToken = token, currentRole = role) => {
+  const fetchProfile = useCallback(async (currentToken = token, currentRole = role) => {
     if (!currentToken || !currentRole) return;
     try {
       let endpoint = "";
@@ -74,13 +74,13 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.warn("AuthContext fetchProfile error:", err.message);
     }
-  };
+  }, [API_URL, token, role]);
 
   useEffect(() => {
     if (token && role) {
       fetchProfile(token, role);
     }
-  }, [token, role]);
+  }, [token, role, fetchProfile]);
 
   const login = (newToken, newRole) => {
     localStorage.setItem('token', newToken);

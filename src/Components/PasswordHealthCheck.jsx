@@ -1,4 +1,3 @@
-import React from "react";
 import { FiCheck, FiX, FiShield } from "react-icons/fi";
 
 export function PasswordHealthCheck({ password = "" }) {

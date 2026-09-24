@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import "./App.css";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Loading from "./Components/Loading";
 
@@ -11,7 +11,7 @@ const SignUp = lazy(() => import("./Pages/Login/SignUp"));
 const SignIn = lazy(() => import("./Pages/Login/SignIn"));
 const SPatient = lazy(() => import("./Pages/Login/SignUp/SPatient"));
 const SDoctor = lazy(() => import("./Pages/Login/SignUp/SDoctor"));
-const SHospital = lazy(() => import("./Pages/Login/SignUp/SHostpital"));
+const SHospital = lazy(() => import("./Pages/Login/SignUp/SHospital"));
 const SExternal = lazy(() => import("./Pages/Login/SignUp/SExternal"));
 
 // Patient Pages

@@ -64,8 +64,6 @@ export default function PatientBasicDetails() {
       </div>
     );
 
-  const visibilityOff = data.profile?.visibility === false || true; // Always show warning when routed to Basic Details view
-
   return (
     <div className="min-h-screen bg-background pb-12">
       <NavBar />

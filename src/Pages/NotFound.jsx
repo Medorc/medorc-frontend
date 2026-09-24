@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FiHome, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
 import { Button } from "../Components/ui/Button";

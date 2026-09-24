@@ -16,11 +16,14 @@ function getStoredPreference() {
 }
 
 function getSystemTheme() {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
   return "light";
 }
 
 function resolveTheme(preference) {
-  return preference === "system" || !preference ? "light" : preference;
+  return preference === "system" || !preference ? getSystemTheme() : preference;
 }
 
 export function ThemeProvider({ children }) {
