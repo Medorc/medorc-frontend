@@ -5,7 +5,7 @@ import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiChevronDown, FiLock, FiMail, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
-import { User, Stethoscope, Building2, Microscope, Zap, ArrowRight } from "lucide-react";
+import { User, Stethoscope, Building2, Microscope, Zap } from "lucide-react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { API_BASE_URL } from "../../config/api";
 import AuthLayout from "../../Components/AuthLayout";
@@ -175,24 +175,22 @@ export default function SignIn() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthLayout title="Sign In" subtitle="Welcome back — access your health dashboard.">
-        {/* Quick Demo Access Box */}
+        {/* Quick Demo Access Bar */}
         <section
           aria-label="Quick Demo Login"
-          className="mb-6 rounded-2xl border border-primary/25 bg-surface/90 backdrop-blur-sm p-4 shadow-xs"
+          className="mb-3.5 rounded-xl border border-primary/20 bg-surface/80 p-2 shadow-2xs backdrop-blur-sm"
         >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Zap size={13} className="fill-primary text-primary" aria-hidden="true" />
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+          <div className="flex items-center justify-between mb-1.5 px-0.5">
+            <div className="flex items-center gap-1.5">
+              <Zap size={12} className="fill-primary text-primary" aria-hidden="true" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-primary">
                 Instant Demo Login
               </span>
             </div>
-            <span className="text-[11px] text-subtle">Click to sign in instantly</span>
+            <span className="text-[10px] text-subtle">1-click test access</span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             {DEMO_ACCOUNTS.map((acc) => {
               const Icon = acc.icon;
               const isLoggingIn = demoLoadingRole === acc.role;
@@ -204,54 +202,36 @@ export default function SignIn() {
                   aria-busy={isLoggingIn}
                   disabled={submitting}
                   onClick={() => handleDemoLogin(acc)}
-                  className={`group relative flex flex-col text-left p-3 rounded-xl border bg-surface hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-all duration-150 shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] ${acc.border} disabled:opacity-60 disabled:cursor-not-allowed`}
+                  title={`${acc.persona} • ${acc.badge}`}
+                  className={`group relative flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg border bg-surface hover:bg-surface-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-all duration-150 shadow-2xs hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] ${acc.border} disabled:opacity-60 disabled:cursor-not-allowed`}
                 >
-                  <div className="flex items-center justify-between w-full mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-hover/70 border border-border group-hover:border-primary/40 text-foreground transition-colors">
-                        {isLoggingIn ? (
-                          <Spinner size="sm" className="text-primary" label={`Logging in as ${acc.label}`} />
-                        ) : (
-                          <Icon size={14} className={acc.accent} aria-hidden="true" />
-                        )}
-                      </span>
-                      <span className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
-                        {acc.label}
-                      </span>
-                    </div>
-                    <ArrowRight
-                      size={12}
-                      aria-hidden="true"
-                      className="text-subtle group-hover:text-primary group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between w-full gap-1">
-                    <span className="text-[11px] text-muted truncate max-w-[95px]">
-                      {acc.persona}
-                    </span>
-                    <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-md border ${acc.badgeColor} shrink-0`}>
-                      {acc.badge}
-                    </span>
-                  </div>
+                  {isLoggingIn ? (
+                    <Spinner size="sm" className="text-primary" label={`Logging in as ${acc.label}`} />
+                  ) : (
+                    <Icon size={13} className={acc.accent} aria-hidden="true" />
+                  )}
+                  <span className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                    {acc.label}
+                  </span>
                 </button>
               );
             })}
           </div>
         </section>
 
-        <div className="relative mb-5 flex items-center justify-center">
+        <div className="relative mb-3 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border" />
           </div>
-          <span className="relative bg-surface px-3 text-xs font-semibold uppercase tracking-wider text-subtle">
+          <span className="relative bg-surface px-2.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Or Sign In With Email
           </span>
         </div>
 
-        <form onSubmit={handlesubmit} className="flex flex-col gap-5">
+        <form onSubmit={handlesubmit} className="flex flex-col gap-3">
           {/* Role select */}
           <div className="relative">
-            <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="role" className="mb-1 block text-xs sm:text-sm font-medium text-foreground">
               Sign In as
             </label>
             <button
@@ -259,13 +239,13 @@ export default function SignIn() {
               onClick={() => setIsDropdownOpen((v) => !v)}
               aria-haspopup="listbox"
               aria-expanded={isDropdownOpen}
-              className="flex h-11 w-full items-center justify-between rounded-xl border border-border bg-surface px-3.5 text-sm transition-all hover:border-primary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring/35"
+              className="flex h-10 w-full items-center justify-between rounded-xl border border-border bg-surface px-3.5 text-xs sm:text-sm transition-all hover:border-primary/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-ring/35"
             >
               <span className={data.role ? "font-medium text-foreground" : "text-subtle"}>
                 {roles.find((r) => r.value === data.role)?.label || "Select your role"}
               </span>
               <FiChevronDown
-                size={16}
+                size={15}
                 className={`text-subtle transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
                 aria-hidden="true"
               />
@@ -279,7 +259,7 @@ export default function SignIn() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-pop"
+                  className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-pop"
                 >
                   <div>
                     {roles.map((role) => (
@@ -290,11 +270,11 @@ export default function SignIn() {
                             setData((prev) => ({ ...prev, role: role.value }));
                             setIsDropdownOpen(false);
                           }}
-                          className="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
+                          className="flex w-full items-center justify-between px-3.5 py-2 text-left text-xs sm:text-sm font-medium text-foreground transition-colors hover:bg-surface-hover"
                         >
                           <span>{role.label}</span>
                           {data.role === role.value && (
-                            <FiCheck size={15} className="text-primary" aria-hidden="true" />
+                            <FiCheck size={14} className="text-primary" aria-hidden="true" />
                           )}
                         </button>
                       </li>
@@ -307,12 +287,12 @@ export default function SignIn() {
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="email" className="mb-1 block text-xs sm:text-sm font-medium text-foreground">
               Email
             </label>
             <div className="relative">
               <FiMail
-                size={15}
+                size={14}
                 className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle"
                 aria-hidden="true"
               />
@@ -323,19 +303,19 @@ export default function SignIn() {
                 value={data.email}
                 onChange={changehandle}
                 placeholder="Enter your email"
-                className="h-11 w-full rounded-xl border border-border bg-surface pl-10 pr-3.5 text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+                className="h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
               />
             </div>
           </div>
 
           {/* Password */}
           <div>
-            <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="password" className="mb-1 block text-xs sm:text-sm font-medium text-foreground">
               Password
             </label>
             <div className="relative">
               <FiLock
-                size={15}
+                size={14}
                 className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-subtle"
                 aria-hidden="true"
               />
@@ -346,7 +326,7 @@ export default function SignIn() {
                 value={data.password}
                 onChange={changehandle}
                 placeholder="Enter your password"
-                className="h-11 w-full rounded-xl border border-border bg-surface pl-10 pr-10 text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
+                className="h-10 w-full rounded-xl border border-border bg-surface pl-9 pr-9 text-xs sm:text-sm text-foreground placeholder:text-subtle transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/35"
               />
               <button
                 type="button"
@@ -354,21 +334,21 @@ export default function SignIn() {
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle transition-colors hover:text-foreground"
               >
-                {showPassword ? <FiEyeOff size={16} /> : <FiEye size={16} />}
+                {showPassword ? <FiEyeOff size={15} /> : <FiEye size={15} />}
               </button>
             </div>
           </div>
 
-          <Button type="submit" size="lg" className="mt-1 w-full" loading={submitting}>
+          <Button type="submit" size="md" className="mt-0.5 w-full h-10 font-semibold" loading={submitting}>
             Sign In
           </Button>
         </form>
 
-        <div className="relative my-4 flex items-center justify-center">
+        <div className="relative my-2.5 flex items-center justify-center">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border" />
           </div>
-          <span className="relative bg-surface px-3 text-xs font-semibold uppercase tracking-wider text-subtle">
+          <span className="relative bg-surface px-2.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
             Or Continue With
           </span>
         </div>
@@ -379,12 +359,12 @@ export default function SignIn() {
             onError={() => toast.error("Google Sign-In failed")}
             shape="pill"
             theme="outline"
-            size="large"
+            size="medium"
             width="100%"
           />
         </div>
 
-      <div className="mt-7 flex flex-col items-center gap-3 text-sm sm:flex-row sm:justify-between">
+      <div className="mt-3.5 flex flex-col items-center gap-2 text-xs sm:text-sm sm:flex-row sm:justify-between">
         <button
           type="button"
           onClick={() => setIsForgotOpen(true)}
