@@ -5,10 +5,12 @@ import { useAuth } from "../../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiChevronDown, FiLock, FiMail, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
+import { User, Stethoscope, Building2, Microscope, Zap, ArrowRight } from "lucide-react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { API_BASE_URL } from "../../config/api";
 import AuthLayout from "../../Components/AuthLayout";
 import { Button } from "../../Components/ui/Button";
+import { Spinner } from "../../Components/ui/Spinner";
 
 import { ForgotPasswordModal } from "../../Components/ForgotPasswordModal";
 
@@ -21,6 +23,57 @@ const roles = [
   { value: "extern", label: "External" },
 ];
 
+const DEMO_ACCOUNTS = [
+  {
+    role: "patient",
+    label: "Patient",
+    persona: "Ilakkiyan J",
+    email: "ilakkiyanj.pt@medorc.in",
+    password: "password123",
+    icon: User,
+    badge: "Personal SHC",
+    badgeColor: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20",
+    border: "border-teal-500/30 hover:border-teal-500",
+    accent: "text-teal-600 dark:text-teal-400",
+  },
+  {
+    role: "doctor",
+    label: "Doctor",
+    persona: "Dr. Ananya Roy",
+    email: "dr.ananya@medorc.in",
+    password: "password123",
+    icon: Stethoscope,
+    badge: "General Med",
+    badgeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    border: "border-blue-500/30 hover:border-blue-500",
+    accent: "text-blue-600 dark:text-blue-400",
+  },
+  {
+    role: "hospital",
+    label: "Hospital",
+    persona: "Apollo Multi-Specialty",
+    email: "apollo@medorc.in",
+    password: "password123",
+    icon: Building2,
+    badge: "Multi-Specialty",
+    badgeColor: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    border: "border-emerald-500/30 hover:border-emerald-500",
+    accent: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    role: "extern",
+    label: "External Viewer",
+    persona: "Central Diagnostic",
+    email: "diagnostic@medorc.in",
+    password: "password123",
+    icon: Microscope,
+    badge: "Diagnostic Lab",
+    badgeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    border: "border-purple-500/30 hover:border-purple-500",
+    accent: "text-purple-600 dark:text-purple-400",
+  },
+];
+
 export default function SignIn() {
   const { login, shcstore } = useAuth();
   const navigate = useNavigate();
@@ -29,6 +82,7 @@ export default function SignIn() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [demoLoadingRole, setDemoLoadingRole] = useState(null);
   const [isForgotOpen, setIsForgotOpen] = useState(false);
 
   const changehandle = (e) => {
@@ -36,9 +90,8 @@ export default function SignIn() {
     setData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlesubmit = async (e) => {
-    e.preventDefault();
-    const { role, email, password } = data;
+  const executeAuth = async (credentials) => {
+    const { role, email, password } = credentials;
     if (!email || !password || !role) {
       toast.error("Please fill all fields");
       return;
@@ -46,9 +99,9 @@ export default function SignIn() {
 
     setSubmitting(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/signin`, data);
+      const response = await axios.post(`${API_BASE_URL}/auth/signin`, credentials);
       if (response.status === 200) {
-        toast.success("Login Successful");
+        toast.success(`Login Successful as ${role.charAt(0).toUpperCase() + role.slice(1)}`);
         login(response.data.token, response.data.role);
         if (response.data.role === "patient" && response.data.shc_code) {
           shcstore(response.data.shc_code);
@@ -62,7 +115,19 @@ export default function SignIn() {
       );
     } finally {
       setSubmitting(false);
+      setDemoLoadingRole(null);
     }
+  };
+
+  const handlesubmit = async (e) => {
+    e.preventDefault();
+    await executeAuth(data);
+  };
+
+  const handleDemoLogin = async (acc) => {
+    setData({ role: acc.role, email: acc.email, password: acc.password });
+    setDemoLoadingRole(acc.role);
+    await executeAuth({ role: acc.role, email: acc.email, password: acc.password });
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -103,6 +168,73 @@ export default function SignIn() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <AuthLayout title="Sign In" subtitle="Welcome back — access your health dashboard.">
+        {/* Quick Demo Access Box */}
+        <div className="mb-6 rounded-2xl border border-primary/25 bg-surface/90 backdrop-blur-sm p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Zap size={13} className="fill-primary text-primary" />
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Instant Demo Login
+              </span>
+            </div>
+            <span className="text-[11px] text-subtle">Click to sign in instantly</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {DEMO_ACCOUNTS.map((acc) => {
+              const Icon = acc.icon;
+              const isLoggingIn = demoLoadingRole === acc.role;
+              return (
+                <button
+                  key={acc.role}
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => handleDemoLogin(acc)}
+                  className={`group relative flex flex-col text-left p-3 rounded-xl border bg-surface hover:bg-surface-hover transition-all duration-150 shadow-2xs hover:shadow-sm hover:scale-[1.01] active:scale-[0.99] ${acc.border} disabled:opacity-60 disabled:cursor-not-allowed`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-surface-hover/70 border border-border group-hover:border-primary/40 text-foreground transition-colors">
+                        {isLoggingIn ? (
+                          <Spinner size="sm" className="text-primary" />
+                        ) : (
+                          <Icon size={14} className={acc.accent} />
+                        )}
+                      </span>
+                      <span className="font-semibold text-xs text-foreground group-hover:text-primary transition-colors">
+                        {acc.label}
+                      </span>
+                    </div>
+                    <ArrowRight
+                      size={12}
+                      className="text-subtle group-hover:text-primary group-hover:translate-x-0.5 transition-all opacity-0 group-hover:opacity-100"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between w-full gap-1">
+                    <span className="text-[11px] text-muted truncate max-w-[95px]">
+                      {acc.persona}
+                    </span>
+                    <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-md border ${acc.badgeColor} shrink-0`}>
+                      {acc.badge}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="relative mb-5 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-border" />
+          </div>
+          <span className="relative bg-surface px-3 text-xs font-semibold uppercase tracking-wider text-subtle">
+            Or Sign In With Email
+          </span>
+        </div>
+
         <form onSubmit={handlesubmit} className="flex flex-col gap-5">
           {/* Role select */}
           <div className="relative">
