@@ -17,7 +17,9 @@ export default function SignUpShell({ title, children }) {
           <FiArrowLeft size={15} aria-hidden="true" />
           <span className="hidden sm:inline">Choose role</span>
         </button>
-        <img src="/Logo.png" alt="Medorc Logo" className="h-11 w-auto" />
+        <Link to="/" title="Back to Home" className="transition-transform hover:scale-105">
+          <img src="/Logo.png" alt="Medorc Logo" className="h-11 w-auto" />
+        </Link>
         <h2 className="font-display text-lg font-extrabold tracking-tight text-foreground sm:text-2xl">
           {title}
         </h2>

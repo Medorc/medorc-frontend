@@ -1,5 +1,7 @@
 
-import { ShieldCheck, QrCode, Bot, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ShieldCheck, QrCode, Bot, Lock, ArrowLeft } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 const FEATURES = [
   { icon: QrCode, text: "One secure SHC code for your entire health history" },
@@ -26,10 +28,21 @@ export default function AuthLayout({ title, subtitle, children }) {
           className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl"
         />
 
-        <div className="relative z-10 p-8 lg:p-10">
-          <div className="inline-flex items-center rounded-2xl bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-xl border border-white/40">
+        <div className="relative z-10 p-8 lg:p-10 flex items-center justify-between">
+          <Link
+            to="/"
+            className="inline-flex items-center rounded-2xl bg-white/95 px-5 py-3 shadow-2xl backdrop-blur-xl border border-white/40 transition-transform hover:scale-105"
+            title="Back to Landing Page"
+          >
             <img src="/Logo.png" alt="Medorc Logo" className="h-10 w-auto object-contain" />
-          </div>
+          </Link>
+
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold text-teal-100 hover:bg-white/20 hover:text-white transition-all ring-1 ring-white/20 backdrop-blur-md"
+          >
+            <ArrowLeft size={14} /> Back to Home
+          </Link>
         </div>
 
         <div className="relative z-10 px-8 pb-10 lg:px-10">
@@ -55,11 +68,23 @@ export default function AuthLayout({ title, subtitle, children }) {
       </aside>
 
       {/* Right content */}
-      <main className="flex w-full flex-col items-center justify-center px-4 py-4 sm:py-6 lg:py-4 lg:px-8 lg:w-1/2">
-        <div className="mb-4 lg:hidden">
-          <div className="inline-flex items-center rounded-2xl bg-surface px-4 py-2 shadow-md border border-border">
+      <main className="flex w-full flex-col items-center justify-center px-4 py-4 sm:py-6 lg:py-4 lg:px-8 lg:w-1/2 relative">
+        {/* Top bar controls on right side */}
+        <div className="w-full max-w-md flex items-center justify-between mb-3">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted shadow-2xs hover:text-foreground hover:border-primary/40 transition-all group"
+          >
+            <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to Home</span>
+          </Link>
+          <ThemeToggle />
+        </div>
+
+        <div className="mb-3 lg:hidden">
+          <Link to="/" className="inline-flex items-center rounded-2xl bg-surface px-4 py-2 shadow-md border border-border">
             <img src="/Logo.png" alt="Medorc Logo" className="h-8 w-auto object-contain" />
-          </div>
+          </Link>
         </div>
 
         <div className="w-full max-w-md">
