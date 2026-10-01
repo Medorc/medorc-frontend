@@ -6,6 +6,11 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Loading from "./Components/Loading";
 
+// Landing & Marketing Pages
+const LandingPage = lazy(() => import("./Pages/LandingPage"));
+const PrivacyPolicy = lazy(() => import("./Pages/Legal/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./Pages/Legal/TermsOfService"));
+
 // Auth Components
 const SignUp = lazy(() => import("./Pages/Login/SignUp"));
 const SignIn = lazy(() => import("./Pages/Login/SignIn"));
@@ -57,9 +62,14 @@ function App() {
       <ToastContainer />
       <BrowserRouter>
         <Routes>
+          {/* Public Landing & Marketing Routes */}
+          <Route path="/" element={withSuspense(<LandingPage />)} />
+          <Route path="/privacy" element={withSuspense(<PrivacyPolicy />)} />
+          <Route path="/terms" element={withSuspense(<TermsOfService />)} />
+
           {/* Public Auth Routes */}
-          <Route path="/" element={withSuspense(<SignIn />)} />
           <Route path="/signin" element={withSuspense(<SignIn />)} />
+          <Route path="/SignIn" element={withSuspense(<SignIn />)} />
           <Route path="/SignUp" element={withSuspense(<SignUp />)} />
           <Route path="/signup" element={withSuspense(<SignUp />)} />
 
